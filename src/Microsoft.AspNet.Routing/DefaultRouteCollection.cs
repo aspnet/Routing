@@ -6,12 +6,7 @@ namespace Microsoft.AspNet.Routing
 {
     public class DefaultRouteCollection : IRouteCollection
     {
-        private readonly List<IRoute> _routes;
-
-        public DefaultRouteCollection()
-        {
-            _routes = new List<IRoute>();
-        }
+        private readonly List<IRoute> _routes = new List<IRoute>();
 
         public IRoute this[int index]
         {

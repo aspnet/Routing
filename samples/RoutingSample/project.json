@@ -3,9 +3,6 @@
   "dependencies": {
     "Microsoft.AspNet.Routing" : ""
   },
-  "compilationOptions" : {
-    "outputType" : "Exe"
-  },
   "configurations": {
     "net45": {
 	  "dependencies": {
