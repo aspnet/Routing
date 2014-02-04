@@ -1,32 +1,25 @@
 ﻿﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
-#if NET45
-
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Abstractions;
-using Microsoft.AspNet.PipelineCore.Owin;
 using Microsoft.AspNet.Routing;
 
 namespace RoutingSample
 {
-    internal class OwinRouteEndpoint : IRouteEndpoint
+    public class HttpContextRouteEndpoint : IRouteEndpoint
     {
-        private readonly Func<IDictionary<string, object>, Task> _appFunc;
+        private readonly RequestDelegate _appFunc;
 
-        public OwinRouteEndpoint(Func<IDictionary<string, object>, Task> appFunc)
+        public HttpContextRouteEndpoint(RequestDelegate appFunc)
         {
             _appFunc = appFunc;
         }
 
         public async Task<bool> Send(HttpContext context)
         {
-            var owinContext = context.GetFeature<ICanHasOwinEnvironment>().Environment;
-            await _appFunc(owinContext);
+            await _appFunc(context);
             return true;
         }
     }
 }
-
-#endif
