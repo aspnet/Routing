@@ -3,6 +3,7 @@
 #if NET45
 
 using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Owin;
 using Microsoft.AspNet.Routing.Template;
 using Owin;
@@ -20,15 +21,22 @@ namespace RoutingSample
 
         private void ConfigureRoutes(IBuilder builder)
         {            
-            var routes = builder.UseRouter();
+            var router = builder.UseRouter();
 
-            var endpoint1 = new HttpContextRouteEndpoint(async (context) => await context.Response.WriteAsync("match1"));
-            var endpoint2 = new HttpContextRouteEndpoint(async (context) => await context.Response.WriteAsync("Hello, World!"));
+            router
+                .For(async (context) => await context.Response.WriteAsync("match1"))
+                .AddTemplateRoute("api/{controller}", new { controller = "Home" })
+                .AddPrefixRoute("hello/");
 
-            routes.Add(new PrefixRoute(endpoint1, "api/store"));
-            routes.Add(new TemplateRoute(endpoint1, "api/checkout/{*extra}"));
-            routes.Add(new PrefixRoute(endpoint2, "hello/world"));
-            routes.Add(new PrefixRoute(endpoint1, ""));
+            router
+                .For(async (context) => await context.Response.WriteAsync("Hello, World!"))
+                .AddTemplateRoute("api/checkout/{*extra}")
+                .AddPrefixRoute("");
+
+            // Imagine something like this exists - mvc.Routes returns an IRouteBuilder
+            var mvc = builder.UseMvc();
+            mvc.Routes
+                .AddRoute("{controller}/{action}/{id}");
         }
     }
 }
