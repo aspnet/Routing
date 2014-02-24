@@ -710,6 +710,58 @@ namespace Microsoft.AspNet.Routing.Template.Tests
                 new RouteValueDictionary { { "language", "xx" }, { "locale", "yy" }, { "controller", "foo" } });
         }
 
+        [Fact]
+        public void MatchSetsOptionalParameter()
+        {
+            // Arrange
+            var route = CreateRoute("{controller}/{action?}");
+            var url = "Home/Index";
+
+            // Act
+            var match = route.Match(new RouteContext(GetHttpContext(url)));
+
+            // Assert
+            Assert.NotNull(match);
+            Assert.Equal(2, match.Values.Count);
+            Assert.Equal("Home", match.Values["controller"]);
+            Assert.Equal("Index", match.Values["action"]);
+        }
+
+        [Fact]
+        public void MatchDoesNotSetOptionalParameter()
+        {
+            // Arrange
+            var route = CreateRoute("{controller}/{action?}");
+            var url = "Home";
+
+            // Act
+            var match = route.Match(new RouteContext(GetHttpContext(url)));
+
+            // Assert
+            Assert.NotNull(match);
+            Assert.Equal(1, match.Values.Count);
+            Assert.Equal("Home", match.Values["controller"]);
+            Assert.False(match.Values.ContainsKey("action"));
+        }
+
+        [Fact]
+        public void MatchMultipleOptionalParameters()
+        {
+            // Arrange
+            var route = CreateRoute("{controller}/{action?}/{id?}");
+            var url = "Home/Index";
+
+            // Act
+            var match = route.Match(new RouteContext(GetHttpContext(url)));
+
+            // Assert
+            Assert.NotNull(match);
+            Assert.Equal(2, match.Values.Count);
+            Assert.Equal("Home", match.Values["controller"]);
+            Assert.Equal("Index", match.Values["action"]);
+            Assert.False(match.Values.ContainsKey("id"));
+        }
+
         private static IRouteValues CreateRouteData()
         {
             return new RouteValues(new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase));
