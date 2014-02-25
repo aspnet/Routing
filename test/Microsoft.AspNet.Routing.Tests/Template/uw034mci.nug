@@ -10,64 +10,60 @@ using Xunit;
 
 namespace Microsoft.AspNet.Routing.Template.Tests
 {
-    public class TemplateRouteTests
+    public class TemplateMatcherTests
     {
         [Fact]
         public void MatchSingleRoute()
         {
             // Arrange
-            HttpContext context = GetHttpContext("~/Bank/DoAction/123");
-            TemplateRoute r = CreateRoute("{controller}/{action}/{id}", null);
+            var matcher = CreateMatcher("{controller}/{action}/{id}");
 
             // Act
-            var match = r.Match(new RouteContext(context));
+            var match = matcher.Match("~/Bank/DoAction/123", null);
 
             // Assert
             Assert.NotNull(match);
-            Assert.Equal("Bank", match.Values["controller"]);
-            Assert.Equal("DoAction", match.Values["action"]);
-            Assert.Equal("123", match.Values["id"]);
+            Assert.Equal("Bank", match["controller"]);
+            Assert.Equal("DoAction", match["action"]);
+            Assert.Equal("123", match["id"]);
         }
 
         [Fact]
         public void NoMatchSingleRoute()
         {
             // Arrange
-            HttpContext context = GetHttpContext("~/Bank/DoAction");
-            TemplateRoute r = CreateRoute("{controller}/{action}/{id}", null);
+            var matcher = CreateMatcher("{controller}/{action}/{id}");
 
             // Act
-            var rd = r.Match(new RouteContext(context));
+            var match = matcher.Match("~/Bank/DoAction", null);
 
             // Assert
-            Assert.Null(rd);
+            Assert.Null(match);
         }
 
         [Fact]
         public void MatchSingleRouteWithDefaults()
         {
             // Arrange
-            HttpContext context = GetHttpContext("~/Bank/DoAction");
-            TemplateRoute r = CreateRoute("{controller}/{action}/{id}", new RouteValueDictionary(new { id = "default id" }));
+            var matcher = CreateMatcher("{controller}/{action}/{id}");
 
             // Act
-            var rd = r.Match(new RouteContext(context));
+            var rd = matcher.Match("~/Bank/DoAction", new RouteValueDictionary(new { id = "default id" }));
 
             // Assert
-            Assert.Equal("Bank", rd.Values["controller"]);
-            Assert.Equal("DoAction", rd.Values["action"]);
-            Assert.Equal("default id", rd.Values["id"]);
+            Assert.Equal("Bank", rd["controller"]);
+            Assert.Equal("DoAction", rd["action"]);
+            Assert.Equal("default id", rd["id"]);
         }
 
         [Fact]
         public void NoMatchSingleRouteWithDefaults()
         {
             // Arrange
-            HttpContext context = GetHttpContext("~/Bank");
-            TemplateRoute r = CreateRoute("{controller}/{action}/{id}", new RouteValueDictionary(new { id = "default id" }));
+            var matcher = CreateMatcher("{controller}/{action}/{id}");
 
             // Act
-            var rd = r.Match(new RouteContext(context));
+            var rd = matcher.Match("~/Bank", new RouteValueDictionary(new { id = "default id" }));
 
             // Assert
             Assert.Null(rd);
@@ -77,41 +73,38 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         public void MatchRouteWithLiterals()
         {
             // Arrange
-            HttpContext context = GetHttpContext("~/moo/111/bar/222");
-            TemplateRoute r = CreateRoute("moo/{p1}/bar/{p2}", new RouteValueDictionary(new { p2 = "default p2" }));
+            var matcher = CreateMatcher("moo/{p1}/bar/{p2}");
 
             // Act
-            var rd = r.Match(new RouteContext(context));
+            var rd = matcher.Match("~/moo/111/bar/222", new RouteValueDictionary(new { p2 = "default p2" }));
 
             // Assert
-            Assert.Equal("111", rd.Values["p1"]);
-            Assert.Equal("222", rd.Values["p2"]);
+            Assert.Equal("111", rd["p1"]);
+            Assert.Equal("222", rd["p2"]);
         }
 
         [Fact]
         public void MatchRouteWithLiteralsAndDefaults()
         {
             // Arrange
-            HttpContext context = GetHttpContext("~/moo/111/bar/");
-            TemplateRoute r = CreateRoute("moo/{p1}/bar/{p2}", new RouteValueDictionary(new { p2 = "default p2" }));
+            var matcher = CreateMatcher("moo/{p1}/bar/{p2}");
 
             // Act
-            var rd = r.Match(new RouteContext(context));
+            var rd = matcher.Match("~/moo/111/bar/", new RouteValueDictionary(new { p2 = "default p2" }));
 
             // Assert
-            Assert.Equal("111", rd.Values["p1"]);
-            Assert.Equal("default p2", rd.Values["p2"]);
+            Assert.Equal("111", rd["p1"]);
+            Assert.Equal("default p2", rd["p2"]);
         }
 
         [Fact]
         public void MatchRouteWithOnlyLiterals()
         {
             // Arrange
-            HttpContext context = GetHttpContext("~/moo/bar");
-            TemplateRoute r = CreateRoute("moo/bar", null);
+            var matcher = CreateMatcher("moo/bar");
 
             // Act
-            var rd = r.Match(new RouteContext(context));
+            var rd = matcher.Match("~/moo/bar", null);
 
             // Assert
             Assert.NotNull(rd);
@@ -122,11 +115,10 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         public void NoMatchRouteWithOnlyLiterals()
         {
             // Arrange
-            HttpContext context = GetHttpContext("~/moo/bar");
-            TemplateRoute r = CreateRoute("moo/bars", null);
+            var matcher = CreateMatcher("moo/bars");
 
             // Act
-            var rd = r.Match(new RouteContext(context));
+            var rd = matcher.Match("~/moo/bar", null);
 
             // Assert
             Assert.Null(rd);
@@ -136,11 +128,10 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         public void MatchRouteWithExtraSeparators()
         {
             // Arrange
-            HttpContext context = GetHttpContext("~/moo/bar/");
-            TemplateRoute r = CreateRoute("moo/bar", null);
+            var matcher = CreateMatcher("moo/bar");
 
             // Act
-            var rd = r.Match(new RouteContext(context));
+            var rd = matcher.Match("~/moo/bar/", null);
 
             // Assert
             Assert.NotNull(rd);
@@ -151,11 +142,10 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         public void MatchRouteUrlWithExtraSeparators()
         {
             // Arrange
-            HttpContext context = GetHttpContext("~/moo/bar");
-            TemplateRoute r = CreateRoute("moo/bar/", null);
+            var matcher = CreateMatcher("moo/bar/";
 
             // Act
-            var rd = r.Match(new RouteContext(context));
+            var rd = matcher.Match("~/moo/bar", null));
 
             // Assert
             Assert.NotNull(rd);
@@ -166,16 +156,15 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         public void MatchRouteUrlWithParametersAndExtraSeparators()
         {
             // Arrange
-            HttpContext context = GetHttpContext("~/moo/bar");
-            TemplateRoute r = CreateRoute("{p1}/{p2}/", null);
+            var matcher = CreateMatcher("{p1}/{p2}/");
 
             // Act
-            var rd = r.Match(new RouteContext(context));
+            var rd = matcher.Match("~/moo/bar", null);
 
             // Assert
             Assert.NotNull(rd);
-            Assert.Equal("moo", rd.Values["p1"]);
-            Assert.Equal("bar", rd.Values["p2"]);
+            Assert.Equal("moo", rd["p1"]);
+            Assert.Equal("bar", rd["p2"]);
         }
 
         [Fact]
@@ -183,10 +172,10 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             // Arrange
             HttpContext context = GetHttpContext("~/moo/bar/boo");
-            TemplateRoute r = CreateRoute("{p1}/{p2}/baz", null);
+            var matcher = CreateMatcher("{p1}/{p2}/baz", null);
 
             // Act
-            var rd = r.Match(new RouteContext(context));
+            var rd = matcher.Match(new RouteContext(context));
 
             // Assert
             Assert.Null(rd);
@@ -197,10 +186,10 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             // Arrange
             HttpContext context = GetHttpContext("~/moo/bar");
-            TemplateRoute r = CreateRoute("{p1}", null);
+            var matcher = CreateMatcher("{p1}", null);
 
             // Act
-            var rd = r.Match(new RouteContext(context));
+            var rd = matcher.Match(new RouteContext(context));
 
             // Assert
             Assert.Null(rd);
@@ -211,10 +200,10 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             // Arrange
             HttpContext context = GetHttpContext("~/default.aspx");
-            TemplateRoute r = CreateRoute("DEFAULT.ASPX", null);
+            var matcher = CreateMatcher("DEFAULT.ASPX", null);
 
             // Act
-            var rd = r.Match(new RouteContext(context));
+            var rd = matcher.Match(new RouteContext(context));
 
             // Assert
             Assert.NotNull(rd);
@@ -223,10 +212,10 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         private void VerifyRouteMatchesWithContext(string route, string requestUrl)
         {
             HttpContext context = GetHttpContext(requestUrl);
-            TemplateRoute r = CreateRoute(route, null);
+            var matcher = CreateMatcher(route, null);
 
             // Act
-            var rd = r.Match(new RouteContext(context));
+            var rd = matcher.Match(new RouteContext(context));
 
             // Assert
             Assert.NotNull(rd);
@@ -250,10 +239,10 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             // Arrange
             HttpContext context = GetHttpContext("~/v1");
-            TemplateRoute r = CreateRoute("{p1}/{p2}", new RouteValueDictionary(new { p2 = (string)null, foo = "bar" }));
+            var matcher = CreateMatcher("{p1}/{p2}", new RouteValueDictionary(new { p2 = (string)null, foo = "bar" }));
 
             // Act
-            var rd = r.Match(new RouteContext(context));
+            var rd = matcher.Match(new RouteContext(context));
 
             // Assert
             Assert.NotNull(rd);
@@ -268,12 +257,12 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             // Arrange
             HttpContext context = GetHttpContext("~/date/2007/08");
-            TemplateRoute r = CreateRoute(
+            var matcher = CreateMatcher(
                 "date/{y}/{m}/{d}",
                 new RouteValueDictionary(new { controller = "blog", action = "showpost", m = (string)null, d = (string)null }));
 
             // Act
-            var rd = r.Match(new RouteContext(context));
+            var rd = matcher.Match(new RouteContext(context));
 
             // Assert
             Assert.NotNull(rd);
@@ -288,8 +277,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetRouteDataWithMultiSegmentParamsOnBothEndsMatches()
         {
-            GetRouteDataHelper(
-                CreateRoute("language/{lang}-{region}", null),
+            RunTest(
+                CreateMatcher("language/{lang}-{region}"),
                 "language/en-US",
                 new RouteValueDictionary(new { lang = "en", region = "US" }));
         }
@@ -297,8 +286,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetRouteDataWithMultiSegmentParamsOnLeftEndMatches()
         {
-            GetRouteDataHelper(
-                CreateRoute("language/{lang}-{region}a", null),
+            RunTest(
+                CreateMatcher("language/{lang}-{region}a"),
                 "language/en-USa",
                 new RouteValueDictionary(new { lang = "en", region = "US" }));
         }
@@ -306,8 +295,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetRouteDataWithMultiSegmentParamsOnRightEndMatches()
         {
-            GetRouteDataHelper(
-                CreateRoute("language/a{lang}-{region}", null),
+            RunTest(
+                CreateMatcher("language/a{lang}-{region}", null),
                 "language/aen-US",
                 new RouteValueDictionary(new { lang = "en", region = "US" }));
         }
@@ -315,8 +304,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetRouteDataWithMultiSegmentParamsOnNeitherEndMatches()
         {
-            GetRouteDataHelper(
-                CreateRoute("language/a{lang}-{region}a", null),
+            RunTest(
+                CreateMatcher("language/a{lang}-{region}a", null),
                 "language/aen-USa",
                 new RouteValueDictionary(new { lang = "en", region = "US" }));
         }
@@ -324,8 +313,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetRouteDataWithMultiSegmentParamsOnNeitherEndDoesNotMatch()
         {
-            GetRouteDataHelper(
-                CreateRoute("language/a{lang}-{region}a", null),
+            RunTest(
+                CreateMatcher("language/a{lang}-{region}a", null),
                 "language/a-USa",
                 null);
         }
@@ -333,8 +322,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetRouteDataWithMultiSegmentParamsOnNeitherEndDoesNotMatch2()
         {
-            GetRouteDataHelper(
-                CreateRoute("language/a{lang}-{region}a", null),
+            RunTest(
+                CreateMatcher("language/a{lang}-{region}a", null),
                 "language/aen-a",
                 null);
         }
@@ -342,8 +331,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetRouteDataWithSimpleMultiSegmentParamsOnBothEndsMatches()
         {
-            GetRouteDataHelper(
-                CreateRoute("language/{lang}", null),
+            RunTest(
+                CreateMatcher("language/{lang}", null),
                 "language/en",
                 new RouteValueDictionary(new { lang = "en" }));
         }
@@ -351,8 +340,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetRouteDataWithSimpleMultiSegmentParamsOnBothEndsTrailingSlashDoesNotMatch()
         {
-            GetRouteDataHelper(
-                CreateRoute("language/{lang}", null),
+            RunTest(
+                CreateMatcher("language/{lang}", null),
                 "language/",
                 null);
         }
@@ -360,8 +349,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetRouteDataWithSimpleMultiSegmentParamsOnBothEndsDoesNotMatch()
         {
-            GetRouteDataHelper(
-                CreateRoute("language/{lang}", null),
+            RunTest(
+                CreateMatcher("language/{lang}", null),
                 "language",
                 null);
         }
@@ -369,8 +358,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetRouteDataWithSimpleMultiSegmentParamsOnLeftEndMatches()
         {
-            GetRouteDataHelper(
-                CreateRoute("language/{lang}-", null),
+            RunTest(
+                CreateMatcher("language/{lang}-", null),
                 "language/en-",
                 new RouteValueDictionary(new { lang = "en" }));
         }
@@ -378,8 +367,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetRouteDataWithSimpleMultiSegmentParamsOnRightEndMatches()
         {
-            GetRouteDataHelper(
-                CreateRoute("language/a{lang}", null),
+            RunTest(
+                CreateMatcher("language/a{lang}", null),
                 "language/aen",
                 new RouteValueDictionary(new { lang = "en" }));
         }
@@ -387,8 +376,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetRouteDataWithSimpleMultiSegmentParamsOnNeitherEndMatches()
         {
-            GetRouteDataHelper(
-                CreateRoute("language/a{lang}a", null),
+            RunTest(
+                CreateMatcher("language/a{lang}a", null),
                 "language/aena",
                 new RouteValueDictionary(new { lang = "en" }));
         }
@@ -396,8 +385,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetRouteDataWithMultiSegmentStandardMvcRouteMatches()
         {
-            GetRouteDataHelper(
-                CreateRoute("{controller}.mvc/{action}/{id}", new RouteValueDictionary(new { action = "Index", id = (string)null })),
+            RunTest(
+                CreateMatcher("{controller}.mvc/{action}/{id}", new RouteValueDictionary(new { action = "Index", id = (string)null })),
                 "home.mvc/index",
                 new RouteValueDictionary(new { controller = "home", action = "index", id = (string)null }));
         }
@@ -405,8 +394,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetRouteDataWithMultiSegmentParamsOnBothEndsWithDefaultValuesMatches()
         {
-            GetRouteDataHelper(
-                CreateRoute("language/{lang}-{region}", new RouteValueDictionary(new { lang = "xx", region = "yy" })),
+            RunTest(
+                CreateMatcher("language/{lang}-{region}", new RouteValueDictionary(new { lang = "xx", region = "yy" })),
                 "language/-", 
                 null);
         }
@@ -414,8 +403,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetRouteDataWithUrlWithMultiSegmentWithRepeatedDots()
         {
-            GetRouteDataHelper(
-                CreateRoute("{Controller}..mvc/{id}/{Param1}", null),
+            RunTest(
+                CreateMatcher("{Controller}..mvc/{id}/{Param1}", null),
                 "Home..mvc/123/p1",
                 new RouteValueDictionary(new { Controller = "Home", id = "123", Param1 = "p1" }));
         }
@@ -423,8 +412,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetRouteDataWithUrlWithTwoRepeatedDots()
         {
-            GetRouteDataHelper(
-                CreateRoute("{Controller}.mvc/../{action}", null),
+            RunTest(
+                CreateMatcher("{Controller}.mvc/../{action}", null),
                 "Home.mvc/../index",
                 new RouteValueDictionary(new { Controller = "Home", action = "index" }));
         }
@@ -432,8 +421,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetRouteDataWithUrlWithThreeRepeatedDots()
         {
-            GetRouteDataHelper(
-                CreateRoute("{Controller}.mvc/.../{action}", null),
+            RunTest(
+                CreateMatcher("{Controller}.mvc/.../{action}", null),
                 "Home.mvc/.../index",
                 new RouteValueDictionary(new { Controller = "Home", action = "index" }));
         }
@@ -441,8 +430,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetRouteDataWithUrlWithManyRepeatedDots()
         {
-            GetRouteDataHelper(
-                CreateRoute("{Controller}.mvc/../../../{action}", null),
+            RunTest(
+                CreateMatcher("{Controller}.mvc/../../../{action}", null),
                 "Home.mvc/../../../index",
                 new RouteValueDictionary(new { Controller = "Home", action = "index" }));
         }
@@ -450,8 +439,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetRouteDataWithUrlWithExclamationPoint()
         {
-            GetRouteDataHelper(
-                CreateRoute("{Controller}.mvc!/{action}", null),
+            RunTest(
+                CreateMatcher("{Controller}.mvc!/{action}", null),
                 "Home.mvc!/index",
                 new RouteValueDictionary(new { Controller = "Home", action = "index" }));
         }
@@ -459,8 +448,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetRouteDataWithUrlWithStartingDotDotSlash()
         {
-            GetRouteDataHelper(
-                CreateRoute("../{Controller}.mvc", null),
+            RunTest(
+                CreateMatcher("../{Controller}.mvc", null),
                 "../Home.mvc",
                 new RouteValueDictionary(new { Controller = "Home" }));
         }
@@ -468,8 +457,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetRouteDataWithUrlWithStartingBackslash()
         {
-            GetRouteDataHelper(
-                CreateRoute(@"\{Controller}.mvc", null),
+            RunTest(
+                CreateMatcher(@"\{Controller}.mvc", null),
                 @"\Home.mvc",
                 new RouteValueDictionary(new { Controller = "Home" }));
         }
@@ -477,8 +466,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetRouteDataWithUrlWithBackslashSeparators()
         {
-            GetRouteDataHelper(
-                CreateRoute(@"{Controller}.mvc\{id}\{Param1}", null),
+            RunTest(
+                CreateMatcher(@"{Controller}.mvc\{id}\{Param1}", null),
                 @"Home.mvc\123\p1",
                 new RouteValueDictionary(new { Controller = "Home", id = "123", Param1 = "p1" }));
         }
@@ -486,8 +475,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetRouteDataWithUrlWithParenthesesLiterals()
         {
-            GetRouteDataHelper(
-                CreateRoute(@"(Controller).mvc", null),
+            RunTest(
+                CreateMatcher(@"(Controller).mvc", null),
                 @"(Controller).mvc",
                 new RouteValueDictionary());
         }
@@ -495,8 +484,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetRouteDataWithUrlWithTrailingSlashSpace()
         {
-            GetRouteDataHelper(
-                CreateRoute(@"Controller.mvc/ ", null),
+            RunTest(
+                CreateMatcher(@"Controller.mvc/ ", null),
                 @"Controller.mvc/ ",
                 new RouteValueDictionary());
         }
@@ -504,8 +493,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetRouteDataWithUrlWithTrailingSpace()
         {
-            GetRouteDataHelper(
-                CreateRoute(@"Controller.mvc ", null),
+            RunTest(
+                CreateMatcher(@"Controller.mvc ", null),
                 @"Controller.mvc ",
                 new RouteValueDictionary());
         }
@@ -514,8 +503,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         public void GetRouteDataWithCatchAllCapturesDots()
         {
             // DevDiv Bugs 189892: UrlRouting: Catch all parameter cannot capture url segments that contain the "."
-            GetRouteDataHelper(
-                CreateRoute(
+            RunTest(
+                CreateMatcher(
                     "Home/ShowPilot/{missionId}/{*name}",
                     new RouteValueDictionary(new
                     {
@@ -533,10 +522,10 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             // Arrange
             HttpContext context = GetHttpContext("~/v1/v2/v3");
-            TemplateRoute r = CreateRoute("{p1}/{*p2}", null);
+            var matcher = CreateMatcher("{p1}/{*p2}", null);
 
             // Act
-            var rd = r.Match(new RouteContext(context));
+            var rd = matcher.Match(new RouteContext(context));
 
             // Assert
             Assert.NotNull(rd);
@@ -550,10 +539,10 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             // Arrange
             HttpContext context = GetHttpContext("~/v1/");
-            TemplateRoute r = CreateRoute("{p1}/{*p2}", null);
+            var matcher = CreateMatcher("{p1}/{*p2}", null);
 
             // Act
-            var rd = r.Match(new RouteContext(context));
+            var rd = matcher.Match(new RouteContext(context));
 
             // Assert
             Assert.NotNull(rd);
@@ -567,10 +556,10 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             // Arrange
             HttpContext context = GetHttpContext("~/v1");
-            TemplateRoute r = CreateRoute("{p1}/{*p2}", null);
+            var matcher = CreateMatcher("{p1}/{*p2}", null);
 
             // Act
-            var rd = r.Match(new RouteContext(context));
+            var rd = matcher.Match(new RouteContext(context));
 
             // Assert
             Assert.NotNull(rd);
@@ -584,10 +573,10 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             // Arrange
             HttpContext context = GetHttpContext("~/v1");
-            TemplateRoute r = CreateRoute("{p1}/{*p2}", new RouteValueDictionary(new { p2 = "catchall" }));
+            var matcher = CreateMatcher("{p1}/{*p2}", new RouteValueDictionary(new { p2 = "catchall" }));
 
             // Act
-            var rd = r.Match(new RouteContext(context));
+            var rd = matcher.Match(new RouteContext(context));
 
             // Assert
             Assert.NotNull(rd);
@@ -601,10 +590,10 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             // Arrange
             HttpContext context = GetHttpContext("~/v1/hello/whatever");
-            TemplateRoute r = CreateRoute("{p1}/{*p2}", new RouteValueDictionary(new { p2 = "catchall" }));
+            var matcher = CreateMatcher("{p1}/{*p2}", new RouteValueDictionary(new { p2 = "catchall" }));
 
             // Act
-            var rd = r.Match(new RouteContext(context));
+            var rd = matcher.Match(new RouteContext(context));
 
             // Assert
             Assert.NotNull(rd);
@@ -616,10 +605,10 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetRouteDataDoesNotMatchOnlyLeftLiteralMatch()
         {
-            TemplateRoute r = CreateRoute("foo", null);
+            var matcher = CreateMatcher("foo", null);
 
             // DevDiv Bugs 191180: UrlRouting: Wrong route getting matched if a url segment is a substring of the requested url
-            GetRouteDataHelper(
+            RunTest(
                 r,
                 "fooBAR",
                 null);
@@ -628,10 +617,10 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetRouteDataDoesNotMatchOnlyRightLiteralMatch()
         {
-            TemplateRoute r = CreateRoute("foo", null);
+            var matcher = CreateMatcher("foo", null);
 
             // DevDiv Bugs 191180: UrlRouting: Wrong route getting matched if a url segment is a substring of the requested url
-            GetRouteDataHelper(
+            RunTest(
                 r,
                 "BARfoo",
                 null);
@@ -640,10 +629,10 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetRouteDataDoesNotMatchMiddleLiteralMatch()
         {
-            TemplateRoute r = CreateRoute("foo", null);
+            var matcher = CreateMatcher("foo", null);
 
             // DevDiv Bugs 191180: UrlRouting: Wrong route getting matched if a url segment is a substring of the requested url
-            GetRouteDataHelper(
+            RunTest(
                 r,
                 "BARfooBAR",
                 null);
@@ -652,10 +641,10 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetRouteDataDoesMatchesExactLiteralMatch()
         {
-            TemplateRoute r = CreateRoute("foo", null);
+            var matcher = CreateMatcher("foo", null);
 
             // DevDiv Bugs 191180: UrlRouting: Wrong route getting matched if a url segment is a substring of the requested url
-            GetRouteDataHelper(
+            RunTest(
                 r,
                 "foo",
                 new RouteValueDictionary());
@@ -664,11 +653,11 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetRouteDataWithWeirdParameterNames()
         {
-            TemplateRoute r = CreateRoute(
+            var matcher = CreateMatcher(
                 "foo/{ }/{.!$%}/{dynamic.data}/{op.tional}",
                 new RouteValueDictionary() { { " ", "not a space" }, { "op.tional", "default value" }, { "ran!dom", "va@lue" } });
 
-            GetRouteDataHelper(
+            RunTest(
                 r,
                 "foo/space/weird/orderid",
                 new RouteValueDictionary() { { " ", "space" }, { ".!$%", "weird" }, { "dynamic.data", "orderid" }, { "op.tional", "default value" }, { "ran!dom", "va@lue" } });
@@ -677,8 +666,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetRouteDataDoesNotMatchRouteWithLiteralSeparatorDefaultsButNoValue()
         {
-            GetRouteDataHelper(
-                CreateRoute("{controller}/{language}-{locale}", new RouteValueDictionary(new { language = "en", locale = "US" })),
+            RunTest(
+                CreateMatcher("{controller}/{language}-{locale}", new RouteValueDictionary(new { language = "en", locale = "US" })),
                 "foo",
                 null);
         }
@@ -686,8 +675,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetRouteDataDoesNotMatchesRouteWithLiteralSeparatorDefaultsAndLeftValue()
         {
-            GetRouteDataHelper(
-                CreateRoute("{controller}/{language}-{locale}", new RouteValueDictionary(new { language = "en", locale = "US" })),
+            RunTest(
+                CreateMatcher("{controller}/{language}-{locale}", new RouteValueDictionary(new { language = "en", locale = "US" })),
                 "foo/xx-",
                 null);
         }
@@ -695,18 +684,20 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [Fact]
         public void GetRouteDataDoesNotMatchesRouteWithLiteralSeparatorDefaultsAndRightValue()
         {
-            GetRouteDataHelper(
-                CreateRoute("{controller}/{language}-{locale}", new RouteValueDictionary(new { language = "en", locale = "US" })),
+            RunTest(
+                "{controller}/{language}-{locale}",
                 "foo/-yy",
+                new RouteValueDictionary(new { language = "en", locale = "US" }))
                 null);
         }
 
         [Fact]
         public void GetRouteDataMatchesRouteWithLiteralSeparatorDefaultsAndValue()
         {
-            GetRouteDataHelper(
-                CreateRoute("{controller}/{language}-{locale}", new RouteValueDictionary(new { language = "en", locale = "US" })),
+            RunTest(
+                "{controller}/{language}-{locale}",
                 "foo/xx-yy",
+                new RouteValueDictionary(new { language = "en", locale = "US" }),
                 new RouteValueDictionary { { "language", "xx" }, { "locale", "yy" }, { "controller", "foo" } });
         }
 
@@ -714,291 +705,79 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         public void MatchSetsOptionalParameter()
         {
             // Arrange
-            var route = CreateRoute("{controller}/{action?}");
+            var route = CreateMatcher("{controller}/{action?}");
             var url = "Home/Index";
 
             // Act
-            var match = route.Match(new RouteContext(GetHttpContext(url)));
+            var match = route.Match(url, null);
 
             // Assert
             Assert.NotNull(match);
             Assert.Equal(2, match.Values.Count);
-            Assert.Equal("Home", match.Values["controller"]);
-            Assert.Equal("Index", match.Values["action"]);
+            Assert.Equal("Home", match["controller"]);
+            Assert.Equal("Index", match["action"]);
         }
 
         [Fact]
         public void MatchDoesNotSetOptionalParameter()
         {
             // Arrange
-            var route = CreateRoute("{controller}/{action?}");
+            var route = CreateMatcher("{controller}/{action?}");
             var url = "Home";
 
             // Act
-            var match = route.Match(new RouteContext(GetHttpContext(url)));
+            var match = route.Match(url, null);
 
             // Assert
             Assert.NotNull(match);
             Assert.Equal(1, match.Values.Count);
-            Assert.Equal("Home", match.Values["controller"]);
-            Assert.False(match.Values.ContainsKey("action"));
+            Assert.Equal("Home", match["controller"]);
+            Assert.False(match.ContainsKey("action"));
         }
 
         [Fact]
         public void MatchMultipleOptionalParameters()
         {
             // Arrange
-            var route = CreateRoute("{controller}/{action?}/{id?}");
+            var route = CreateMatcher("{controller}/{action?}/{id?}");
             var url = "Home/Index";
 
             // Act
-            var match = route.Match(new RouteContext(GetHttpContext(url)));
+            var match = route.Match(url, null);
 
             // Assert
             Assert.NotNull(match);
             Assert.Equal(2, match.Values.Count);
-            Assert.Equal("Home", match.Values["controller"]);
-            Assert.Equal("Index", match.Values["action"]);
-            Assert.False(match.Values.ContainsKey("id"));
+            Assert.Equal("Home", match["controller"]);
+            Assert.Equal("Index", match["action"]);
+            Assert.False(match.ContainsKey("id"));
         }
 
-        private static IRouteValues CreateRouteData()
+        private TemplateMatcher CreateMatcher(string template)
         {
-            return new RouteValues(new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase));
+            return new TemplateMatcher(TemplateParser.Parse(template));
         }
 
-        private static RouteValueDictionary CreateRouteValueDictionary()
-        {
-            var values = new RouteValueDictionary();
-            return values;
-        }
-
-        private static void GetRouteDataHelper(TemplateRoute route, string requestPath, RouteValueDictionary expectedValues)
+        private static void RunTest(string template, string path, IDictionary<string, object> defaults, IDictionary<string, object> expected)
         {
             // Arrange
-            HttpContext context = GetHttpContext(requestPath);
+            var matcher = new TemplateMatcher(TemplateParser.Parse(template));
 
             // Act
-            var match = route.Match(new RouteContext(context));
+            var match = matcher.Match(path, defaults);
 
             // Assert
-            if (expectedValues == null)
+            if (expected == null)
             {
                 Assert.Null(match);
             }
             else
             {
                 Assert.NotNull(match);
-                Assert.Equal<int>(expectedValues.Count, match.Values.Count);
-                foreach (string key in match.Values.Keys)
+                Assert.Equal(expected.Count, match.Values.Count);
+                foreach (string key in match.Keys)
                 {
-                    Assert.Equal(expectedValues[key], match.Values[key]);
-                }
-            }
-        }
-
-        internal static HttpContext GetHttpContext(string requestPath)
-        {
-            return GetHttpContext(null, requestPath);
-        }
-
-        private static HttpContext GetHttpContext(string appPath, string requestPath)
-        {
-            if (!String.IsNullOrEmpty(requestPath) && requestPath[0] == '~')
-            {
-                requestPath = requestPath.Substring(1);
-            }
-
-            if (!String.IsNullOrEmpty(requestPath) && requestPath[0] != '/')
-            {
-                requestPath = "/" + requestPath;
-            }
-
-            var context = new MockHttpContext();
-            context.Request.Path = new PathString(requestPath);
-            context.Request.PathBase = new PathString(appPath);
-
-            return context;
-        }
-
-        private static TemplateRoute CreateRoute(string template)
-        {
-            return CreateRoute(template, null);
-        }
-
-        private static TemplateRoute CreateRoute(string template, RouteValueDictionary defaults)
-        {
-            return new TemplateRoute(new MockRouteEndpoint(), template, defaults);
-        }
-
-        private class MockRouteEndpoint : IRouteEndpoint
-        {
-            public Task<bool> Send(HttpContext context)
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        // This is a placeholder
-        private class RouteValueDictionary : Dictionary<string, object>
-        {
-            public RouteValueDictionary()
-                : base(StringComparer.OrdinalIgnoreCase)
-            {
-            }
-
-            public RouteValueDictionary(object obj)
-                : base(StringComparer.OrdinalIgnoreCase)
-            {
-                foreach (var property in obj.GetType().GetProperties())
-                {
-                    Add(property.Name, property.GetValue(obj));
-                }
-            }
-        }
-
-        private class MockHttpContext : HttpContext
-        {
-            private readonly Dictionary<Type, object> _features = new Dictionary<Type, object>();
-            private readonly MockHttpRequest _request;
-
-            public MockHttpContext()
-            {
-                _request = new MockHttpRequest(this);
-            }
-
-            public override void Dispose()
-            {
-            }
-
-            public override object GetFeature(Type type)
-            {
-                return _features[type];
-            }
-
-            public override IDictionary<object, object> Items
-            {
-                get { throw new NotImplementedException(); }
-            }
-
-            public override HttpRequest Request
-            {
-                get { return _request; }
-            }
-
-            public override HttpResponse Response
-            {
-                get { throw new NotImplementedException(); }
-            }
-
-            public override void SetFeature(Type type, object instance)
-            {
-                _features[type] = instance;
-            }
-        }
-
-        private class MockHttpRequest : HttpRequest
-        {
-            private readonly HttpContext _context;
-            public MockHttpRequest(HttpContext context)
-            {
-                _context = context;
-            }
-
-            public override Stream Body
-            {
-                get;
-                set;
-            }
-
-            public override CancellationToken CallCanceled
-            {
-                get;
-                set;
-            }
-
-            public override IReadableStringCollection Cookies
-            {
-                get { throw new NotImplementedException(); }
-            }
-
-            public override IHeaderDictionary Headers
-            {
-                get { throw new NotImplementedException(); }
-            }
-
-            public override HostString Host
-            {
-                get;
-                set;
-            }
-
-            public override HttpContext HttpContext
-            {
-                get { return _context; }
-            }
-
-            public override bool IsSecure
-            {
-                get { throw new NotImplementedException(); }
-            }
-
-            public override string Method
-            {
-                get;
-                set;
-            }
-
-            public override PathString Path
-            {
-                get;
-                set;
-            }
-
-            public override PathString PathBase
-            {
-                get;
-                set;
-            }
-
-            public override string Protocol
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-                set
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
-            public override IReadableStringCollection Query
-            {
-                get { throw new NotImplementedException(); }
-            }
-
-            public override QueryString QueryString
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-                set
-                {
-                    throw new NotImplementedException();
-                }
-            }
-
-            public override string Scheme
-            {
-                get
-                {
-                    throw new NotImplementedException();
-                }
-                set
-                {
-                    throw new NotImplementedException();
+                    Assert.Equal(expected[key], match[key]);
                 }
             }
         }
