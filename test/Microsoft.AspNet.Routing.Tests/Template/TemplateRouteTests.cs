@@ -839,24 +839,6 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             }
         }
 
-        // This is a placeholder
-        private class RouteValueDictionary : Dictionary<string, object>
-        {
-            public RouteValueDictionary()
-                : base(StringComparer.OrdinalIgnoreCase)
-            {
-            }
-
-            public RouteValueDictionary(object obj)
-                : base(StringComparer.OrdinalIgnoreCase)
-            {
-                foreach (var property in obj.GetType().GetProperties())
-                {
-                    Add(property.Name, property.GetValue(obj));
-                }
-            }
-        }
-
         private class MockHttpContext : HttpContext
         {
             private readonly Dictionary<Type, object> _features = new Dictionary<Type, object>();
