@@ -4,8 +4,6 @@
 
 using Microsoft.AspNet.Abstractions;
 using Microsoft.AspNet.Routing;
-using Microsoft.AspNet.Routing.Owin;
-using Microsoft.AspNet.Routing.Template;
 using Owin;
 
 namespace RoutingSample
@@ -26,13 +24,12 @@ namespace RoutingSample
             var endpoint1 = new HttpContextRouteEndpoint(async (context) => await context.Response.WriteAsync("match1"));
             var endpoint2 = new HttpContextRouteEndpoint(async (context) => await context.Response.WriteAsync("Hello, World!"));
 
-            var rb1 = new RouteBuilder(endpoint1, routes.Routes);
-            rb1.AddPrefixRoute("api/store");
-            rb1.AddTemplateRoute("api/{controller}/{*extra}", new { controller = "Store" });
+            routes.DefaultHandler = endpoint1;
+            routes.AddPrefixRoute("api/store");
+            routes.MapRoute("api/{controller}/{*extra}", new { controller = "Store" });
 
-            var rb2 = new RouteBuilder(endpoint2, routes.Routes);
-            rb2.AddPrefixRoute("hello/world");
-            rb2.AddPrefixRoute("");
+            routes.AddPrefixRoute("hello/world", endpoint2);
+            routes.AddPrefixRoute("", endpoint2);
         }
     }
 }

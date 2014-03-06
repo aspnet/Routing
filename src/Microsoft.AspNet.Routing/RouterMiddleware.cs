@@ -1,19 +1,19 @@
 ﻿﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.AspNet.Abstractions;
+using Microsoft.AspNet.Routing;
 
-namespace Microsoft.AspNet.Routing.Owin
+namespace Microsoft.AspNet.Abstractions
 {
     public class RouterMiddleware
     {
-        public RouterMiddleware(RequestDelegate next, IRouteEngine engine)
+        public RouterMiddleware(RequestDelegate next, IRouter route)
         {
             Next = next;
-            Engine = engine;
+            Route = route;
         }
 
-        private IRouteEngine Engine
+        private IRouter Route
         {
             get;
             set;
@@ -25,11 +25,14 @@ namespace Microsoft.AspNet.Routing.Owin
             set;
         }
 
-        public async Task Invoke(HttpContext context)
+        public async Task Invoke(HttpContext httpContext)
         {
-            if (!(await Engine.Invoke(context)))
+            var context = new RouteContext(httpContext);
+
+            await Route.RouteAsync(context);
+            if (!context.IsHandled)
             {
-                await Next.Invoke(context);
+                await Next.Invoke(httpContext);
             }
         }
     }

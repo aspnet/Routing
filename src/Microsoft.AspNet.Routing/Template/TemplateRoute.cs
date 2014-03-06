@@ -2,31 +2,34 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Threading.Tasks;
+using Microsoft.AspNet.Abstractions;
 
 namespace Microsoft.AspNet.Routing.Template
 {
-    public class TemplateRoute : IRoute
+    public class TemplateRoute : IRouter
     {
         private readonly IDictionary<string, object> _defaults;
-        private readonly IRouteEndpoint _endpoint;
+        private readonly IRouter _target;
         private readonly Template _parsedTemplate;
         private readonly string _routeTemplate;
         private readonly TemplateMatcher _matcher;
         private readonly TemplateBinder _binder;
 
-        public TemplateRoute(IRouteEndpoint endpoint, string routeTemplate)
-            : this(endpoint, routeTemplate, null)
+        public TemplateRoute(IRouter target, string routeTemplate)
+            : this(target, routeTemplate, null)
         {
         }
 
-        public TemplateRoute(IRouteEndpoint endpoint, string routeTemplate, IDictionary<string, object> defaults)
+        public TemplateRoute(IRouter target, string routeTemplate, IDictionary<string, object> defaults)
         {
-            if (endpoint == null)
+            if (target == null)
             {
-                throw new ArgumentNullException("endpoint");
+                throw new ArgumentNullException("target");
             }
 
-            _endpoint = endpoint;
+            _target = target;
             _routeTemplate = routeTemplate ?? string.Empty;
             _defaults = defaults ?? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
@@ -42,17 +45,12 @@ namespace Microsoft.AspNet.Routing.Template
             get { return _defaults; }
         }
 
-        public IRouteEndpoint Endpoint
-        {
-            get { return _endpoint; }
-        }
-
         public string RouteTemplate
         {
             get { return _routeTemplate; }
         }
 
-        public virtual RouteMatch Match(RouteContext context)
+        public async virtual Task RouteAsync(RouteContext context)
         {
             if (context == null)
             {
@@ -69,18 +67,37 @@ namespace Microsoft.AspNet.Routing.Template
             if (values == null)
             {
                 // If we got back a null value set, that means the URI did not match
-                return null;
+                return;
             }
             else
             {
-                return new RouteMatch(_endpoint, values);
+                await _target.RouteAsync(new RouteContext(context.HttpContext){ Values = values });
             }
         }
 
-        public RouteBindResult Bind(RouteBindContext context)
+        public string BindPath(BindPathContext context)
         {
-            var path = _binder.Bind(_defaults, context.AmbientValues, context.Values);
-            return path == null ? null : new RouteBindResult(path);
+            // Validate that the target can accept these values - if the target generates a value
+            // then that can short circuit.
+            var path = _target.BindPath(context);
+            if (path != null)
+            {
+                return path;
+            }
+            else if (!context.IsBound)
+            {
+                return null;
+            }
+
+            // This could be optimized more heavily - right now we try to do the full url
+            // generation after validating, but we could do it in two phases.
+            path = _binder.Bind(_defaults, context.AmbientValues, context.Values);
+            if (path == null)
+            {
+                context.IsBound = false;
+            }
+
+            return path;
         }
     }
 }
