@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Routing
             return BuildConstraintsCore(inputConstraints, routeTemplate);
         }
 
-        public static IDictionary<string, IRouteConstraint>
+        private static IDictionary<string, IRouteConstraint>
             BuildConstraintsCore(IDictionary<string, object> inputConstraints, string routeTemplate)
         {
             if (inputConstraints == null || inputConstraints.Count == 0)
@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Routing
                         {
                             throw new InvalidOperationException(
                                 Resources.FormatTemplateRoute_ValidationMustBeStringOrCustomConstraint(
-                                    kvp.Key, routeTemplate, typeof (IRouteConstraint)));
+                                    kvp.Key, routeTemplate, typeof(IRouteConstraint)));
                         }
                         else
                         {
