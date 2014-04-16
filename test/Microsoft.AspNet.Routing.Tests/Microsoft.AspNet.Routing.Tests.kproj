@@ -30,8 +30,5 @@
     <Compile Include="Template\TemplateParserTests.cs" />
     <Compile Include="Template\TemplateRouteTests.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Properties\" />
-  </ItemGroup>
   <Import Project="$(VSToolsPath)\ProjectK\Microsoft.Web.ProjectK.targets" Condition="'$(VSToolsPath)' != ''" />
 </Project>
