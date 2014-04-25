@@ -375,6 +375,11 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             return new VirtualPathContext(context.Object, ambientValues, values);
         }
 
+        private static VirtualPathContext CreateVirtualPathContext(string routeName)
+        {
+            return new VirtualPathContext(null, null, null, routeName);
+        }
+
         #endregion
 
         #region Route Registration
@@ -415,6 +420,39 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             Assert.IsType<RegexConstraint>(constraints["controller"]);
             Assert.Equal(mockConstraint, constraints["action"]);
 
+        }
+
+        [Fact]
+        public void RegisteringRouteWithRouteName_WithNullDefaults()
+        {
+            // Arrange
+            var collection = new RouteCollection();
+            collection.DefaultHandler = new Mock<IRouter>().Object;
+
+            collection.MapRoute("{controller}/{action}", "RouteName");
+            collection.MapRoute("{controller}/{action}", "RouteName2", null, null);
+
+            // Act
+            var name = ((TemplateRoute)collection[0]).Name;
+
+            // Assert
+            Assert.Equal("RouteName", name);
+        }
+
+        [Fact]
+        public void RegisteringRouteWithRouteName_WithNullDefaultsAndConstraints()
+        {
+            // Arrange
+            var collection = new RouteCollection();
+            collection.DefaultHandler = new Mock<IRouter>().Object;
+
+            collection.MapRoute("{controller}/{action}", "RouteName", null, null);
+
+            // Act
+            var name = ((TemplateRoute)collection[0]).Name;
+
+            // Assert
+            Assert.Equal("RouteName", name);
         }
 
         #endregion
