@@ -26,18 +26,19 @@ namespace Microsoft.AspNet.Routing.Template
                              string routeTemplate,
                              IDictionary<string, object> defaults,
                              IDictionary<string, object> constraints)
-            : this(target, routeTemplate, defaults, constraints, string.Empty)
+            : this(target, routeTemplate, string.Empty, defaults, constraints)
         {
         }
 
         public TemplateRoute([NotNull] IRouter target,
                              string routeTemplate,
+                             string routeName,
                              IDictionary<string, object> defaults,
-                             IDictionary<string, object> constraints,
-                             string routeName)
+                             IDictionary<string, object> constraints)
         {
             _target = target;
             _routeTemplate = routeTemplate ?? string.Empty;
+            Name = routeName;
             _defaults = defaults ?? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             _constraints = RouteConstraintBuilder.BuildConstraints(constraints, _routeTemplate);
 
@@ -46,7 +47,6 @@ namespace Microsoft.AspNet.Routing.Template
 
             _matcher = new TemplateMatcher(_parsedTemplate);
             _binder = new TemplateBinder(_parsedTemplate, _defaults);
-            Name = routeName;
         }
 
         public string Name { get; private set; }

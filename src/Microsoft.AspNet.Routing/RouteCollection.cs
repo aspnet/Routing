@@ -9,8 +9,8 @@ namespace Microsoft.AspNet.Routing
     public class RouteCollection : IRouteCollection
     {
         private readonly List<IRouter> _routes = new List<IRouter>();
-        private readonly List<IRouter> _pureRoutes = new List<IRouter>();
-        private readonly Dictionary<string, INamedRouter> _namedRoutes = new Dictionary<string, INamedRouter>();
+        private readonly List<IRouter> _unnamedRoute = new List<IRouter>();
+        private readonly Dictionary<string, INamedRouter> _namedRoutes = new Dictionary<string, INamedRouter>(StringComparer.OrdinalIgnoreCase);
         public IRouter this[int index]
         {
             get { return _routes[index]; }
@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Routing
 
         public IRouter DefaultHandler { get; set; }
 
-        public void Add(IRouter router)
+        public void Add([NotNull] IRouter router)
         {
             var namedRouter = router as INamedRouter;
             if (namedRouter != null)
@@ -35,7 +35,7 @@ namespace Microsoft.AspNet.Routing
             }
             else
             {
-                _pureRoutes.Add(router);
+                _unnamedRoute.Add(router);
             }
 
             _routes.Add(router);
@@ -57,19 +57,18 @@ namespace Microsoft.AspNet.Routing
 
         public virtual string GetVirtualPath(VirtualPathContext context)
         {
-            if (!String.IsNullOrEmpty(context.RouteName))
+            if (!string.IsNullOrEmpty(context.RouteName))
             {
                 INamedRouter matchedNamedRoute;
                 _namedRoutes.TryGetValue(context.RouteName, out matchedNamedRoute);
-                IRouter matchedRoute = matchedNamedRoute;
 
-                string virtualPath = null;
-                foreach (var route in _pureRoutes)
+                var virtualPath = matchedNamedRoute != null ? matchedNamedRoute.GetVirtualPath(context) : null;
+                foreach (var unnamedRoute in _unnamedRoute)
                 {
-                    virtualPath = route.GetVirtualPath(context);
-                    if (virtualPath != null)
+                    var tempVirtualPath = unnamedRoute.GetVirtualPath(context);
+                    if (tempVirtualPath != null)
                     {
-                        if (matchedRoute != null)
+                        if (virtualPath != null)
                         {
                             // There was already a previous route which matched the name.
                             throw new InvalidOperationException(
@@ -77,11 +76,11 @@ namespace Microsoft.AspNet.Routing
                                                         FormatNamedRoutes_AmbiguousRoutesFound(context.RouteName));
                         }
 
-                        matchedRoute = route;
+                        virtualPath = tempVirtualPath;
                     }
                 }
 
-                return virtualPath ?? matchedRoute.GetVirtualPath(context);
+                return virtualPath;
             }
             else
             {
