@@ -10,7 +10,13 @@ namespace Microsoft.AspNet.Routing
     {
         public static IRouteCollection MapRoute(this IRouteCollection routes, string template)
         {
-            MapRoute(routes, template, string.Empty);
+            MapRoute(routes, template, name: null);
+            return routes;
+        }
+
+        public static IRouteCollection MapRoute(this IRouteCollection routes, string template, object defaults)
+        {
+            MapRoute(routes, template, name: null, defaults: defaults);
             return routes;
         }
 
@@ -44,9 +50,9 @@ namespace Microsoft.AspNet.Routing
         {
             MapRoute(routes,
                     template, 
-                    string.Empty,
-                    new RouteValueDictionary(defaults),
-                    new RouteValueDictionary(constraints));
+                    name: null,
+                    defaults: new RouteValueDictionary(defaults),
+                    constraints: new RouteValueDictionary(constraints));
 
             return routes;
         }

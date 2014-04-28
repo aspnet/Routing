@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Routing
         public VirtualPathContext(HttpContext httpContext,
                                   IDictionary<string, object> ambientValues, 
                                   IDictionary<string, object> values)
-            : this(httpContext, ambientValues, values, string.Empty)
+            : this(httpContext, ambientValues, values, null)
         {
         }
 

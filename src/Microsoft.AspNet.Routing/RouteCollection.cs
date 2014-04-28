@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Routing
             var namedRouter = router as INamedRouter;
             if (namedRouter != null)
             {
-                if (!String.IsNullOrEmpty(namedRouter.Name))
+                if (!string.IsNullOrEmpty(namedRouter.Name))
                 {
                     _namedRoutes.Add(namedRouter.Name, namedRouter);
                 }

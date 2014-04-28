@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Routing.Template
                              string routeTemplate,
                              IDictionary<string, object> defaults,
                              IDictionary<string, object> constraints)
-            : this(target, routeTemplate, string.Empty, defaults, constraints)
+            : this(target, routeTemplate, null, defaults, constraints)
         {
         }
 

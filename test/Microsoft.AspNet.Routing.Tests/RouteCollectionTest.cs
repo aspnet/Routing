@@ -1,11 +1,11 @@
 ﻿#if NET45
 
-using Microsoft.AspNet.Abstractions;
-using Moq;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNet.Abstractions;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNet.Routing.Tests
@@ -130,7 +130,7 @@ namespace Microsoft.AspNet.Routing.Tests
         public void NamedRouteTests_GetNamedRoute_AmbiguousRoutesInCollection_ThrowsForAmbiguousRoute()
         {
             // Arrange
-            string ambiguousRoute = "ambiguousRoute";
+            var ambiguousRoute = "ambiguousRoute";
             var routeCollection = GetNestedRouteCollection(new string[] { "Route1", "Route2", ambiguousRoute, "Route4" });
 
             // Add Duplicate route.
