@@ -392,7 +392,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             collection.DefaultHandler = new Mock<IRouter>().Object;
 
             // Assert
-            ExceptionAssert.Throws<InvalidOperationException>(() => collection.MapRoute("{controller}/{action}",
+            ExceptionAssert.Throws<InvalidOperationException>(() => collection.MapRoute("mockName", 
+                "{controller}/{action}",
                 defaults: null,
                 constraints: new { controller = "a.*", action = new Object() }),
                 "The constraint entry 'action' on the route with route template '{controller}/{action}' " +
@@ -409,7 +410,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
             var mockConstraint = new Mock<IRouteConstraint>().Object;
 
-            collection.MapRoute("{controller}/{action}",
+            collection.MapRoute("mockName",
+                "{controller}/{action}",
                 defaults: null,
                 constraints: new { controller = "a.*", action = mockConstraint });
 
@@ -429,8 +431,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var collection = new RouteCollection();
             collection.DefaultHandler = new Mock<IRouter>().Object;
 
-            collection.MapRoute("{controller}/{action}", "RouteName");
-            collection.MapRoute("{controller}/{action}", "RouteName2", null, null);
+            collection.MapRoute("RouteName", "{controller}/{action}");
+            collection.MapRoute("RouteName2", "{controller}/{action}", null, null);
 
             // Act
             var name = ((TemplateRoute)collection[0]).Name;
@@ -446,7 +448,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var collection = new RouteCollection();
             collection.DefaultHandler = new Mock<IRouter>().Object;
 
-            collection.MapRoute("{controller}/{action}", "RouteName", null, null);
+            collection.MapRoute("RouteName", "{controller}/{action}", null, null);
 
             // Act
             var name = ((TemplateRoute)collection[0]).Name;

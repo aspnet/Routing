@@ -26,13 +26,13 @@ namespace Microsoft.AspNet.Routing.Template
                              string routeTemplate,
                              IDictionary<string, object> defaults,
                              IDictionary<string, object> constraints)
-            : this(target, routeTemplate, null, defaults, constraints)
+            : this(target, null, routeTemplate, defaults, constraints)
         {
         }
 
         public TemplateRoute([NotNull] IRouter target,
-                             string routeTemplate,
                              string routeName,
+                             string routeTemplate,
                              IDictionary<string, object> defaults,
                              IDictionary<string, object> constraints)
         {
