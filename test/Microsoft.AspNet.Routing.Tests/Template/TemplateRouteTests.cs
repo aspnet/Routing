@@ -421,18 +421,16 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             Assert.Equal(2, constraints.Count);
             Assert.IsType<RegexConstraint>(constraints["controller"]);
             Assert.Equal(mockConstraint, constraints["action"]);
-
         }
 
         [Fact]
-        public void RegisteringRouteWithRouteName_WithNullDefaults()
+        public void RegisteringRouteWithRouteName_WithNullDefaults_AddsTheRoute()
         {
             // Arrange
             var collection = new RouteCollection();
             collection.DefaultHandler = new Mock<IRouter>().Object;
 
             collection.MapRoute("RouteName", "{controller}/{action}");
-            collection.MapRoute("RouteName2", "{controller}/{action}", null, null);
 
             // Act
             var name = ((TemplateRoute)collection[0]).Name;
@@ -442,7 +440,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         }
 
         [Fact]
-        public void RegisteringRouteWithRouteName_WithNullDefaultsAndConstraints()
+        public void RegisteringRouteWithRouteName_WithNullDefaultsAndConstraints_AddsTheRoute()
         {
             // Arrange
             var collection = new RouteCollection();

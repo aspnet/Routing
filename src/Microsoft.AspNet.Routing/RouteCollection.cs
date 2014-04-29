@@ -9,8 +9,10 @@ namespace Microsoft.AspNet.Routing
     public class RouteCollection : IRouteCollection
     {
         private readonly List<IRouter> _routes = new List<IRouter>();
-        private readonly List<IRouter> _unnamedRoute = new List<IRouter>();
-        private readonly Dictionary<string, INamedRouter> _namedRoutes = new Dictionary<string, INamedRouter>(StringComparer.OrdinalIgnoreCase);
+        private readonly List<IRouter> _unnamedRoutes = new List<IRouter>();
+        private readonly Dictionary<string, INamedRouter> _namedRoutes = 
+                                    new Dictionary<string, INamedRouter>(StringComparer.OrdinalIgnoreCase);
+
         public IRouter this[int index]
         {
             get { return _routes[index]; }
@@ -35,7 +37,7 @@ namespace Microsoft.AspNet.Routing
             }
             else
             {
-                _unnamedRoute.Add(router);
+                _unnamedRoutes.Add(router);
             }
 
             _routes.Add(router);
@@ -63,7 +65,7 @@ namespace Microsoft.AspNet.Routing
                 _namedRoutes.TryGetValue(context.RouteName, out matchedNamedRoute);
 
                 var virtualPath = matchedNamedRoute != null ? matchedNamedRoute.GetVirtualPath(context) : null;
-                foreach (var unnamedRoute in _unnamedRoute)
+                foreach (var unnamedRoute in _unnamedRoutes)
                 {
                     var tempVirtualPath = unnamedRoute.GetVirtualPath(context);
                     if (tempVirtualPath != null)
@@ -72,8 +74,7 @@ namespace Microsoft.AspNet.Routing
                         {
                             // There was already a previous route which matched the name.
                             throw new InvalidOperationException(
-                                                        Resources.
-                                                        FormatNamedRoutes_AmbiguousRoutesFound(context.RouteName));
+                                        Resources.FormatNamedRoutes_AmbiguousRoutesFound(context.RouteName));
                         }
 
                         virtualPath = tempVirtualPath;
