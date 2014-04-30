@@ -430,7 +430,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var collection = new RouteCollection();
             collection.DefaultHandler = new Mock<IRouter>().Object;
 
-            collection.MapRoute("RouteName", "{controller}/{action}");
+            collection.MapRoute(name: "RouteName", template: "{controller}/{action}", defaults: null);
 
             // Act
             var name = ((TemplateRoute)collection[0]).Name;
@@ -446,7 +446,10 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             var collection = new RouteCollection();
             collection.DefaultHandler = new Mock<IRouter>().Object;
 
-            collection.MapRoute("RouteName", "{controller}/{action}", null, null);
+            collection.MapRoute(name: "RouteName",
+                                template: "{controller}/{action}",
+                                defaults: null,
+                                constraints: null);
 
             // Act
             var name = ((TemplateRoute)collection[0]).Name;
