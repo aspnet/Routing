@@ -463,22 +463,34 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
         private static TemplateRoute CreateRoute(string template, bool accept = true)
         {
-            return new TemplateRoute(CreateTarget(accept), template);
+            return new TemplateRoute(CreateTarget(accept), template, new DefaultInlineConstraintResolver());
         }
 
         private static TemplateRoute CreateRoute(string template, object defaults, bool accept = true, IDictionary<string, object> constraints = null)
         {
-            return new TemplateRoute(CreateTarget(accept), template, new RouteValueDictionary(defaults), constraints);
+            return new TemplateRoute(CreateTarget(accept),
+                                     template,
+                                     new RouteValueDictionary(defaults),
+                                     constraints,
+                                     new DefaultInlineConstraintResolver());
         }
 
         private static TemplateRoute CreateRoute(IRouter target, string template)
         {
-            return new TemplateRoute(target, template, new RouteValueDictionary(), constraints: null);
+            return new TemplateRoute(target,
+                                     template,
+                                     new RouteValueDictionary(),
+                                     constraints: null,
+                                     inlineConstraintResolver: new DefaultInlineConstraintResolver());
         }
 
         private static TemplateRoute CreateRoute(IRouter target, string template, object defaults)
         {
-            return new TemplateRoute(target, template, new RouteValueDictionary(defaults), constraints: null);
+            return new TemplateRoute(target,
+                                     template,
+                                     new RouteValueDictionary(defaults),
+                                     constraints: null,
+                                     inlineConstraintResolver: new DefaultInlineConstraintResolver());
         }
 
         private static IRouter CreateTarget(bool accept = true)
