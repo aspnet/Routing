@@ -70,15 +70,15 @@ namespace Microsoft.AspNet.Routing
                                                                 constraintType, constraintKey));
             }
 
-            return (IRouteConstraint)CreateConstraint(constraintType, argumentString);
+            return CreateConstraint(constraintType, argumentString);
         }
 
-        private static object CreateConstraint(Type constraintType, string argumentString)
+        private static IRouteConstraint CreateConstraint(Type constraintType, string argumentString)
         {
             // No arguments - call the default constructor
             if (argumentString == null)
             {
-                return Activator.CreateInstance(constraintType);
+                return (IRouteConstraint)Activator.CreateInstance(constraintType);
             }
 
             var constraintTypeInfo = constraintType.GetTypeInfo();
@@ -119,7 +119,7 @@ namespace Microsoft.AspNet.Routing
                 }
             }
 
-            return activationConstructor.Invoke(parameters);
+            return (IRouteConstraint)activationConstructor.Invoke(parameters);
         }
 
         private static object[] ConvertArguments(ParameterInfo[] parameterInfos, string[] arguments)

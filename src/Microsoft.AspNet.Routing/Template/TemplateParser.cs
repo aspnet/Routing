@@ -173,10 +173,11 @@ namespace Microsoft.AspNet.Routing.Template
             }
 
             var rawParameter = context.Capture();
-         
-            // At this point, we need to parse the raw name for inline constraint, default values and optional parameters. 
+
+            // At this point, we need to parse the raw name for inline constraint, 
+            // default values and optional parameters. 
             var templatePart = InlineRouteParameterParser.ParseRouteParameter(rawParameter,
-                                                                         context.ConstraintResolver);
+                                                                              context.ConstraintResolver);
 
             
 
@@ -189,12 +190,8 @@ namespace Microsoft.AspNet.Routing.Template
             if (templatePart.IsOptional && templatePart.DefaultValue != null)
             {
                 // Cannot be optional and have a default value.
-                // TODO: 
-                // This behavior conflicts with what we have in mvc/webapi,
-                // This used to be treated as a default value including the '?'.
                 // The only way to declare an optional parameter is to have a ? at the end, 
                 // hence we cannot have both default value and optional parameter within the template. 
-                // Need to think about scenarios where user wants to provide a default value which ends with a ?.
                 // A workaround is to add it as a separate entry in the defaults argument.
                 context.Error = Resources.TemplateRoute_OptionalCannotHaveDefaultValue;
                 return false;

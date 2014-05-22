@@ -180,8 +180,16 @@ namespace Microsoft.AspNet.Routing.Template
             {
                 if (parameter.InlineConstraint != null)
                 {
-                    // Override the value if already exists.
-                    _constraints[parameter.Name] = parameter.InlineConstraint;
+                    IRouteConstraint constraint;
+                    if (_constraints.TryGetValue(parameter.Name, out constraint))
+                    {
+                        _constraints[parameter.Name] = 
+                            new CompoundRouteConstraint(new []{ constraint, parameter.InlineConstraint });
+                    }
+                    else
+                    {
+                        _constraints[parameter.Name] = parameter.InlineConstraint;
+                    }
                 }
 
                 if (parameter.DefaultValue != null)
