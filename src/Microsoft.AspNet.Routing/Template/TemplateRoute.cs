@@ -184,7 +184,7 @@ namespace Microsoft.AspNet.Routing.Template
                     if (_constraints.TryGetValue(parameter.Name, out constraint))
                     {
                         _constraints[parameter.Name] = 
-                            new CompoundRouteConstraint(new []{ constraint, parameter.InlineConstraint });
+                            new CompositeRouteConstraint(new []{ constraint, parameter.InlineConstraint });
                     }
                     else
                     {

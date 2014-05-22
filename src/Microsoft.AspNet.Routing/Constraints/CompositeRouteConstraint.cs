@@ -9,13 +9,13 @@ namespace Microsoft.AspNet.Routing
     /// <summary>
     /// Constrains a route by several child constraints.
     /// </summary>
-    public class CompoundRouteConstraint : IRouteConstraint
+    public class CompositeRouteConstraint : IRouteConstraint
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="CompoundRouteConstraint" /> class.
+        /// Initializes a new instance of the <see cref="CompositeRouteConstraint" /> class.
         /// </summary>
         /// <param name="constraints">The child constraints that must match for this constraint to match.</param>
-        public CompoundRouteConstraint([NotNull] IEnumerable<IRouteConstraint> constraints)
+        public CompositeRouteConstraint([NotNull] IEnumerable<IRouteConstraint> constraints)
         {
             Constraints = constraints;
         }

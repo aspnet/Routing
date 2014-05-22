@@ -100,7 +100,7 @@ namespace Microsoft.AspNet.Routing
             {
                 var constraint = parameterConstraints.Count == 1 ?
                                             parameterConstraints[0] :
-                                            new CompoundRouteConstraint(parameterConstraints);
+                                            new CompositeRouteConstraint(parameterConstraints);
                 return constraint;
             }
 
