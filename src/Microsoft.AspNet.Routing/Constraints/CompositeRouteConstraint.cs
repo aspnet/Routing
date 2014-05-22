@@ -4,7 +4,7 @@
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 
-namespace Microsoft.AspNet.Routing
+namespace Microsoft.AspNet.Routing.Constraints
 {
     /// <summary>
     /// Constrains a route by several child constraints.

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNet.Routing.Constraints;
 
 namespace Microsoft.AspNet.Routing
 {
@@ -67,7 +68,7 @@ namespace Microsoft.AspNet.Routing
             {
                 throw new InvalidOperationException(
                             Resources.FormatDefaultInlineConstraintResolver_TypeNotConstraint(
-                                                                constraintType, constraintKey));
+                                                                constraintType, constraintKey, "IRouteConstraint"));
             }
 
             return CreateConstraint(constraintType, argumentString);

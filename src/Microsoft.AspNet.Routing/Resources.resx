@@ -130,7 +130,7 @@
     <value>Could not find a constructor for constraint type '{0}' with the following number of parameters: {1}.</value>
   </data>
   <data name="DefaultInlineConstraintResolver_TypeNotConstraint" xml:space="preserve">
-    <value>The constraint type '{0}' which is mapped to constraint key '{1}' must implement the IRouteConstraint interface.</value>
+    <value>The constraint type '{0}' which is mapped to constraint key '{1}' must implement the '{2}' interface.</value>
   </data>
   <data name="GeneralConstraints_ValidationMustBeStringOrCustomConstraint" xml:space="preserve">
     <value>The constraint entry '{0}' must have a string value or be of a type which implements '{1}'.</value>

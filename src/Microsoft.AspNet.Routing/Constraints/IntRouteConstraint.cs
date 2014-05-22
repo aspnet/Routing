@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNet.Http;
 
-namespace Microsoft.AspNet.Routing
+namespace Microsoft.AspNet.Routing.Constraints
 {
 
     /// <summary>

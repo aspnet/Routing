@@ -75,7 +75,7 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <summary>
-        /// The constraint type '{0}' which is mapped to constraint key '{1}' must implement the IRouteConstraint interface.
+        /// The constraint type '{0}' which is mapped to constraint key '{1}' must implement the '{2}' interface.
         /// </summary>
         internal static string DefaultInlineConstraintResolver_TypeNotConstraint
         {
@@ -83,11 +83,11 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <summary>
-        /// The constraint type '{0}' which is mapped to constraint key '{1}' must implement the IRouteConstraint interface.
+        /// The constraint type '{0}' which is mapped to constraint key '{1}' must implement the '{2}' interface.
         /// </summary>
-        internal static string FormatDefaultInlineConstraintResolver_TypeNotConstraint(object p0, object p1)
+        internal static string FormatDefaultInlineConstraintResolver_TypeNotConstraint(object p0, object p1, object p2)
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("DefaultInlineConstraintResolver_TypeNotConstraint"), p0, p1);
+            return string.Format(CultureInfo.CurrentCulture, GetString("DefaultInlineConstraintResolver_TypeNotConstraint"), p0, p1, p2);
         }
 
         /// <summary>
