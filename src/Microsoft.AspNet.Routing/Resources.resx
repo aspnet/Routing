@@ -138,6 +138,9 @@
   <data name="TemplateRoute_CannotHaveCatchAllInMultiSegment" xml:space="preserve">
     <value>A path segment that contains more than one section, such as a literal section or a parameter, cannot contain a catch-all parameter.</value>
   </data>
+  <data name="TemplateRoute_CannotHaveDefaultValueSpecifiedInlineAndExplicitly" xml:space="preserve">
+    <value>The route parameter '{0}' has both an inline default value and an explicit default value specified. A route parameter cannot contain an inline default value when a default value is specified explicitly. Consider removing one of them.</value>
+  </data>
   <data name="TemplateRoute_CannotHaveConsecutiveParameters" xml:space="preserve">
     <value>A path segment cannot contain two consecutive parameters. They must be separated by a '/' or by a literal string.</value>
   </data>

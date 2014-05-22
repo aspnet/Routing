@@ -123,6 +123,22 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <summary>
+        /// The route parameter '{0}' has both an inline deafult value and an explicit default value specified. A route parameter cannot contain an inline default value when a default value is specified explicitly. Consider removing one of them.
+        /// </summary>
+        internal static string TemplateRoute_CannotHaveDefaultValueSpecifiedInlineAndExplicitly
+        {
+            get { return GetString("TemplateRoute_CannotHaveDefaultValueSpecifiedInlineAndExplicitly"); }
+        }
+
+        /// <summary>
+        /// The route parameter '{0}' has both an inline deafult value and an explicit default value specified. A route parameter cannot contain an inline default value when a default value is specified explicitly. Consider removing one of them.
+        /// </summary>
+        internal static string FormatTemplateRoute_CannotHaveDefaultValueSpecifiedInlineAndExplicitly(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TemplateRoute_CannotHaveDefaultValueSpecifiedInlineAndExplicitly"), p0);
+        }
+
+        /// <summary>
         /// A path segment cannot contain two consecutive parameters. They must be separated by a '/' or by a literal string.
         /// </summary>
         internal static string TemplateRoute_CannotHaveConsecutiveParameters

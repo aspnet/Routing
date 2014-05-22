@@ -195,8 +195,16 @@ namespace Microsoft.AspNet.Routing.Template
 
                 if (parameter.DefaultValue != null)
                 {
-                    // Override the value if already exists.
-                    _defaults[parameter.Name] = parameter.DefaultValue;
+                    if (_defaults.ContainsKey(parameter.Name))
+                    {
+                        throw new InvalidOperationException(
+                            Resources.
+                             FormatTemplateRoute_CannotHaveDefaultValueSpecifiedInlineAndExplicitly(parameter.Name));
+                    }
+                    else
+                    {
+                        _defaults[parameter.Name] = parameter.DefaultValue;
+                    }
                 }
             }
         }
