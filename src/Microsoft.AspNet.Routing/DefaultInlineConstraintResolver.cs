@@ -68,7 +68,7 @@ namespace Microsoft.AspNet.Routing
             {
                 throw new InvalidOperationException(
                             Resources.FormatDefaultInlineConstraintResolver_TypeNotConstraint(
-                                                                constraintType, constraintKey, "IRouteConstraint"));
+                                                        constraintType, constraintKey, typeof(IRouteConstraint).Name));
             }
 
             return CreateConstraint(constraintType, argumentString);
