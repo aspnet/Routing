@@ -1,9 +1,9 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if NET45
-
 using System;
+using System.Collections.Generic;
+using Microsoft.AspNet.Http;
 using Xunit;
 
 namespace Microsoft.AspNet.Routing.Tests
@@ -36,7 +36,7 @@ namespace Microsoft.AspNet.Routing.Tests
         {
             // Arrange
             var resolver = new DefaultInlineConstraintResolver();
-            resolver.ConstraintMap.Add("custom", typeof(IntRouteConstraint));
+            resolver.ConstraintMap.Add("custom", typeof(CustomRouteConstraint));
 
             // Act
             var constraint = resolver.ResolveConstraint("custom");
@@ -46,7 +46,7 @@ namespace Microsoft.AspNet.Routing.Tests
         }
 
         [Fact]
-        public void ResolveConstraint_CustomConstraintThatDoesNotImplementouteConstraintInterfact_Throws()
+        public void ResolveConstraint_CustomConstraintThatDoesNotImplementIRouteConstraint_Throws()
         {
             // Arrange
             var resolver = new DefaultInlineConstraintResolver();
@@ -58,7 +58,23 @@ namespace Microsoft.AspNet.Routing.Tests
                          " must implement the IRouteConstraint interface.", 
                          ex.Message);
         }
+
+        private class CustomRouteConstraint : IRouteConstraint
+        {
+            public CustomRouteConstraint(string pattern)
+            {
+                Pattern = pattern;
+            }
+
+            public string Pattern { get; private set; }
+            public bool Match(HttpContext httpContext,
+                              IRouter route,
+                              string routeKey,
+                              IDictionary<string, object> values,
+                              RouteDirection routeDirection)
+            {
+                return true;
+            }
+        }
     }
 }
-
-#endif
