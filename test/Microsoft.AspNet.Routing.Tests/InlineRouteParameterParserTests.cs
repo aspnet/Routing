@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if NET45
-
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -280,7 +278,6 @@ namespace Microsoft.AspNet.Routing.Tests
         {
             var constraintResolver = new DefaultInlineConstraintResolver();
 
-            // TODO: This will be removed once this is supported in product code.
             constraintResolver.ConstraintMap.Add("test", typeof(TestRouteConstraint));
             return TemplateParser.Parse(template, constraintResolver);
         }
@@ -304,5 +301,3 @@ namespace Microsoft.AspNet.Routing.Tests
         }
     }
 }
-
-#endif
