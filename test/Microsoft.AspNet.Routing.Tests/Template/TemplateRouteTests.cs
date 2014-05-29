@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing.Constraints;
 using Microsoft.AspNet.Testing;
+using Microsoft.Framework.DependencyInjection;
 using Moq;
 using Xunit;
 
@@ -391,11 +392,10 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         public void RegisteringRouteWithInvalidConstraints_Throws()
         {
             // Arrange
-            var collection = new RouteCollection();
-            collection.DefaultHandler = new Mock<IRouter>().Object;
+            var routeBuilder = CreateRouteBuilder(new RouteCollection());
 
             // Assert
-            ExceptionAssert.Throws<InvalidOperationException>(() => collection.MapRoute("mockName", 
+            ExceptionAssert.Throws<InvalidOperationException>(() => routeBuilder.MapRoute("mockName", 
                 "{controller}/{action}",
                 defaults: null,
                 constraints: new { controller = "a.*", action = new Object() }),
@@ -409,11 +409,11 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             // Arrange
             var collection = new RouteCollection();
-            collection.DefaultHandler = new Mock<IRouter>().Object;
+            var routeBuilder = CreateRouteBuilder(collection);
 
             var mockConstraint = new Mock<IRouteConstraint>().Object;
 
-            collection.MapRoute("mockName",
+            routeBuilder.MapRoute("mockName",
                 "{controller}/{action}",
                 defaults: null,
                 constraints: new { controller = "a.*", action = mockConstraint });
@@ -474,9 +474,9 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             // Arrange
             var collection = new RouteCollection();
-            collection.DefaultHandler = new Mock<IRouter>().Object;
+            var routeBuilder = CreateRouteBuilder(collection);
 
-            collection.MapRoute(name: "RouteName", template: "{controller}/{action}", defaults: null);
+            routeBuilder.MapRoute(name: "RouteName", template: "{controller}/{action}", defaults: null);
 
             // Act
             var name = ((TemplateRoute)collection[0]).Name;
@@ -490,9 +490,9 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             // Arrange
             var collection = new RouteCollection();
-            collection.DefaultHandler = new Mock<IRouter>().Object;
+            var routeBuilder = CreateRouteBuilder(collection);
 
-            collection.MapRoute(name: "RouteName",
+            routeBuilder.MapRoute(name: "RouteName",
                                 template: "{controller}/{action}",
                                 defaults: null,
                                 constraints: null);
@@ -505,6 +505,20 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         }
 
         #endregion
+
+        private static IRouteCollectionBuilder CreateRouteBuilder(RouteCollection collection)
+        {
+            var routeBuilder = new RouteCollectionBuilder(collection);
+
+            routeBuilder.DefaultHandler = new Mock<IRouter>().Object;
+
+            var serviceProviderMock = new Mock<IServiceProvider>();
+            serviceProviderMock.Setup(o => o.GetService(typeof(IInlineConstraintResolver)))
+                               .Returns(new DefaultInlineConstraintResolver());
+            routeBuilder.ServiceProvider = serviceProviderMock.Object;
+
+            return routeBuilder;
+        }
 
         private static TemplateRoute CreateRoute(string template, bool accept = true)
         {

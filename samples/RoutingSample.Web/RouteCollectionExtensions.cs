@@ -3,22 +3,27 @@ using Microsoft.AspNet.Routing;
 
 namespace RoutingSample.Web
 {
-    public static class RouteCollectionExtensions
+    public static class RouteBuilderExtensions
     {
-        public static IRouteCollection AddPrefixRoute(this IRouteCollection routes, string prefix)
+        public static IRouteCollectionBuilder AddPrefixRoute(this IRouteCollectionBuilder routeBuilder, string prefix)
         {
-            if (routes.DefaultHandler == null)
+            if (routeBuilder.DefaultHandler == null)
             {
                 throw new ArgumentException("DefaultHandler must be set.");
             }
 
-            return AddPrefixRoute(routes, prefix, routes.DefaultHandler);
+            if (routeBuilder.ServiceProvider == null)
+            {
+                throw new ArgumentException("ServiceProvider must be set.");
+            }
+
+            return AddPrefixRoute(routeBuilder, prefix, routeBuilder.DefaultHandler);
         }
 
-        public static IRouteCollection AddPrefixRoute(this IRouteCollection routes, string prefix, IRouter handler)
+        public static IRouteCollectionBuilder AddPrefixRoute(this IRouteCollectionBuilder routeBuilder, string prefix, IRouter handler)
         {
-            routes.Add(new PrefixRoute(handler, prefix));
-            return routes;
+            routeBuilder.Routes.Add(new PrefixRoute(handler, prefix));
+            return routeBuilder;
         }
     }
 }
