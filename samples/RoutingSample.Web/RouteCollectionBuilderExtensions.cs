@@ -5,7 +5,8 @@ namespace RoutingSample.Web
 {
     public static class RouteBuilderExtensions
     {
-        public static IRouteCollectionBuilder AddPrefixRoute(this IRouteCollectionBuilder routeBuilder, string prefix)
+        public static IRouteCollectionBuilder AddPrefixRoute(this IRouteCollectionBuilder routeBuilder,
+                                                             string prefix)
         {
             if (routeBuilder.DefaultHandler == null)
             {
@@ -20,7 +21,9 @@ namespace RoutingSample.Web
             return AddPrefixRoute(routeBuilder, prefix, routeBuilder.DefaultHandler);
         }
 
-        public static IRouteCollectionBuilder AddPrefixRoute(this IRouteCollectionBuilder routeBuilder, string prefix, IRouter handler)
+        public static IRouteCollectionBuilder AddPrefixRoute(this IRouteCollectionBuilder routeBuilder,
+                                                             string prefix,
+                                                             IRouter handler)
         {
             routeBuilder.Routes.Add(new PrefixRoute(handler, prefix));
             return routeBuilder;

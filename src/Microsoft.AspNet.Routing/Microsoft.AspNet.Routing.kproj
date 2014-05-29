@@ -37,7 +37,7 @@
     <Compile Include="Properties\Resources.Designer.cs" />
     <Compile Include="RouteCollection.cs" />
     <Compile Include="RouteCollectionBuilder.cs" />
-    <Compile Include="RouteCollectionExtensions.cs" />
+    <Compile Include="RouteCollectionBuilderExtensions.cs" />
     <Compile Include="RouteConstraintBuilder.cs" />
     <Compile Include="RouteConstraintMatcher.cs" />
     <Compile Include="RouteContext.cs" />
