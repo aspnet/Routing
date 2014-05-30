@@ -40,6 +40,13 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <inheritdoc />
+        /// <example>
+        /// A typical constraint looks like the following
+        /// "exampleConstraint(arg1, arg2, 12)".
+        /// Here if the type registered for exampleConstraint has a single constructor with one argument,
+        /// The entire string "arg1, arg2, 12" will be treated as a single argument.
+        /// In all other cases arguments are split at comma.
+        /// </example>
         public virtual IRouteConstraint ResolveConstraint([NotNull] string inlineConstraint)
         {
             string constraintKey;

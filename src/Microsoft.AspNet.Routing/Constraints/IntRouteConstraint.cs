@@ -8,7 +8,6 @@ using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Routing.Constraints
 {
-
     /// <summary>
     /// Constrains a route parameter to represent only 32-bit integer values.
     /// </summary>
