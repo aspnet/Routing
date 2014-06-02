@@ -3,19 +3,19 @@ using Microsoft.AspNet.Routing;
 
 namespace RoutingSample.Web
 {
-    public static class RouteBuilderExtensions
+    public static class RouteCollectionBuilderExtensions
     {
         public static IRouteCollectionBuilder AddPrefixRoute(this IRouteCollectionBuilder routeBuilder,
                                                              string prefix)
         {
             if (routeBuilder.DefaultHandler == null)
             {
-                throw new ArgumentException("DefaultHandler must be set.");
+                throw new InvalidOperationException("DefaultHandler must be set.");
             }
 
             if (routeBuilder.ServiceProvider == null)
             {
-                throw new ArgumentException("ServiceProvider must be set.");
+                throw new InvalidOperationException("ServiceProvider must be set.");
             }
 
             return AddPrefixRoute(routeBuilder, prefix, routeBuilder.DefaultHandler);
