@@ -392,7 +392,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         public void RegisteringRouteWithInvalidConstraints_Throws()
         {
             // Arrange
-            var routeBuilder = CreateRouteBuilder(new RouteCollection());
+            var routeBuilder = CreateRouteBuilder();
 
             // Assert
             ExceptionAssert.Throws<InvalidOperationException>(() => routeBuilder.MapRoute("mockName", 
@@ -408,8 +408,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         public void RegisteringRouteWithTwoConstraints()
         {
             // Arrange
-            var collection = new RouteCollection();
-            var routeBuilder = CreateRouteBuilder(collection);
+            var routeBuilder = CreateRouteBuilder();
 
             var mockConstraint = new Mock<IRouteConstraint>().Object;
 
@@ -418,7 +417,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
                 defaults: null,
                 constraints: new { controller = "a.*", action = mockConstraint });
 
-            var constraints = ((TemplateRoute)collection[0]).Constraints;
+            var constraints = ((TemplateRoute)routeBuilder.Routes[0]).Constraints;
 
             // Assert
             Assert.Equal(2, constraints.Count);
@@ -473,13 +472,12 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         public void RegisteringRouteWithRouteName_WithNullDefaults_AddsTheRoute()
         {
             // Arrange
-            var collection = new RouteCollection();
-            var routeBuilder = CreateRouteBuilder(collection);
+            var routeBuilder = CreateRouteBuilder();
 
             routeBuilder.MapRoute(name: "RouteName", template: "{controller}/{action}", defaults: null);
 
             // Act
-            var name = ((TemplateRoute)collection[0]).Name;
+            var name = ((TemplateRoute)routeBuilder.Routes[0]).Name;
 
             // Assert
             Assert.Equal("RouteName", name);
@@ -489,8 +487,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         public void RegisteringRouteWithRouteName_WithNullDefaultsAndConstraints_AddsTheRoute()
         {
             // Arrange
-            var collection = new RouteCollection();
-            var routeBuilder = CreateRouteBuilder(collection);
+            var routeBuilder = CreateRouteBuilder();
 
             routeBuilder.MapRoute(name: "RouteName",
                                 template: "{controller}/{action}",
@@ -498,7 +495,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
                                 constraints: null);
 
             // Act
-            var name = ((TemplateRoute)collection[0]).Name;
+            var name = ((TemplateRoute)routeBuilder.Routes[0]).Name;
 
             // Assert
             Assert.Equal("RouteName", name);
@@ -506,9 +503,9 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
         #endregion
 
-        private static IRouteCollectionBuilder CreateRouteBuilder(RouteCollection collection)
+        private static IRouteBuilder CreateRouteBuilder()
         {
-            var routeBuilder = new RouteCollectionBuilder(collection);
+            var routeBuilder = new RouteBuilder();
 
             routeBuilder.DefaultHandler = new Mock<IRouter>().Object;
 

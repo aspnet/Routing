@@ -8,9 +8,9 @@ using Microsoft.Framework.DependencyInjection;
 
 namespace Microsoft.AspNet.Routing
 {
-    public static class RouteCollectionBuilderExtensions
+    public static class RouteBuilderExtensions
     {
-        public static IRouteCollectionBuilder MapRoute(this IRouteCollectionBuilder routeCollectionBuilder,
+        public static IRouteBuilder MapRoute(this IRouteBuilder routeCollectionBuilder,
                                                        string name,
                                                        string template)
         {
@@ -18,7 +18,7 @@ namespace Microsoft.AspNet.Routing
             return routeCollectionBuilder;
         }
 
-        public static IRouteCollectionBuilder MapRoute(this IRouteCollectionBuilder routeCollectionBuilder,
+        public static IRouteBuilder MapRoute(this IRouteBuilder routeCollectionBuilder,
                                                        string name,
                                                        string template,
                                                        object defaults)
@@ -27,7 +27,7 @@ namespace Microsoft.AspNet.Routing
             return routeCollectionBuilder;
         }
 
-        public static IRouteCollectionBuilder MapRoute(this IRouteCollectionBuilder routeCollectionBuilder,
+        public static IRouteBuilder MapRoute(this IRouteBuilder routeCollectionBuilder,
                                                        string name,
                                                        string template,
                                                        IDictionary<string, object> defaults)
@@ -50,7 +50,7 @@ namespace Microsoft.AspNet.Routing
             return routeCollectionBuilder;
         }
 
-        public static IRouteCollectionBuilder MapRoute(this IRouteCollectionBuilder routeCollectionBuilder,
+        public static IRouteBuilder MapRoute(this IRouteBuilder routeCollectionBuilder,
                                                        string name,
                                                        string template,
                                                        object defaults,
@@ -64,7 +64,7 @@ namespace Microsoft.AspNet.Routing
             return routeCollectionBuilder;
         }
 
-        public static IRouteCollectionBuilder MapRoute(this IRouteCollectionBuilder routeCollectionBuilder,
+        public static IRouteBuilder MapRoute(this IRouteBuilder routeCollectionBuilder,
                                                        string name,
                                                        string template,
                                                        object defaults,
@@ -74,7 +74,7 @@ namespace Microsoft.AspNet.Routing
             return routeCollectionBuilder;
         }
 
-        public static IRouteCollectionBuilder MapRoute(this IRouteCollectionBuilder routeCollectionBuilder,
+        public static IRouteBuilder MapRoute(this IRouteBuilder routeCollectionBuilder,
                                                        string name,
                                                        string template,
                                                        IDictionary<string, object> defaults, object constraints)
@@ -83,7 +83,7 @@ namespace Microsoft.AspNet.Routing
             return routeCollectionBuilder;
         }
 
-        public static IRouteCollectionBuilder MapRoute(this IRouteCollectionBuilder routeCollectionBuilder,
+        public static IRouteBuilder MapRoute(this IRouteBuilder routeCollectionBuilder,
                                                        string name,
                                                        string template,
                                                        IDictionary<string, object> defaults,

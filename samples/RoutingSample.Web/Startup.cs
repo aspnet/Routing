@@ -11,7 +11,7 @@ namespace RoutingSample.Web
     {
         public void Configure(IBuilder builder)
         {
-            var collectionBuilder = new RouteCollectionBuilder(new RouteCollection());
+            var collectionBuilder = new RouteBuilder();
 
             var endpoint1 = new DelegateRouteEndpoint(async (context) =>
                                                         await context
@@ -50,7 +50,7 @@ namespace RoutingSample.Web
 
             collectionBuilder.AddPrefixRoute("hello/world", endpoint2);
             collectionBuilder.AddPrefixRoute("", endpoint2);
-            builder.UseRouter(collectionBuilder.Routes);
+            builder.UseRouter(collectionBuilder.Build());
         }
     }
 }
