@@ -11,26 +11,26 @@ namespace Microsoft.AspNet.Routing
     public static class RouteBuilderExtensions
     {
         public static IRouteBuilder MapRoute(this IRouteBuilder routeCollectionBuilder,
-                                                       string name,
-                                                       string template)
+                                             string name,
+                                             string template)
         {
             MapRoute(routeCollectionBuilder, name, template, defaults: null);
             return routeCollectionBuilder;
         }
 
         public static IRouteBuilder MapRoute(this IRouteBuilder routeCollectionBuilder,
-                                                       string name,
-                                                       string template,
-                                                       object defaults)
+                                             string name,
+                                             string template,
+                                             object defaults)
         {
             MapRoute(routeCollectionBuilder, name, template, new RouteValueDictionary(defaults));
             return routeCollectionBuilder;
         }
 
         public static IRouteBuilder MapRoute(this IRouteBuilder routeCollectionBuilder,
-                                                       string name,
-                                                       string template,
-                                                       IDictionary<string, object> defaults)
+                                             string name,
+                                             string template,
+                                             IDictionary<string, object> defaults)
         {
             if (routeCollectionBuilder.DefaultHandler == null)
             {
@@ -51,10 +51,10 @@ namespace Microsoft.AspNet.Routing
         }
 
         public static IRouteBuilder MapRoute(this IRouteBuilder routeCollectionBuilder,
-                                                       string name,
-                                                       string template,
-                                                       object defaults,
-                                                       object constraints)
+                                             string name,
+                                             string template,
+                                             object defaults,
+                                             object constraints)
         {
             MapRoute(routeCollectionBuilder,
                      name,
@@ -65,29 +65,29 @@ namespace Microsoft.AspNet.Routing
         }
 
         public static IRouteBuilder MapRoute(this IRouteBuilder routeCollectionBuilder,
-                                                       string name,
-                                                       string template,
-                                                       object defaults,
-                                                       IDictionary<string, object> constraints)
+                                             string name,
+                                             string template,
+                                             object defaults,
+                                             IDictionary<string, object> constraints)
         {
             MapRoute(routeCollectionBuilder, name, template, new RouteValueDictionary(defaults), constraints);
             return routeCollectionBuilder;
         }
 
         public static IRouteBuilder MapRoute(this IRouteBuilder routeCollectionBuilder,
-                                                       string name,
-                                                       string template,
-                                                       IDictionary<string, object> defaults, object constraints)
+                                             string name,
+                                             string template,
+                                             IDictionary<string, object> defaults, object constraints)
         {
             MapRoute(routeCollectionBuilder, name, template, defaults, new RouteValueDictionary(constraints));
             return routeCollectionBuilder;
         }
 
         public static IRouteBuilder MapRoute(this IRouteBuilder routeCollectionBuilder,
-                                                       string name,
-                                                       string template,
-                                                       IDictionary<string, object> defaults,
-                                                       IDictionary<string, object> constraints)
+                                             string name,
+                                             string template,
+                                             IDictionary<string, object> defaults,
+                                             IDictionary<string, object> constraints)
         {
             if (routeCollectionBuilder.DefaultHandler == null)
             {

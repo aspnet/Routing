@@ -429,18 +429,16 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         public void RegisteringRouteWithOneInlineConstraintAndOneUsingConstraintArgument()
         {
             // Arrange
-            var collection = new RouteCollection();
-            collection.DefaultHandler = new Mock<IRouter>().Object;
-            collection.InlineConstraintResolver = new DefaultInlineConstraintResolver();
+            var routeBuilder = CreateRouteBuilder();
 
-            collection.MapRoute("mockName",
+            // Act
+            routeBuilder.MapRoute("mockName",
                 "{controller}/{action}/{id:int}",
                 defaults: null,
                 constraints: new { id = "1*" });
 
-            var constraints = ((TemplateRoute)collection[0]).Constraints;
-
             // Assert
+            var constraints = ((TemplateRoute)routeBuilder.Routes[0]).Constraints;
             Assert.Equal(1, constraints.Count);
             var constraint = (CompositeRouteConstraint)constraints["id"];
             Assert.IsType<CompositeRouteConstraint>(constraint);
@@ -452,18 +450,16 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         public void RegisteringRoute_WithOneInlineConstraint_AddsItToConstraintCollection()
         {
             // Arrange
-            var collection = new RouteCollection();
-            collection.DefaultHandler = new Mock<IRouter>().Object;
-            collection.InlineConstraintResolver = new DefaultInlineConstraintResolver();
+            var routeBuilder = CreateRouteBuilder();
 
-            collection.MapRoute("mockName",
+            // Act
+            routeBuilder.MapRoute("mockName",
                 "{controller}/{action}/{id:int}",
                 defaults: null,
                 constraints: null);
 
-            var constraints = ((TemplateRoute)collection[0]).Constraints;
-
             // Assert
+            var constraints = ((TemplateRoute)routeBuilder.Routes[0]).Constraints;
             Assert.Equal(1, constraints.Count);
             Assert.IsType<IntRouteConstraint>(constraints["id"]);
         }

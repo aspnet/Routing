@@ -6,7 +6,7 @@ namespace RoutingSample.Web
     public static class RouteBuilderExtensions
     {
         public static IRouteBuilder AddPrefixRoute(this IRouteBuilder routeBuilder,
-                                                             string prefix)
+                                                   string prefix)
         {
             if (routeBuilder.DefaultHandler == null)
             {
@@ -22,8 +22,8 @@ namespace RoutingSample.Web
         }
 
         public static IRouteBuilder AddPrefixRoute(this IRouteBuilder routeBuilder,
-                                                             string prefix,
-                                                             IRouter handler)
+                                                   string prefix,
+                                                   IRouter handler)
         {
             routeBuilder.Routes.Add(new PrefixRoute(handler, prefix));
             return routeBuilder;
