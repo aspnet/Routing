@@ -11,7 +11,7 @@ using Microsoft.Framework.DependencyInjection.NestedProviders;
 
 namespace Microsoft.AspNet.Routing
 {
-    public class RouterServices
+    public class RoutingServices
     {
         public static IEnumerable<IServiceDescriptor> GetDefaultServices()
         {
