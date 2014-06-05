@@ -784,13 +784,13 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
         private TemplateMatcher CreateMatcher(string template)
         {
-            return new TemplateMatcher(TemplateParser.Parse(template, new DefaultInlineConstraintResolver()));
+            return new TemplateMatcher(TemplateParser.Parse(template, constraintResolver: null));
         }
 
         private static void RunTest(string template, string path, IDictionary<string, object> defaults, IDictionary<string, object> expected)
         {
             // Arrange
-            var matcher = new TemplateMatcher(TemplateParser.Parse(template, new DefaultInlineConstraintResolver()));
+            var matcher = new TemplateMatcher(TemplateParser.Parse(template, constraintResolver: null));
 
             // Act
             var match = matcher.Match(path, defaults);

@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 {
     public class TemplateRouteParserTests
     {
-        private IInlineConstraintResolver _inlineConstraintResolver = new DefaultInlineConstraintResolver();
+        private IInlineConstraintResolver _inlineConstraintResolver = null;
 
         [Fact]
         public void Parse_SingleLiteral()
