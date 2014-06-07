@@ -21,8 +21,8 @@ namespace Microsoft.AspNet.Routing
         private readonly IDictionary<string, Type> _inlineConstraintMap;
         private readonly IServiceProvider _serviceProvider;
 
-        public DefaultInlineConstraintResolver([NotNull] IServiceProvider serviceProvider,
-                                               [NotNull] IOptionsAccessor<RouteOptions> routeOptions)
+        public DefaultInlineConstraintResolver(IServiceProvider serviceProvider,
+                                               IOptionsAccessor<RouteOptions> routeOptions)
         {
             _serviceProvider = serviceProvider;
             _inlineConstraintMap = routeOptions.Options.ConstraintMap;

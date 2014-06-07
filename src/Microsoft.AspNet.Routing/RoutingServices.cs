@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Routing
         {
             var describe = new ServiceDescriber(configuration);
 
-            yield return describe.Singleton<IInlineConstraintResolver, DefaultInlineConstraintResolver>();
+            yield return describe.Transient<IInlineConstraintResolver, DefaultInlineConstraintResolver>();
         }
     }
 }
