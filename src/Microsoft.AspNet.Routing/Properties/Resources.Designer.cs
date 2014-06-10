@@ -11,6 +11,22 @@ namespace Microsoft.AspNet.Routing
             = new ResourceManager("Microsoft.AspNet.Routing.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// Value must be greater than or equal to {0}.
+        /// </summary>
+        internal static string ArgumentMustBeGreaterThanOrEqualTo
+        {
+            get { return GetString("ArgumentMustBeGreaterThanOrEqualTo"); }
+        }
+
+        /// <summary>
+        /// Value must be greater than or equal to {0}.
+        /// </summary>
+        internal static string FormatArgumentMustBeGreaterThanOrEqualTo(object p0)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("ArgumentMustBeGreaterThanOrEqualTo"), p0);
+        }
+
+        /// <summary>
         /// The '{0}' property of '{1}' must not be null.
         /// </summary>
         internal static string PropertyOfTypeCannotBeNull

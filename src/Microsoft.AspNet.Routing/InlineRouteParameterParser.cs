@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Routing
            "^" + ParameterNamePattern + ConstraintPattern + DefaultValueParameter + "$",
             RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
         public static TemplatePart ParseRouteParameter([NotNull] string routeParameter,
-                                                       [NotNull] IInlineConstraintResolver constraintResolver)
+                                                       [NotNull] IInlineConstraintResolver _constraintResolver)
         {
             var isCatchAll = routeParameter.StartsWith("*", StringComparison.Ordinal);
             var isOptional = routeParameter.EndsWith("?", StringComparison.Ordinal);
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Routing
 
             // Register inline constraints if present
             var constraintGroup = parameterMatch.Groups["constraint"];
-            var inlineConstraint = GetInlineConstraint(constraintGroup, constraintResolver);
+            var inlineConstraint = GetInlineConstraint(constraintGroup, _constraintResolver);
             
             return TemplatePart.CreateParameter(parameterName,
                                                 isCatchAll,
@@ -78,18 +78,18 @@ namespace Microsoft.AspNet.Routing
         }
 
         private static IRouteConstraint GetInlineConstraint(Group constraintGroup,
-                                                            IInlineConstraintResolver constraintResolver)
+                                                            IInlineConstraintResolver _constraintResolver)
         {
             var parameterConstraints = new List<IRouteConstraint>();
             foreach (Capture constraintCapture in constraintGroup.Captures)
             {
                 var inlineConstraint = constraintCapture.Value;
-                var constraint = constraintResolver.ResolveConstraint(inlineConstraint);
+                var constraint = _constraintResolver.ResolveConstraint(inlineConstraint);
                 if (constraint == null)
                 {
                     throw new InvalidOperationException(
                         Resources.FormatInlineRouteParser_CouldNotResolveConstraint(
-                                        constraintResolver.GetType().Name, inlineConstraint));
+                                        _constraintResolver.GetType().Name, inlineConstraint));
                 }
 
                 parameterConstraints.Add(constraint);
