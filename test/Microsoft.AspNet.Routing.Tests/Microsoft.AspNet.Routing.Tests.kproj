@@ -27,6 +27,7 @@
     <Compile Include="RouteCollectionTest.cs" />
     <Compile Include="InlineRouteParameterParserTests.cs" />
     <Compile Include="RouteConstraintsTests.cs" />
+    <Compile Include="RouteOptionsTests.cs" />
     <Compile Include="RouteValueDictionaryTests.cs" />
     <Compile Include="Template\TemplateBinderTests.cs" />
     <Compile Include="Template\TemplateMatcherTests.cs" />

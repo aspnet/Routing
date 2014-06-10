@@ -270,15 +270,15 @@ namespace Microsoft.AspNet.Routing.Tests
 
         private TemplatePart ParseParameter(string routeParameter)
         {
-            var constraintResolver = GetConstraintResolver();
-            var templatePart = InlineRouteParameterParser.ParseRouteParameter(routeParameter, constraintResolver);
+            var _constraintResolver = GetConstraintResolver();
+            var templatePart = InlineRouteParameterParser.ParseRouteParameter(routeParameter, _constraintResolver);
             return templatePart;
         }
 
         private static Template.Template ParseRouteTemplate(string template)
         {
-            var constraintResolver = GetConstraintResolver();
-            return TemplateParser.Parse(template, constraintResolver);
+            var _constraintResolver = GetConstraintResolver();
+            return TemplateParser.Parse(template, _constraintResolver);
         }
 
         private static IInlineConstraintResolver GetConstraintResolver()
