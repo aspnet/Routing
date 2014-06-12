@@ -26,6 +26,7 @@
     <Compile Include="RegexConstraintTests.cs" />
     <Compile Include="RouteCollectionTest.cs" />
     <Compile Include="InlineRouteParameterParserTests.cs" />
+    <Compile Include="DefaultValueTests.cs" />
     <Compile Include="RouteConstraintsTests.cs" />
     <Compile Include="RouteOptionsTests.cs" />
     <Compile Include="RouteValueDictionaryTests.cs" />

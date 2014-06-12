@@ -137,7 +137,8 @@ namespace Microsoft.AspNet.Routing.Tests
 
             // Assert
             Assert.IsType<LengthRouteConstraint>(constraint);
-            Assert.Equal(5, ((LengthRouteConstraint)constraint).Length);
+            Assert.Equal(5, ((LengthRouteConstraint)constraint).MinLength);
+            Assert.Equal(5, ((LengthRouteConstraint)constraint).MaxLength);
         }
 
         [Fact]
