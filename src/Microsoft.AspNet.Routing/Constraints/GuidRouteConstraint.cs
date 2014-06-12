@@ -10,6 +10,8 @@ namespace Microsoft.AspNet.Routing.Constraints
 {
     /// <summary>
     /// Constrains a route parameter to represent only <see cref="Guid"/> values.
+    /// Matches values specified in any of the five formats "N", "D", "B", "P", or "X",
+    /// supported by Guid.ToString(string) and Guid.ToString(String, IFormatProvider) methods.
     /// </summary>
     public class GuidRouteConstraint : IRouteConstraint
     {

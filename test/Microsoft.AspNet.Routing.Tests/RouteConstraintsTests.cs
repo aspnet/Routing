@@ -339,7 +339,9 @@ namespace Microsoft.AspNet.Routing.Tests
 
         [Theory]
         [InlineData("true", true)]
+        [InlineData("TruE", true)]
         [InlineData("false", true)]
+        [InlineData("FalSe", true)]
         [InlineData(true, true)]
         [InlineData(false, true)]
         [InlineData(1, false)]

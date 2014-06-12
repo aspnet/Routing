@@ -28,7 +28,7 @@ namespace Microsoft.AspNet.Routing
            "^" + ParameterNamePattern + ConstraintPattern + DefaultValueParameter + "$",
             RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
         public static TemplatePart ParseRouteParameter([NotNull] string routeParameter,
-                                                       [NotNull] IInlineConstraintResolver _constraintResolver)
+                                                       [NotNull] IInlineConstraintResolver constraintResolver)
         {
             var isCatchAll = routeParameter.StartsWith("*", StringComparison.Ordinal);
             var isOptional = routeParameter.EndsWith("?", StringComparison.Ordinal);
@@ -54,7 +54,7 @@ namespace Microsoft.AspNet.Routing
 
             // Register inline constraints if present
             var constraintGroup = parameterMatch.Groups["constraint"];
-            var inlineConstraint = GetInlineConstraint(constraintGroup, _constraintResolver);
+            var inlineConstraint = GetInlineConstraint(constraintGroup, constraintResolver);
             
             return TemplatePart.CreateParameter(parameterName,
                                                 isCatchAll,
