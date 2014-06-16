@@ -662,7 +662,48 @@ namespace Microsoft.AspNet.Routing.Template
 
         #endregion
 
-#region Route Registration
+        #region Route Registration
+
+        public static IEnumerable<object[]> DataTokens
+        {
+            get
+            {
+                yield return new object[] { new Dictionary<string, object> { { "key1", "data1" }, { "key2", 13 } }, 2 };
+                yield return new object[] { new RouteValueDictionary { { "key1", "data1" }, { "key2", 13 } }, 2 };
+                yield return new object[] { new object(), 0};
+                yield return new object[] { null, 0};
+            }
+        }
+
+        [Theory]
+        [MemberData("DataTokens")]
+        public void RegisteringRoute_WithDataTokens_AbleToAddTheRoute(object dataToken, int count)
+        {
+            // Arrange
+            var routeBuilder = CreateRouteBuilder();
+
+            // Act 
+            routeBuilder.MapRoute("mockName",
+                                  "{controller}/{action}",
+                                  defaults: null,
+                                  constraints: null,
+                                  dataTokens: dataToken);
+
+            // Assert
+            var templateRoute = (TemplateRoute)routeBuilder.Routes[0];
+
+            // Assert
+            Assert.Equal(count, templateRoute.DataTokens.Count);
+            if(count > 0)
+            {
+                var expectedDataTokenCollection = ObjectToDictionary(dataToken);
+                foreach (var expectedKey in expectedDataTokenCollection.Keys)
+                {
+                    Assert.True(templateRoute.DataTokens.ContainsKey(expectedKey));
+                    Assert.Equal(expectedDataTokenCollection[expectedKey], templateRoute.DataTokens[expectedKey]);
+                }
+            }
+        }
 
         [Fact]
         public void RegisteringRouteWithInvalidConstraints_Throws()
@@ -794,12 +835,19 @@ namespace Microsoft.AspNet.Routing.Template
             return new TemplateRoute(CreateTarget(accept), template, _inlineConstraintResolver);
         }
 
-        private static TemplateRoute CreateRoute(string template, object defaults, bool accept = true, object constraints = null)
+        private static TemplateRoute CreateRoute(string template,
+                                                 object defaults,
+                                                 bool accept = true,
+                                                 object constraints = null,
+                                                 object dataTokens = null)
         {
             return new TemplateRoute(CreateTarget(accept),
                                      template,
                                      new RouteValueDictionary(defaults),
-                                     (constraints as IDictionary<string, object>) ?? new RouteValueDictionary(constraints),
+                                     (constraints as IDictionary<string, object>) ??
+                                            new RouteValueDictionary(constraints),
+                                     (dataTokens as IDictionary<string, object>) ??
+                                            new RouteValueDictionary(constraints),
                                      _inlineConstraintResolver);
         }
 
@@ -809,6 +857,7 @@ namespace Microsoft.AspNet.Routing.Template
                                      template,
                                      new RouteValueDictionary(),
                                      constraints: null,
+                                     dataTokens: null,
                                      inlineConstraintResolver: _inlineConstraintResolver);
         }
 
@@ -818,6 +867,7 @@ namespace Microsoft.AspNet.Routing.Template
                                      template,
                                      new RouteValueDictionary(defaults),
                                      constraints: null,
+                                     dataTokens: null,
                                      inlineConstraintResolver: _inlineConstraintResolver);
         }
 
@@ -842,6 +892,17 @@ namespace Microsoft.AspNet.Routing.Template
             var resolverMock = new Mock<IInlineConstraintResolver>();
             resolverMock.Setup(o => o.ResolveConstraint("int")).Returns(new IntRouteConstraint());
             return resolverMock.Object;
+        }
+
+        private static IDictionary<string, object> ObjectToDictionary(object value)
+        {
+            var dictionary = value as IDictionary<string, object>;
+            if (dictionary != null)
+            {
+                return dictionary;
+            }
+
+            return new RouteValueDictionary(value);
         }
 
         private class CapturingConstraint : IRouteConstraint
