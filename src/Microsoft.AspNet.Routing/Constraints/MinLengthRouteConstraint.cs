@@ -13,6 +13,10 @@ namespace Microsoft.AspNet.Routing.Constraints
     /// </summary>
     public class MinLengthRouteConstraint : IRouteConstraint
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MinLengthRouteConstraint" /> class.
+        /// </summary>
+        /// <param name="minLength">The minimum length allowed for the route parameter.</param>
         public MinLengthRouteConstraint(int minLength)
         {
             if (minLength < 0)

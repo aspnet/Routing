@@ -20,7 +20,6 @@ namespace Microsoft.AspNet.Routing.Constraints
                           [NotNull] IDictionary<string, object> values,
                           RouteDirection routeDirection)
         {
-
             object value;
             if (values.TryGetValue(routeKey, out value) && value != null)
             {

@@ -10,7 +10,7 @@ namespace Microsoft.AspNet.Routing.Constraints
 {
     /// <summary>
     /// Constrains a route parameter to represent only <see cref="DateTime"/> values.
-    /// Supports default date time formats.
+    /// Supports date time formats represented by CultureInfo.DateTimeFormat for the CultureInfo.InvariantCulture.
     /// </summary>
     public class DateTimeRouteConstraint : IRouteConstraint
     {

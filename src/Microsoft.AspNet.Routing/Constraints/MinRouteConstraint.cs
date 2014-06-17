@@ -13,13 +13,17 @@ namespace Microsoft.AspNet.Routing.Constraints
     /// </summary>
     public class MinRouteConstraint : IRouteConstraint
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MinRouteConstraint" /> class.
+        /// </summary>
+        /// <param name="min">The minimum value allowed for the route parameter.</param>
         public MinRouteConstraint(long min)
         {
             Min = min;
         }
 
         /// <summary>
-        /// Gets the minimum value of the route parameter.
+        /// Gets the minimum allowed value of the route parameter.
         /// </summary>
         public long Min { get; private set; }
 
@@ -34,12 +38,6 @@ namespace Microsoft.AspNet.Routing.Constraints
             if (values.TryGetValue(routeKey, out value) && value != null)
             {
                 long longValue;
-                if (value is long)
-                {
-                    longValue = (long)value;
-                    return longValue >= Min;
-                }
-
                 var valueString = Convert.ToString(value, CultureInfo.InvariantCulture);
                 if (Int64.TryParse(valueString, NumberStyles.Integer, CultureInfo.InvariantCulture, out longValue))
                 {

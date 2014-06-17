@@ -30,7 +30,10 @@ namespace Microsoft.AspNet.Routing.Constraints
 
                 float result;
                 var valueString = Convert.ToString(value, CultureInfo.InvariantCulture);
-                return Single.TryParse(valueString, NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out result);
+                return Single.TryParse(valueString,
+                                       NumberStyles.Float | NumberStyles.AllowThousands,
+                                       CultureInfo.InvariantCulture,
+                                       out result);
             }
 
             return false;

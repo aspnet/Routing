@@ -15,6 +15,8 @@ namespace Microsoft.AspNet.Routing.Tests
 {
     public class RouteConstraintsTests
     {
+        private const decimal _decimalObject = 2m;
+
         [Theory]
         [InlineData(42, true)]
         [InlineData("42", true)]
@@ -35,6 +37,7 @@ namespace Microsoft.AspNet.Routing.Tests
 
         [Theory]
         [InlineData(42, true)]
+        [InlineData(42L, true)]
         [InlineData("42", true)]
         [InlineData("9223372036854775807", true)]
         [InlineData(3.14, false)]
@@ -59,6 +62,7 @@ namespace Microsoft.AspNet.Routing.Tests
         [InlineData("A1PHA", false)]
         [InlineData("alPHA", true)]
         [InlineData("A1pHA", false)]
+        [InlineData("AlpHA╥", false)]
         [InlineData("", true)]
         public void AlphaRouteConstraintTests(string parameterValue, bool expected)
         {
@@ -79,7 +83,8 @@ namespace Microsoft.AspNet.Routing.Tests
         [InlineData(3, 5, 5, true)]
         [InlineData(3, 5, 6, false)]
         [InlineData(3, 5, 2, false)]
-        [InlineData(3, 1, 2, false)]
+        [InlineData(3, 3, 2, false)]
+        [InlineData(3, 3, 3, true)]
         public void RangeRouteConstraintTests(long min, long max, int parameterValue, bool expected)
         {
             // Arrange
@@ -90,6 +95,16 @@ namespace Microsoft.AspNet.Routing.Tests
 
             // Assert
             Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void RangeRouteConstraint_MinGreaterThanMax_Throws()
+        {
+            // Arrange Act & Assert
+            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => new RangeRouteConstraint(3, 2));
+            Assert.Equal("The value for argument 'min' should be less than or equal to the value for the argument "+
+                         "'max'.\r\nParameter name: min\r\nActual value was 3.",
+                         ex.Message);
         }
 
         [Theory]
@@ -266,7 +281,7 @@ namespace Microsoft.AspNet.Routing.Tests
 
         [Theory]
         [InlineData("3.14", true)]
-        [InlineData(3.14f, true)]
+        [InlineData(3.14, true)]
         [InlineData("not-parseable-as-float", false)]
         [InlineData(false, false)]
         [InlineData("1.79769313486232E+300", false)]
@@ -285,6 +300,7 @@ namespace Microsoft.AspNet.Routing.Tests
         [Theory]
         [InlineData("3.14", true)]
         [InlineData(3.14f, true)]
+        [InlineData(3.14d, true)]
         [InlineData("1.79769313486232E+300", true)]
         [InlineData("not-parseable-as-double", false)]
         [InlineData(false, false)]
@@ -306,6 +322,7 @@ namespace Microsoft.AspNet.Routing.Tests
         [InlineData("1.79769313486232E+300", false)]
         [InlineData("not-parseable-as-decimal", false)]
         [InlineData(false, false)]
+        [MemberData("GetDecimalObject")]
         public void DecimalRouteConstraintTests(object parameterValue, bool expected)
         {
             // Arrange
@@ -318,13 +335,39 @@ namespace Microsoft.AspNet.Routing.Tests
             Assert.Equal(expected, actual);
         }
 
+        public static IEnumerable<object[]> GetDateTimeObject
+        {
+            get
+            {
+                yield return new object[]
+                {
+                    DateTime.Now,
+                    true
+                };
+            }
+        }
+
+        public static IEnumerable<object[]> GetDecimalObject
+        {
+            get
+            {
+                yield return new object[]
+                {
+                    2m,
+                    true
+                };
+            }
+        }
+
         [Theory]
         [InlineData("12/25/2009", true)]
+        [InlineData("25/12/2009 11:45:00 PM", false)]
         [InlineData("12/25/2009 11:45:00 PM", true)]
         [InlineData("11:45:00 PM", true)]
         [InlineData("2009-05-12T11:45:00Z", true)]
         [InlineData("not-parseable-as-date", false)]
         [InlineData(false, false)]
+        [MemberData("GetDateTimeObject")]
         public void DateTimeRouteConstraint(object parameterValue, bool expected)
         {
             // Arrange
@@ -342,6 +385,9 @@ namespace Microsoft.AspNet.Routing.Tests
         [InlineData("TruE", true)]
         [InlineData("false", true)]
         [InlineData("FalSe", true)]
+        [InlineData(" FalSe", true)]
+        [InlineData("True ", true)]
+        [InlineData(" False ", true)]
         [InlineData(true, true)]
         [InlineData(false, true)]
         [InlineData(1, false)]

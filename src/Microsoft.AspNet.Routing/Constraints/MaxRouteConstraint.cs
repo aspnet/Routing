@@ -13,13 +13,17 @@ namespace Microsoft.AspNet.Routing.Constraints
     /// </summary>
     public class MaxRouteConstraint : IRouteConstraint
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MaxRouteConstraint" /> class.
+        /// </summary>
+        /// <param name="max">The maximum value allowed for the route parameter.</param>
         public MaxRouteConstraint(long max)
         {
             Max = max;
         }
 
         /// <summary>
-        /// Gets the maximum value of the route parameter.
+        /// Gets the maximum allowed value of the route parameter.
         /// </summary>
         public long Max { get; private set; }
 
@@ -34,12 +38,6 @@ namespace Microsoft.AspNet.Routing.Constraints
             if (values.TryGetValue(routeKey, out value) && value != null)
             {
                 long longValue;
-                if (value is long)
-                {
-                    longValue = (long)value;
-                    return longValue <= Max;
-                }
-
                 var valueString = Convert.ToString(value, CultureInfo.InvariantCulture);
                 if (Int64.TryParse(valueString, NumberStyles.Integer, CultureInfo.InvariantCulture, out longValue))
                 {

@@ -16,7 +16,7 @@ using Xunit;
 
 namespace Microsoft.AspNet.Routing.Tests
 {
-    public class DefaultValueTests
+    public class TemplateParserDefaultValuesTests
     {
         private static IInlineConstraintResolver _inlineConstraintResolver = GetInlineConstraintResolver();
 
@@ -53,6 +53,40 @@ namespace Microsoft.AspNet.Routing.Tests
             var message = "The route parameter 'id' has both an inline default value and an explicit default" +
                           " value specified. A route parameter cannot contain an inline default value when" +
                           " a default value is specified explicitly. Consider removing one of them.";
+            Assert.Equal(message, ex.Message);
+        }
+
+        [Fact]
+        public void EmptyDefaultValue_WithOptionalParameter_Throws()
+        {
+            // Arrange
+            var routeBuilder = CreateRouteBuilder();
+
+            // Act & Assert
+            var ex = Assert.Throws<ArgumentException>(
+                                () => routeBuilder.MapRoute("mockName",
+                                                            "{controller}/{action}/{id:int=?}",
+                                                            defaults: new { id = 13 },
+                                                            constraints: null));
+
+            var message = "An optional parameter cannot have default value.\r\nParameter name: routeTemplate";
+            Assert.Equal(message, ex.Message);
+        }
+
+        [Fact]
+        public void NonEmptyDefaultValue_WithOptionalParameter_Throws()
+        {
+            // Arrange
+            var routeBuilder = CreateRouteBuilder();
+
+            // Act & Assert
+            var ex = Assert.Throws<ArgumentException>(
+                                () => routeBuilder.MapRoute("mockName",
+                                                            "{controller}/{action}/{id:int=12?}",
+                                                            defaults: new { id = 13 },
+                                                            constraints: null));
+
+            var message = "An optional parameter cannot have default value.\r\nParameter name: routeTemplate";
             Assert.Equal(message, ex.Message);
         }
 

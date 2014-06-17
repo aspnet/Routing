@@ -13,6 +13,10 @@ namespace Microsoft.AspNet.Routing.Constraints
     /// </summary>
     public class MaxLengthRouteConstraint : IRouteConstraint
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="MaxLengthRouteConstraint" /> class.
+        /// </summary>
+        /// <param name="maxLength">The maximum length allowed for the route parameter.</param>
         public MaxLengthRouteConstraint(int maxLength)
         {
             if (maxLength < 0)

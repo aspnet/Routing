@@ -27,6 +27,22 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <summary>
+        /// The value for argument '{0}' should be less than or equal to the value for the argument '{1}'.
+        /// </summary>
+        internal static string RangeConstraint_MinShouldBeLessThanOrEqualToMax
+        {
+            get { return GetString("RangeConstraint_MinShouldBeLessThanOrEqualToMax"); }
+        }
+
+        /// <summary>
+        /// The value for argument '{0}' should be less than or equal to the value for the argument '{1}'.
+        /// </summary>
+        internal static string FormatRangeConstraint_MinShouldBeLessThanOrEqualToMax(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("RangeConstraint_MinShouldBeLessThanOrEqualToMax"), p0, p1);
+        }
+
+        /// <summary>
         /// The '{0}' property of '{1}' must not be null.
         /// </summary>
         internal static string PropertyOfTypeCannotBeNull
