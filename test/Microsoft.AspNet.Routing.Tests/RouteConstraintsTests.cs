@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Routing.Tests
             var constraint = new IntRouteConstraint();
 
             // Act
-            var actual = TestValue(constraint, parameterValue);
+            var actual = ConstraintsTestHelper.TestConstraint(constraint, parameterValue);
 
             // Assert
             Assert.Equal(expected, actual);
@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Routing.Tests
             var constraint = new LongRouteConstraint();
 
             // Act
-            var actual = TestValue(constraint, parameterValue);
+            var actual = ConstraintsTestHelper.TestConstraint(constraint, parameterValue);
 
             // Assert
             Assert.Equal(expected, actual);
@@ -70,7 +70,7 @@ namespace Microsoft.AspNet.Routing.Tests
             var constraint = new AlphaRouteConstraint();
 
             // Act
-            var actual = TestValue(constraint, parameterValue);
+            var actual = ConstraintsTestHelper.TestConstraint(constraint, parameterValue);
 
             // Assert
             Assert.Equal(expected, actual);
@@ -91,7 +91,7 @@ namespace Microsoft.AspNet.Routing.Tests
             var constraint = new RangeRouteConstraint(min, max);
 
             // Act
-            var actual = TestValue(constraint, parameterValue);
+            var actual = ConstraintsTestHelper.TestConstraint(constraint, parameterValue);
 
             // Assert
             Assert.Equal(expected, actual);
@@ -117,7 +117,7 @@ namespace Microsoft.AspNet.Routing.Tests
             var constraint = new MinRouteConstraint(min);
 
             // Act
-            var actual = TestValue(constraint, parameterValue);
+            var actual = ConstraintsTestHelper.TestConstraint(constraint, parameterValue);
 
             // Assert
             Assert.Equal(expected, actual);
@@ -133,7 +133,7 @@ namespace Microsoft.AspNet.Routing.Tests
             var constraint = new MaxRouteConstraint(max);
 
             // Act
-            var actual = TestValue(constraint, parameterValue);
+            var actual = ConstraintsTestHelper.TestConstraint(constraint, parameterValue);
 
             // Assert
             Assert.Equal(expected, actual);
@@ -150,7 +150,7 @@ namespace Microsoft.AspNet.Routing.Tests
             var constraint = new MinLengthRouteConstraint(min);
 
             // Act
-            var actual = TestValue(constraint, parameterValue);
+            var actual = ConstraintsTestHelper.TestConstraint(constraint, parameterValue);
 
             // Assert
             Assert.Equal(expected, actual);
@@ -177,7 +177,7 @@ namespace Microsoft.AspNet.Routing.Tests
             var constraint = new MaxLengthRouteConstraint(min);
 
             // Act
-            var actual = TestValue(constraint, parameterValue);
+            var actual = ConstraintsTestHelper.TestConstraint(constraint, parameterValue);
 
             // Assert
             Assert.Equal(expected, actual);
@@ -202,7 +202,7 @@ namespace Microsoft.AspNet.Routing.Tests
             var constraint = new LengthRouteConstraint(length);
 
             // Act
-            var actual = TestValue(constraint, parameterValue);
+            var actual = ConstraintsTestHelper.TestConstraint(constraint, parameterValue);
 
             // Assert
             Assert.Equal(expected, actual);
@@ -220,7 +220,7 @@ namespace Microsoft.AspNet.Routing.Tests
             var constraint = new LengthRouteConstraint(min, max);
 
             // Act
-            var actual = TestValue(constraint, parameterValue);
+            var actual = ConstraintsTestHelper.TestConstraint(constraint, parameterValue);
 
             // Assert
             Assert.Equal(expected, actual);
@@ -273,7 +273,7 @@ namespace Microsoft.AspNet.Routing.Tests
             var constraint = new GuidRouteConstraint();
 
             // Act
-            var actual = TestValue(constraint, parameterValue);
+            var actual = ConstraintsTestHelper.TestConstraint(constraint, parameterValue);
 
             // Assert
             Assert.Equal(expected, actual);
@@ -291,7 +291,7 @@ namespace Microsoft.AspNet.Routing.Tests
             var constraint = new FloatRouteConstraint();
 
             // Act
-            var actual = TestValue(constraint, parameterValue);
+            var actual = ConstraintsTestHelper.TestConstraint(constraint, parameterValue);
 
             // Assert
             Assert.Equal(expected, actual);
@@ -310,7 +310,7 @@ namespace Microsoft.AspNet.Routing.Tests
             var constraint = new DoubleRouteConstraint();
 
             // Act
-            var actual = TestValue(constraint, parameterValue);
+            var actual = ConstraintsTestHelper.TestConstraint(constraint, parameterValue);
 
             // Assert
             Assert.Equal(expected, actual);
@@ -329,7 +329,7 @@ namespace Microsoft.AspNet.Routing.Tests
             var constraint = new DecimalRouteConstraint();
 
             // Act
-            var actual = TestValue(constraint, parameterValue);
+            var actual = ConstraintsTestHelper.TestConstraint(constraint, parameterValue);
 
             // Assert
             Assert.Equal(expected, actual);
@@ -374,7 +374,7 @@ namespace Microsoft.AspNet.Routing.Tests
             var constraint = new DateTimeRouteConstraint();
 
             // Act
-            var actual = TestValue(constraint, parameterValue);
+            var actual = ConstraintsTestHelper.TestConstraint(constraint, parameterValue);
 
             // Assert
             Assert.Equal(expected, actual);
@@ -398,7 +398,7 @@ namespace Microsoft.AspNet.Routing.Tests
             var constraint = new BoolRouteConstraint();
             
             // Act
-            var actual = TestValue(constraint, parameterValue);
+            var actual = ConstraintsTestHelper.TestConstraint(constraint, parameterValue);
 
             // Assert
             Assert.Equal(expected, actual);
@@ -419,7 +419,7 @@ namespace Microsoft.AspNet.Routing.Tests
 
             // Act
             var constraint = new CompositeRouteConstraint(new[] { inner1.Object, inner2.Object });
-            var actual = TestValue(constraint, null);
+            var actual = ConstraintsTestHelper.TestConstraint(constraint, null);
 
             // Assert
             Assert.Equal(expected, actual);
@@ -444,23 +444,6 @@ namespace Microsoft.AspNet.Routing.Tests
         private static void AssertMatchWasCalled(Mock<IRouteConstraint> mock, Times times)
         {
             mock.Verify(ConstraintMatchMethodExpression, times);
-        }
-
-        private static bool TestValue(IRouteConstraint constraint, object value, Action<IRouter> routeConfig = null)
-        {
-            var context = new Mock<HttpContext>();
-
-            IRouter route = new RouteCollection();
-
-            if (routeConfig != null)
-            {
-                routeConfig(route);
-            }
-
-            var parameterName = "fake";
-            var values = new Dictionary<string, object>() { { parameterName, value } };
-            var routeDirection = RouteDirection.IncomingRequest;
-            return constraint.Match(context.Object, route, parameterName, values, routeDirection);
         }
     }
 }
