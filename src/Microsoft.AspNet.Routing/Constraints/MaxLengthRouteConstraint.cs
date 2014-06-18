@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Routing.Constraints
         }
 
         /// <summary>
-        /// Gets the maximum length of the route parameter.
+        /// Gets the maximum length allowed for the route parameter.
         /// </summary>
         public int MaxLength { get; private set; }
 

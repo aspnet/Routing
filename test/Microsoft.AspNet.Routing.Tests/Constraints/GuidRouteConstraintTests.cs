@@ -4,6 +4,7 @@
 #if NET45
 
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNet.Routing.Constraints;
 using Xunit;
 
@@ -17,6 +18,7 @@ namespace Microsoft.AspNet.Routing.Tests
         [InlineData("12345678901234567890123456789012", false, true)]
         [InlineData("not-parseable-as-guid", false, false)]
         [InlineData(12, false, false)]
+
         public void GuidRouteConstraint_ApplyConstraint(object parameterValue, bool parseBeforeTest, bool expected)
         {
             // Arrange

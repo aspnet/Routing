@@ -14,6 +14,7 @@ namespace Microsoft.AspNet.Routing.Tests
         [Theory]
         [InlineData(3, "123", true)]
         [InlineData(3, "1234", false)]
+        [InlineData(0, "", true)]
         public void LengthRouteConstraint_ExactLength_Tests(int length, string parameterValue, bool expected)
         {
             // Arrange
@@ -72,6 +73,16 @@ namespace Microsoft.AspNet.Routing.Tests
             Assert.Equal("Value must be greater than or equal to 0.\r\nParameter name: maxLength\r\n" +
                         "Actual value was -1.",
                         ex.Message);
+        }
+
+        [Fact]
+        public void LengthRouteConstraint_MinGreaterThanMax_Throws()
+        {
+            // Arrange Act & Assert
+            var ex = Assert.Throws<ArgumentOutOfRangeException>(() => new LengthRouteConstraint(3, 2));
+            Assert.Equal("The value for argument 'minLength' should be less than or equal to the "+
+                         "value for the argument 'maxLength'.\r\nParameter name: minLength\r\nActual value was 3.",
+                         ex.Message);
         }
     }
 }

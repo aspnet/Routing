@@ -16,7 +16,7 @@ namespace Microsoft.AspNet.Routing.Tests
         {
             var context = new Mock<HttpContext>();
 
-            IRouter route = new RouteCollection();
+            var route = new RouteCollection();
 
             if (routeConfig != null)
             {

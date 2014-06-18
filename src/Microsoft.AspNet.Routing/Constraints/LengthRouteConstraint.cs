@@ -33,8 +33,8 @@ namespace Microsoft.AspNet.Routing.Constraints
         /// Initializes a new instance of the <see cref="LengthRouteConstraint" /> class that constrains
         /// a route parameter to be a string of a given length.
         /// </summary>
-        /// <param name="minLength">The minimum length of the route parameter.</param>
-        /// <param name="maxLength">The maximum length of the route parameter.</param>
+        /// <param name="minLength">The minimum length allowed for the route parameter.</param>
+        /// <param name="maxLength">The maximum length allowed for the route parameter.</param>
         public LengthRouteConstraint(int minLength, int maxLength)
         {
             if (minLength < 0)
@@ -49,17 +49,24 @@ namespace Microsoft.AspNet.Routing.Constraints
                 throw new ArgumentOutOfRangeException("maxLength", maxLength, errorMessage);
             }
 
+            if (minLength > maxLength)
+            {
+                var errorMessage = 
+                    Resources.FormatRangeConstraint_MinShouldBeLessThanOrEqualToMax("minLength", "maxLength");
+                throw new ArgumentOutOfRangeException("minLength", minLength, errorMessage);
+            }
+
             MinLength = minLength;
             MaxLength = maxLength;
         }
 
         /// <summary>
-        /// Gets the minimum length of the route parameter.
+        /// Gets the minimum length allowed for the route parameter.
         /// </summary>
         public int MinLength { get; private set; }
 
         /// <summary>
-        /// Gets the maximum length of the route parameter.
+        /// Gets the maximum length allowed for the route parameter.
         /// </summary>
         public int MaxLength { get; private set; }
 

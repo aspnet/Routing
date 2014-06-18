@@ -29,7 +29,7 @@ namespace Microsoft.AspNet.Routing.Constraints
         }
 
         /// <summary>
-        /// Gets the minimum length of the route parameter.
+        /// Gets the minimum length allowed for the route parameter.
         /// </summary>
         public int MinLength { get; private set; }
 
