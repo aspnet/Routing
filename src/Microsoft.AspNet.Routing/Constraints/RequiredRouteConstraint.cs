@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Routing.Constraints
     /// This constraint is primarily used to enforce that a non-parameter value is present during 
     /// URL generation.
     /// </remarks>
-    public class RequiredConstraint : IRouteConstraint
+    public class RequiredRouteConstraint : IRouteConstraint
     {
         /// <inheritdoc />
         public bool Match(

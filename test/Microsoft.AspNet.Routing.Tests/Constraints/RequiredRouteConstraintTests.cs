@@ -19,7 +19,7 @@ namespace Microsoft.AspNet.Routing.Tests
         public void RequiredRouteConstraint_NoValue(RouteDirection direction)
         {
             // Arrange
-            var constraint = new RequiredConstraint();
+            var constraint = new RequiredRouteConstraint();
 
             // Act
             var result = constraint.Match(
@@ -39,7 +39,7 @@ namespace Microsoft.AspNet.Routing.Tests
         public void RequiredRouteConstraint_Null(RouteDirection direction)
         {
             // Arrange
-            var constraint = new RequiredConstraint();
+            var constraint = new RequiredRouteConstraint();
 
             // Act
             var result = constraint.Match(
@@ -59,7 +59,7 @@ namespace Microsoft.AspNet.Routing.Tests
         public void RequiredRouteConstraint_EmptyString(RouteDirection direction)
         {
             // Arrange
-            var constraint = new RequiredConstraint();
+            var constraint = new RequiredRouteConstraint();
 
             // Act
             var result = constraint.Match(
@@ -79,7 +79,7 @@ namespace Microsoft.AspNet.Routing.Tests
         public void RequiredRouteConstraint_WithValue(RouteDirection direction)
         {
             // Arrange
-            var constraint = new RequiredConstraint();
+            var constraint = new RequiredRouteConstraint();
 
             // Act
             var result = constraint.Match(
