@@ -49,9 +49,6 @@ namespace Microsoft.AspNet.Routing
                 { "maxlength", typeof(MaxLengthRouteConstraint) },
                 { "length", typeof(LengthRouteConstraint) },
 
-                // Required-value constraints
-                { "required", typeof(RequiredConstraint) },
-
                 // Min/Max value constraints
                 { "min", typeof(MinRouteConstraint) },
                 { "max", typeof(MaxRouteConstraint) },

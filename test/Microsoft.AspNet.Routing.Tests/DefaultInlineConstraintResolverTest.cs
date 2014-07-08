@@ -221,16 +221,6 @@ namespace Microsoft.AspNet.Routing.Tests
         }
 
         [Fact]
-        public void ResolveConstraint_RequiredConstraint()
-        {
-            // Arrange & Act
-            var constraint = _constraintResolver.ResolveConstraint("required");
-
-            // Assert
-            var requiredConstraint = Assert.IsType<RequiredConstraint>(constraint);
-        }
-
-        [Fact]
         public void ResolveConstraint_SupportsCustomConstraints()
         {
             // Arrange
