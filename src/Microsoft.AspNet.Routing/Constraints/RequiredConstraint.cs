@@ -30,7 +30,7 @@ namespace Microsoft.AspNet.Routing.Constraints
             {
                 // In routing the empty string is equivalent to null, which is equivalent to an unset value.
                 var valueString = Convert.ToString(value, CultureInfo.InvariantCulture);
-                return valueString.Length > 0;
+                return !string.IsNullOrEmpty(valueString);
             }
 
             return false;
