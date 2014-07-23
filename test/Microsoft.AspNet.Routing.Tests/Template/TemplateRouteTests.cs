@@ -102,6 +102,20 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             Assert.NotNull(context.RouteData.Values);
         }
 
+        [Fact]
+        public async void Match_RouteValuesDoesntThrowOnKeyNotFound()
+        {
+            // Arrange
+            var route = CreateRoute("{controller}/{action}");
+            var context = CreateRouteContext("/Home/Index");
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.Null(context.RouteData.Values["1controller"]);
+        }
+
         private static RouteContext CreateRouteContext(string requestPath)
         {
             var request = new Mock<HttpRequest>(MockBehavior.Strict);
