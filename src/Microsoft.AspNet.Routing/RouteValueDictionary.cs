@@ -12,11 +12,7 @@ namespace Microsoft.AspNet.Routing
     /// <summary>
     /// An <see cref="IDictionary{string, object}"/> type for route values.
     /// </summary>
-    public class RouteValueDictionary : 
-        IDictionary<string, object>, 
-        ICollection<KeyValuePair<string, object>>, 
-        IEnumerable<KeyValuePair<string, object>>, 
-        IEnumerable
+    public class RouteValueDictionary : IDictionary<string, object>
     {
         private readonly Dictionary<string, object> _dictionary;
 
@@ -32,7 +28,7 @@ namespace Microsoft.AspNet.Routing
         /// Creates a RouteValueDictionary initialized with the provided input values.
         /// </summary>
         /// <param name="values">Input values to copy into the dictionary.</param>
-        public RouteValueDictionary(IDictionary<string, object> values)
+        public RouteValueDictionary([NotNull] IDictionary<string, object> values)
         {
             _dictionary = new Dictionary<string, object>(values, StringComparer.OrdinalIgnoreCase);
         }
@@ -78,7 +74,7 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <inheritdoc />
-        public object this[string key]
+        public object this[[NotNull] string key]
         {
             get
             {
@@ -168,7 +164,7 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <inheritdoc />
-        public void Add(string key, object value)
+        public void Add([NotNull] string key, object value)
         {
             _dictionary.Add(key, value);
         }
@@ -186,13 +182,15 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <inheritdoc />
-        public bool ContainsKey(string key)
+        public bool ContainsKey([NotNull] string key)
         {
             return _dictionary.ContainsKey(key);
         }
 
         /// <inheritdoc />
-        void ICollection<KeyValuePair<string, object>>.CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
+        void ICollection<KeyValuePair<string, object>>.CopyTo(
+            [NotNull] KeyValuePair<string, object>[] array, 
+            int arrayIndex)
         {
             ((ICollection<KeyValuePair<string, object>>)_dictionary).CopyTo(array, arrayIndex);
         }
@@ -222,13 +220,13 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <inheritdoc />
-        public bool Remove(string key)
+        public bool Remove([NotNull] string key)
         {
             return _dictionary.Remove(key);
         }
 
         /// <inheritdoc />
-        public bool TryGetValue(string key, out object value)
+        public bool TryGetValue([NotNull] string key, out object value)
         {
             return _dictionary.TryGetValue(key, out value);
         }

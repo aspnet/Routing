@@ -23,7 +23,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
         // PathString in HttpAbstractions guarantees a leading slash - so no value in testing other cases.
         [Fact]
-        public async void Match_Success_LeadingSlash()
+        public async Task Match_Success_LeadingSlash()
         {
             // Arrange
             var route = CreateRoute("{controller}/{action}");
@@ -40,7 +40,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         }
 
         [Fact]
-        public async void Match_Success_RootUrl()
+        public async Task Match_Success_RootUrl()
         {
             // Arrange
             var route = CreateRoute("");
@@ -55,7 +55,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         }
 
         [Fact]
-        public async void Match_Success_Defaults()
+        public async Task Match_Success_Defaults()
         {
             // Arrange
             var route = CreateRoute("{controller}/{action}", new { action = "Index" });
@@ -72,7 +72,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         }
 
         [Fact]
-        public async void Match_Fails()
+        public async Task Match_Fails()
         {
             // Arrange
             var route = CreateRoute("{controller}/{action}");
@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         }
 
         [Fact]
-        public async void Match_RejectedByHandler()
+        public async Task Match_RejectedByHandler()
         {
             // Arrange
             var route = CreateRoute("{controller}", accept: false);
@@ -103,7 +103,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         }
 
         [Fact]
-        public async void Match_RouteValuesDoesntThrowOnKeyNotFound()
+        public async Task Match_RouteValuesDoesntThrowOnKeyNotFound()
         {
             // Arrange
             var route = CreateRoute("{controller}/{action}");
