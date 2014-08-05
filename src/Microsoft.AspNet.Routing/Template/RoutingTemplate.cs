@@ -9,11 +9,11 @@ using System.Linq;
 namespace Microsoft.AspNet.Routing.Template
 {
     [DebuggerDisplay("{DebuggerToString()}")]
-    public class Template
+    public class RoutingTemplate
     {
         private const string SeparatorString = "/";
 
-        public Template(List<TemplateSegment> segments)
+        public RoutingTemplate(List<TemplateSegment> segments)
         {
             if (segments == null)
             {

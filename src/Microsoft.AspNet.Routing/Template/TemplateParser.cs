@@ -5,8 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Globalization;
+using Microsoft.AspNet.Routing.Template;
 
-namespace Microsoft.AspNet.Routing.Template
+namespace Microsoft.AspNet.Routing
 {
     public static class TemplateParser
     {
@@ -16,7 +17,7 @@ namespace Microsoft.AspNet.Routing.Template
         private const char EqualsSign = '=';
         private const char QuestionMark = '?';
         
-        public static Template Parse(string routeTemplate, IInlineConstraintResolver constraintResolver)
+        public static RoutingTemplate Parse(string routeTemplate, IInlineConstraintResolver constraintResolver)
         {
             if (routeTemplate == null)
             {
@@ -51,7 +52,7 @@ namespace Microsoft.AspNet.Routing.Template
 
             if (IsAllValid(context, segments))
             {
-                return new Template(segments);
+                return new RoutingTemplate(segments);
             }
             else
             {
