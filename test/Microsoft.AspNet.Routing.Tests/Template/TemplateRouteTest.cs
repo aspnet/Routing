@@ -672,6 +672,7 @@ namespace Microsoft.AspNet.Routing.Template
                 yield return new object[] { new RouteValueDictionary { { "key1", "data1" }, { "key2", 13 } }, 2 };
                 yield return new object[] { new object(), 0};
                 yield return new object[] { null, 0};
+                yield return new object[] { new { key1 = "data1", key2 = 13 }, 2 };
             }
         }
 
