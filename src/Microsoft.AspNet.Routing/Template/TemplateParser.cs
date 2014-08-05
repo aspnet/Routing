@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Routing
         private const char EqualsSign = '=';
         private const char QuestionMark = '?';
         
-        public static RoutingTemplate Parse(string routeTemplate, IInlineConstraintResolver constraintResolver)
+        public static RouteTemplate Parse(string routeTemplate, IInlineConstraintResolver constraintResolver)
         {
             if (routeTemplate == null)
             {
@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Routing
 
             if (IsAllValid(context, segments))
             {
-                return new RoutingTemplate(segments);
+                return new RouteTemplate(segments);
             }
             else
             {
