@@ -5,9 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Globalization;
-using Microsoft.AspNet.Routing.Template;
 
-namespace Microsoft.AspNet.Routing
+namespace Microsoft.AspNet.Routing.Template
 {
     public static class TemplateParser
     {
