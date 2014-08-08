@@ -25,7 +25,12 @@ namespace Microsoft.AspNet.Routing.Template
         private ILogger _constraintLogger;
 
         public TemplateRoute(IRouter target, string routeTemplate, IInlineConstraintResolver inlineConstraintResolver)
-            : this(target, routeTemplate, null, null, null, inlineConstraintResolver)
+                        : this(target,
+                               routeTemplate,
+                               defaults: null,
+                               constraints: null,
+                               dataTokens: null,
+                               inlineConstraintResolver: inlineConstraintResolver)
         {
         }
 

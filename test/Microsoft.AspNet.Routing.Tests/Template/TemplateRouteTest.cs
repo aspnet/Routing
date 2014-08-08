@@ -668,17 +668,33 @@ namespace Microsoft.AspNet.Routing.Template
         {
             get
             {
-                yield return new object[] { new Dictionary<string, object> { { "key1", "data1" }, { "key2", 13 } }, 2 };
-                yield return new object[] { new RouteValueDictionary { { "key1", "data1" }, { "key2", 13 } }, 2 };
-                yield return new object[] { new object(), 0};
-                yield return new object[] { null, 0};
-                yield return new object[] { new { key1 = "data1", key2 = 13 }, 2 };
+                yield return new object[] {
+                                            new Dictionary<string, object> { { "key1", "data1" }, { "key2", 13 } },
+                                            new Dictionary<string, object> { { "key1", "data1" }, { "key2", 13 } },
+                                          };
+                yield return new object[] {
+                                            new RouteValueDictionary { { "key1", "data1" }, { "key2", 13 } },
+                                            new Dictionary<string, object> { { "key1", "data1" }, { "key2", 13 } },
+                                          };
+                yield return new object[] {
+                                            new object(),
+                                            new Dictionary<string,object>(),
+                                          };
+                yield return new object[] {
+                                            null,
+                                            new Dictionary<string, object>()
+                                          };
+                yield return new object[] {
+                                            new { key1 = "data1", key2 = 13 },
+                                            new Dictionary<string, object> { { "key1", "data1" }, { "key2", 13 } },
+                                          };
             }
         }
 
         [Theory]
         [MemberData("DataTokens")]
-        public void RegisteringRoute_WithDataTokens_AbleToAddTheRoute(object dataToken, int count)
+        public void RegisteringRoute_WithDataTokens_AbleToAddTheRoute(object dataToken,
+                                                                      IDictionary<string, object> expectedDictionary)
         {
             // Arrange
             var routeBuilder = CreateRouteBuilder();
@@ -694,15 +710,11 @@ namespace Microsoft.AspNet.Routing.Template
             var templateRoute = (TemplateRoute)routeBuilder.Routes[0];
 
             // Assert
-            Assert.Equal(count, templateRoute.DataTokens.Count);
-            if(count > 0)
+            Assert.Equal(expectedDictionary.Count, templateRoute.DataTokens.Count);
+            foreach (var expectedKey in expectedDictionary.Keys)
             {
-                var expectedDataTokenCollection = ObjectToDictionary(dataToken);
-                foreach (var expectedKey in expectedDataTokenCollection.Keys)
-                {
-                    Assert.True(templateRoute.DataTokens.ContainsKey(expectedKey));
-                    Assert.Equal(expectedDataTokenCollection[expectedKey], templateRoute.DataTokens[expectedKey]);
-                }
+                Assert.True(templateRoute.DataTokens.ContainsKey(expectedKey));
+                Assert.Equal(expectedDictionary[expectedKey], templateRoute.DataTokens[expectedKey]);
             }
         }
 
@@ -893,17 +905,6 @@ namespace Microsoft.AspNet.Routing.Template
             var resolverMock = new Mock<IInlineConstraintResolver>();
             resolverMock.Setup(o => o.ResolveConstraint("int")).Returns(new IntRouteConstraint());
             return resolverMock.Object;
-        }
-
-        private static IDictionary<string, object> ObjectToDictionary(object value)
-        {
-            var dictionary = value as IDictionary<string, object>;
-            if (dictionary != null)
-            {
-                return dictionary;
-            }
-
-            return new RouteValueDictionary(value);
         }
 
         private class CapturingConstraint : IRouteConstraint
