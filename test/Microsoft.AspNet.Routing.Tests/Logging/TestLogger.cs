@@ -33,9 +33,9 @@ namespace Microsoft.AspNet.Routing
             return NullDisposable.Instance;
         }
 
-        public bool WriteCore(TraceType eventType, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
+        public void Write(TraceType eventType, int eventId, object state, Exception exception, Func<object, Exception, string> formatter)
         {
-            _sink.Write(new WriteCoreContext()
+            _sink.Write(new WriteContext()
             {
                 EventType = eventType,
                 EventId = eventId,
@@ -45,7 +45,20 @@ namespace Microsoft.AspNet.Routing
                 LoggerName = _name,
                 Scope = _scope
             });
+        }
 
+        public bool IsEnabled(TraceType eventType)
+        {
+            _sink.Write(new WriteContext()
+            {
+                EventType = eventType,
+                EventId = 0,
+                State = null,
+                Exception = null,
+                Formatter = null,
+                LoggerName = _name,
+                Scope = _scope
+            });
             return true;
         }
     }
