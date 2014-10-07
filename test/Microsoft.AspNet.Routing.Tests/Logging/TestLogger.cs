@@ -11,11 +11,13 @@ namespace Microsoft.AspNet.Routing
         private object _scope;
         private TestSink _sink;
         private string _name;
+        private bool _enabled;
 
-	    public TestLogger(string name, TestSink sink)
+	    public TestLogger(string name, TestSink sink, bool enabled)
 	    {
             _sink = sink;
             _name = name;
+            _enabled = enabled;
 	    }
 
         public string Name { get; set; }
@@ -49,17 +51,7 @@ namespace Microsoft.AspNet.Routing
 
         public bool IsEnabled(TraceType eventType)
         {
-            _sink.Write(new WriteContext()
-            {
-                EventType = eventType,
-                EventId = 0,
-                State = null,
-                Exception = null,
-                Formatter = null,
-                LoggerName = _name,
-                Scope = _scope
-            });
-            return true;
+            return _enabled;
         }
     }
 }

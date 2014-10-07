@@ -16,17 +16,17 @@ namespace Microsoft.AspNet.Routing
 {
     public class RouteCollectionTest
     {
-        [Fact]
-        public async Task RouteAsync_LogsCorrectValuesWhenHandled()
+
+        private async Task<TestSink> SetUp(bool enabled, bool handled)
         {
             // Arrange
             var sink = new TestSink(
                 TestSink.EnableWithTypeName<RouteCollection>,
                 TestSink.EnableWithTypeName<RouteCollection>);
-            var loggerFactory = new TestLoggerFactory(sink);
+            var loggerFactory = new TestLoggerFactory(sink, enabled);
 
             var routes = new RouteCollection();
-            var route = CreateRoute(accept: true);
+            var route = CreateRoute(accept: handled);
             routes.Add(route.Object);
 
             var context = CreateRouteContext("/Cool", loggerFactory);
@@ -34,21 +34,24 @@ namespace Microsoft.AspNet.Routing
             // Act
             await routes.RouteAsync(context);
 
+            return sink;
+        }
+
+        [Fact]
+        public async Task RouteAsync_LogsCorrectValuesWhenHandled()
+        {
+            // Arrange & Act
+            var sink = await SetUp(true, true);
+
             // Assert
             Assert.Equal(1, sink.Scopes.Count);
             var scope = sink.Scopes[0];
             Assert.Equal(typeof(RouteCollection).FullName, scope.LoggerName);
             Assert.Equal("RouteCollection.RouteAsync", scope.Scope);
 
-            // There is a record for IsEnabled and one for WriteCore.
-            Assert.Equal(2, sink.Writes.Count);
+            Assert.Equal(1, sink.Writes.Count);
 
-            var enabled = sink.Writes[0];
-            Assert.Equal(typeof(RouteCollection).FullName, enabled.LoggerName);
-            Assert.Equal("RouteCollection.RouteAsync", enabled.Scope);
-            Assert.Null(enabled.State);
-
-            var write = sink.Writes[1];
+            var write = sink.Writes[0];
             Assert.Equal(typeof(RouteCollection).FullName, write.LoggerName);
             Assert.Equal("RouteCollection.RouteAsync", write.Scope);
             var values = Assert.IsType<RouteCollectionRouteAsyncValues>(write.State);
@@ -58,22 +61,25 @@ namespace Microsoft.AspNet.Routing
         }
 
         [Fact]
+        public async Task RouteAsync_DoesNotLogWhenDisabledAndHandled()
+        {
+            // Arrange & Act
+            var sink = await SetUp(false, true);
+
+            // Assert
+            Assert.Equal(1, sink.Scopes.Count);
+            var scope = sink.Scopes[0];
+            Assert.Equal(typeof(RouteCollection).FullName, scope.LoggerName);
+            Assert.Equal("RouteCollection.RouteAsync", scope.Scope);
+
+            Assert.Equal(0, sink.Writes.Count);
+        }
+
+        [Fact]
         public async Task RouteAsync_LogsCorrectValuesWhenNotHandled()
         {
-            // Arrange
-            var sink = new TestSink(
-                TestSink.EnableWithTypeName<RouteCollection>,
-                TestSink.EnableWithTypeName<RouteCollection>);
-            var loggerFactory = new TestLoggerFactory(sink);
-
-            var routes = new RouteCollection();
-            var route = CreateRoute(accept: false);
-            routes.Add(route.Object);
-
-            var context = CreateRouteContext("/Cool", loggerFactory);
-
-            // Act
-            await routes.RouteAsync(context);
+            // Arrange & Act
+            var sink = await SetUp(true, false);
 
             // Assert
             Assert.Equal(1, sink.Scopes.Count);
@@ -82,20 +88,30 @@ namespace Microsoft.AspNet.Routing
             Assert.Equal("RouteCollection.RouteAsync", scope.Scope);
 
             // There is a record for IsEnabled and one for WriteCore.
-            Assert.Equal(2, sink.Writes.Count);
+            Assert.Equal(1, sink.Writes.Count);
 
-            var enabled = sink.Writes[0];
-            Assert.Equal(typeof(RouteCollection).FullName, enabled.LoggerName);
-            Assert.Equal("RouteCollection.RouteAsync", enabled.Scope);
-            Assert.Null(enabled.State);
-
-            var write = sink.Writes[1];
+            var write = sink.Writes[0];
             Assert.Equal(typeof(RouteCollection).FullName, write.LoggerName);
             Assert.Equal("RouteCollection.RouteAsync", write.Scope);
             var values = Assert.IsType<RouteCollectionRouteAsyncValues>(write.State);
             Assert.Equal("RouteCollection.RouteAsync", values.Name);
             Assert.NotNull(values.Routes);
             Assert.Equal(false, values.Handled);
+        }
+
+        [Fact]
+        public async Task RouteAsync_DoesNotLogWhenDisabledAndNotHandled()
+        {
+            // Arrange & Act
+            var sink = await SetUp(false, false);
+
+            // Assert
+            Assert.Equal(1, sink.Scopes.Count);
+            var scope = sink.Scopes[0];
+            Assert.Equal(typeof(RouteCollection).FullName, scope.LoggerName);
+            Assert.Equal("RouteCollection.RouteAsync", scope.Scope);
+
+            Assert.Equal(0, sink.Writes.Count);
         }
 
         [Fact]
