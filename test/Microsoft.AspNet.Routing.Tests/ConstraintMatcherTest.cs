@@ -14,7 +14,7 @@ namespace Microsoft.AspNet.Routing
     public class ConstraintMatcherTest
     {
 #if ASPNET50
-        public const string name = "name";
+        public const string _name = "name";
 
         [Fact]
         public void MatchUrlGeneration_DoesNotLogData()
@@ -22,7 +22,7 @@ namespace Microsoft.AspNet.Routing
             // Arrange
             
             var sink = new TestSink();
-            var logger = new TestLogger(name, sink, true);
+            var logger = new TestLogger(_name, sink, true);
 
             var routeValueDictionary = new RouteValueDictionary(new { a = "value", b = "value" });
             var constraints = new Dictionary<string, IRouteConstraint>
@@ -52,7 +52,7 @@ namespace Microsoft.AspNet.Routing
         {
             // Arrange
             var sink = new TestSink();
-            var logger = new TestLogger(name, sink, enabled);
+            var logger = new TestLogger(_name, sink, enabled);
 
             var routeValueDictionary = new RouteValueDictionary(new { a = "value", b = "value" });
 
@@ -86,7 +86,7 @@ namespace Microsoft.AspNet.Routing
             Assert.Equal(2, sink.Writes.Count);
 
             var write = sink.Writes[0];
-            Assert.Equal(name, write.LoggerName);
+            Assert.Equal(_name, write.LoggerName);
             var values = Assert.IsType<RouteConstraintMatcherMatchValues>(write.State);
             Assert.Equal("RouteConstraintMatcher.Match", values.Name);
             Assert.Equal("a", values.ConstraintKey);
@@ -94,7 +94,7 @@ namespace Microsoft.AspNet.Routing
             Assert.Equal(true, values.Matched);
 
             write = sink.Writes[1];
-            Assert.Equal(name, write.LoggerName);
+            Assert.Equal(_name, write.LoggerName);
             values = Assert.IsType<RouteConstraintMatcherMatchValues>(write.State);
             Assert.Equal("RouteConstraintMatcher.Match", values.Name);
             Assert.Equal("b", values.ConstraintKey);
@@ -140,7 +140,7 @@ namespace Microsoft.AspNet.Routing
             Assert.Equal(2, sink.Writes.Count);
 
             var write = sink.Writes[0];
-            Assert.Equal(name, write.LoggerName);
+            Assert.Equal(_name, write.LoggerName);
             var values = Assert.IsType<RouteConstraintMatcherMatchValues>(write.State);
             Assert.Equal("RouteConstraintMatcher.Match", values.Name);
             Assert.Equal("a", values.ConstraintKey);
@@ -148,7 +148,7 @@ namespace Microsoft.AspNet.Routing
             Assert.Equal(true, values.Matched);
 
             write = sink.Writes[1];
-            Assert.Equal(name, write.LoggerName);
+            Assert.Equal(_name, write.LoggerName);
             values = Assert.IsType<RouteConstraintMatcherMatchValues>(write.State);
             Assert.Equal("RouteConstraintMatcher.Match", values.Name);
             Assert.Equal("b", values.ConstraintKey);

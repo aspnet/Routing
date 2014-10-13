@@ -13,12 +13,12 @@ namespace Microsoft.AspNet.Routing
         private string _name;
         private bool _enabled;
 
-	    public TestLogger(string name, TestSink sink, bool enabled)
-	    {
+        public TestLogger(string name, TestSink sink, bool enabled)
+        {
             _sink = sink;
             _name = name;
             _enabled = enabled;
-	    }
+        }
 
         public string Name { get; set; }
 

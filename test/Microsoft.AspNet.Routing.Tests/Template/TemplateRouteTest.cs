@@ -77,7 +77,6 @@ namespace Microsoft.AspNet.Routing.Template
             var template = "{controller}/{action}";
             var result = await SetUp(false, template, "/Home/Index");
             var sink = result.Item1;
-            var context = result.Item2;
 
             // Assert
             Assert.Equal(1, sink.Scopes.Count);
@@ -127,7 +126,6 @@ namespace Microsoft.AspNet.Routing.Template
             var template = "{controller}/{action}";
             var result = await SetUp(false, template, "/Home/Index/Failure");
             var sink = result.Item1;
-            var context = result.Item2;
 
             // Assert
             Assert.Equal(1, sink.Scopes.Count);
@@ -177,7 +175,6 @@ namespace Microsoft.AspNet.Routing.Template
             var template = "{controller}/{action}/{id:int}";
             var result = await SetUp(false, template, "/Home/Index/Failure");
             var sink = result.Item1;
-            var context = result.Item2;
 
             // Assert
             Assert.Equal(1, sink.Scopes.Count);
