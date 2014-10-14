@@ -14,15 +14,14 @@ namespace Microsoft.AspNet.Routing
     public class ConstraintMatcherTest
     {
 #if ASPNET50
-        public const string _name = "name";
+        private const string _name = "name";
 
         [Fact]
         public void MatchUrlGeneration_DoesNotLogData()
         {
             // Arrange
-            
             var sink = new TestSink();
-            var logger = new TestLogger(_name, sink, true);
+            var logger = new TestLogger(_name, sink, enabled: true);
 
             var routeValueDictionary = new RouteValueDictionary(new { a = "value", b = "value" });
             var constraints = new Dictionary<string, IRouteConstraint>
@@ -42,29 +41,10 @@ namespace Microsoft.AspNet.Routing
 
             // Assert
             // There are no BeginScopes called.
-            Assert.Equal(0, sink.Scopes.Count);
+            Assert.Empty(sink.Scopes);
 
             // There are no WriteCores called.
-            Assert.Equal(0, sink.Writes.Count);
-        }
-
-        private TestSink SetUpMatch(Dictionary<string, IRouteConstraint> constraints, bool enabled)
-        {
-            // Arrange
-            var sink = new TestSink();
-            var logger = new TestLogger(_name, sink, enabled);
-
-            var routeValueDictionary = new RouteValueDictionary(new { a = "value", b = "value" });
-
-            // Act
-            RouteConstraintMatcher.Match(
-                constraints: constraints,
-                routeValues: routeValueDictionary,
-                httpContext: new Mock<HttpContext>().Object,
-                route: new Mock<IRouter>().Object,
-                routeDirection: RouteDirection.IncomingRequest,
-                logger: logger);
-            return sink;
+            Assert.Empty(sink.Writes);
         }
 
         [Fact]
@@ -80,7 +60,7 @@ namespace Microsoft.AspNet.Routing
 
             // Assert
             // There are no begin scopes called.
-            Assert.Equal(0, sink.Scopes.Count);
+            Assert.Empty(sink.Scopes);
 
             // There are two records for WriteCore.
             Assert.Equal(2, sink.Writes.Count);
@@ -115,10 +95,10 @@ namespace Microsoft.AspNet.Routing
 
             // Assert
             // There are no begin scopes called.
-            Assert.Equal(0, sink.Scopes.Count);
+            Assert.Empty(sink.Scopes);
 
             // Logger is disabled so it should not write
-            Assert.Equal(0, sink.Writes.Count);
+            Assert.Empty(sink.Writes);
         }
 
         [Fact]
@@ -134,7 +114,7 @@ namespace Microsoft.AspNet.Routing
 
             // Assert
             // There are no begin scopes called.
-            Assert.Equal(0, sink.Scopes.Count);
+            Assert.Empty(sink.Scopes);
 
             // There are two records WriteCore.
             Assert.Equal(2, sink.Writes.Count);
@@ -169,10 +149,10 @@ namespace Microsoft.AspNet.Routing
 
             // Assert
             // There are no begin scopes called.
-            Assert.Equal(0, sink.Scopes.Count);
+            Assert.Empty(sink.Scopes);
 
             // Disabled Logger should not write
-            Assert.Equal(0, sink.Writes.Count);
+            Assert.Empty(sink.Writes);
         }
 
         [Fact]
@@ -285,6 +265,25 @@ namespace Microsoft.AspNet.Routing
                 route: new Mock<IRouter>().Object,
                 routeDirection: RouteDirection.IncomingRequest,
                 logger: NullLogger.Instance));
+        }
+
+        private TestSink SetUpMatch(Dictionary<string, IRouteConstraint> constraints, bool enabled)
+        {
+            // Arrange
+            var sink = new TestSink();
+            var logger = new TestLogger(_name, sink, enabled);
+
+            var routeValueDictionary = new RouteValueDictionary(new { a = "value", b = "value" });
+
+            // Act
+            RouteConstraintMatcher.Match(
+                constraints: constraints,
+                routeValues: routeValueDictionary,
+                httpContext: new Mock<HttpContext>().Object,
+                route: new Mock<IRouter>().Object,
+                routeDirection: RouteDirection.IncomingRequest,
+                logger: logger);
+            return sink;
         }
 #endif
 

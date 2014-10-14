@@ -25,7 +25,7 @@ namespace Microsoft.AspNet.Routing
             var sink = new TestSink(
                 TestSink.EnableWithTypeName<RouterMiddleware>, 
                 TestSink.EnableWithTypeName<RouterMiddleware>);
-            var loggerFactory = new TestLoggerFactory(sink, true);
+            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
             var mockContext = new Mock<HttpContext>(MockBehavior.Strict);
             mockContext.Setup(m => m.RequestServices.GetService(typeof(ILoggerFactory)))
@@ -43,12 +43,12 @@ namespace Microsoft.AspNet.Routing
             await middleware.Invoke(mockContext.Object);
 
             // Assert
-            Assert.Equal(1, sink.Scopes.Count);
+            Assert.Single(sink.Scopes);
             var scope = sink.Scopes[0];
             Assert.Equal(typeof(RouterMiddleware).FullName, scope.LoggerName);
             Assert.Equal("RouterMiddleware.Invoke", scope.Scope);
 
-            Assert.Equal(1, sink.Writes.Count);
+            Assert.Single(sink.Writes);
 
             var write = sink.Writes[0];
             Assert.Equal(typeof(RouterMiddleware).FullName, write.LoggerName);
@@ -67,7 +67,7 @@ namespace Microsoft.AspNet.Routing
             var sink = new TestSink(
                 TestSink.EnableWithTypeName<RouterMiddleware>,
                 TestSink.EnableWithTypeName<RouterMiddleware>);
-            var loggerFactory = new TestLoggerFactory(sink, false);
+            var loggerFactory = new TestLoggerFactory(sink, enabled: false);
 
             var mockContext = new Mock<HttpContext>(MockBehavior.Strict);
             mockContext.Setup(m => m.RequestServices.GetService(typeof(ILoggerFactory)))
@@ -85,12 +85,12 @@ namespace Microsoft.AspNet.Routing
             await middleware.Invoke(mockContext.Object);
 
             // Assert
-            Assert.Equal(1, sink.Scopes.Count);
+            Assert.Single(sink.Scopes);
             var scope = sink.Scopes[0];
             Assert.Equal(typeof(RouterMiddleware).FullName, scope.LoggerName);
             Assert.Equal("RouterMiddleware.Invoke", scope.Scope);
 
-            Assert.Equal(0, sink.Writes.Count);
+            Assert.Empty(sink.Writes);
         }
 
         [Fact]
@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Routing
             var sink = new TestSink(
                 TestSink.EnableWithTypeName<RouterMiddleware>,
                 TestSink.EnableWithTypeName<RouterMiddleware>);
-            var loggerFactory = new TestLoggerFactory(sink, true);
+            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
             var mockContext = new Mock<HttpContext>(MockBehavior.Strict);
             mockContext.Setup(m => m.RequestServices.GetService(typeof(ILoggerFactory)))
@@ -121,12 +121,12 @@ namespace Microsoft.AspNet.Routing
 
             // Assert
             // exists a BeginScope, verify contents
-            Assert.Equal(1, sink.Scopes.Count);
+            Assert.Single(sink.Scopes);
             var scope = sink.Scopes[0];
             Assert.Equal(typeof(RouterMiddleware).FullName, scope.LoggerName);
             Assert.Equal("RouterMiddleware.Invoke", scope.Scope);
 
-            Assert.Equal(1, sink.Writes.Count);
+            Assert.Single(sink.Writes);
 
             var write = sink.Writes[0];
             Assert.Equal(typeof(RouterMiddleware).FullName, write.LoggerName);
@@ -146,7 +146,7 @@ namespace Microsoft.AspNet.Routing
             var sink = new TestSink(
                 TestSink.EnableWithTypeName<RouterMiddleware>,
                 TestSink.EnableWithTypeName<RouterMiddleware>);
-            var loggerFactory = new TestLoggerFactory(sink, false);
+            var loggerFactory = new TestLoggerFactory(sink, enabled: false);
 
             var mockContext = new Mock<HttpContext>(MockBehavior.Strict);
             mockContext.Setup(m => m.RequestServices.GetService(typeof(ILoggerFactory)))
@@ -165,12 +165,12 @@ namespace Microsoft.AspNet.Routing
 
             // Assert
             // exists a BeginScope, verify contents
-            Assert.Equal(1, sink.Scopes.Count);
+            Assert.Single(sink.Scopes);
             var scope = sink.Scopes[0];
             Assert.Equal(typeof(RouterMiddleware).FullName, scope.LoggerName);
             Assert.Equal("RouterMiddleware.Invoke", scope.Scope);
 
-            Assert.Equal(0, sink.Writes.Count);
+            Assert.Empty(sink.Writes);
         }
 #endif
 

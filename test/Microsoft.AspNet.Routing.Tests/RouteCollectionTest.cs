@@ -16,40 +16,19 @@ namespace Microsoft.AspNet.Routing
 {
     public class RouteCollectionTest
     {
-
-        private async Task<TestSink> SetUp(bool enabled, bool handled)
-        {
-            // Arrange
-            var sink = new TestSink(
-                TestSink.EnableWithTypeName<RouteCollection>,
-                TestSink.EnableWithTypeName<RouteCollection>);
-            var loggerFactory = new TestLoggerFactory(sink, enabled);
-
-            var routes = new RouteCollection();
-            var route = CreateRoute(accept: handled);
-            routes.Add(route.Object);
-
-            var context = CreateRouteContext("/Cool", loggerFactory);
-
-            // Act
-            await routes.RouteAsync(context);
-
-            return sink;
-        }
-
         [Fact]
         public async Task RouteAsync_LogsCorrectValuesWhenHandled()
         {
             // Arrange & Act
-            var sink = await SetUp(true, true);
+            var sink = await SetUp(enabled: true, handled: true);
 
             // Assert
-            Assert.Equal(1, sink.Scopes.Count);
+            Assert.Single(sink.Scopes);
             var scope = sink.Scopes[0];
             Assert.Equal(typeof(RouteCollection).FullName, scope.LoggerName);
             Assert.Equal("RouteCollection.RouteAsync", scope.Scope);
 
-            Assert.Equal(1, sink.Writes.Count);
+            Assert.Single(sink.Writes);
 
             var write = sink.Writes[0];
             Assert.Equal(typeof(RouteCollection).FullName, write.LoggerName);
@@ -64,31 +43,31 @@ namespace Microsoft.AspNet.Routing
         public async Task RouteAsync_DoesNotLogWhenDisabledAndHandled()
         {
             // Arrange & Act
-            var sink = await SetUp(false, true);
+            var sink = await SetUp(enabled: false, handled: true);
 
             // Assert
-            Assert.Equal(1, sink.Scopes.Count);
+            Assert.Single(sink.Scopes);
             var scope = sink.Scopes[0];
             Assert.Equal(typeof(RouteCollection).FullName, scope.LoggerName);
             Assert.Equal("RouteCollection.RouteAsync", scope.Scope);
 
-            Assert.Equal(0, sink.Writes.Count);
+            Assert.Empty(sink.Writes);
         }
 
         [Fact]
         public async Task RouteAsync_LogsCorrectValuesWhenNotHandled()
         {
             // Arrange & Act
-            var sink = await SetUp(true, false);
+            var sink = await SetUp(enabled: true, handled: false);
 
             // Assert
-            Assert.Equal(1, sink.Scopes.Count);
+            Assert.Single(sink.Scopes);
             var scope = sink.Scopes[0];
             Assert.Equal(typeof(RouteCollection).FullName, scope.LoggerName);
             Assert.Equal("RouteCollection.RouteAsync", scope.Scope);
 
             // There is a record for IsEnabled and one for WriteCore.
-            Assert.Equal(1, sink.Writes.Count);
+            Assert.Single(sink.Writes);
 
             var write = sink.Writes[0];
             Assert.Equal(typeof(RouteCollection).FullName, write.LoggerName);
@@ -103,15 +82,15 @@ namespace Microsoft.AspNet.Routing
         public async Task RouteAsync_DoesNotLogWhenDisabledAndNotHandled()
         {
             // Arrange & Act
-            var sink = await SetUp(false, false);
+            var sink = await SetUp(enabled: false, handled: false);
 
             // Assert
-            Assert.Equal(1, sink.Scopes.Count);
+            Assert.Single(sink.Scopes);
             var scope = sink.Scopes[0];
             Assert.Equal(typeof(RouteCollection).FullName, scope.LoggerName);
             Assert.Equal("RouteCollection.RouteAsync", scope.Scope);
 
-            Assert.Equal(0, sink.Writes.Count);
+            Assert.Empty(sink.Writes);
         }
 
         [Fact]
@@ -242,6 +221,26 @@ namespace Microsoft.AspNet.Routing
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(() => routeCollection.GetVirtualPath(virtualPathContext));
             Assert.Equal("The supplied route name 'ambiguousRoute' is ambiguous and matched more than one route.", ex.Message);
+        }
+
+        private static async Task<TestSink> SetUp(bool enabled, bool handled)
+        {
+            // Arrange
+            var sink = new TestSink(
+                TestSink.EnableWithTypeName<RouteCollection>,
+                TestSink.EnableWithTypeName<RouteCollection>);
+            var loggerFactory = new TestLoggerFactory(sink, enabled);
+
+            var routes = new RouteCollection();
+            var route = CreateRoute(accept: handled);
+            routes.Add(route.Object);
+
+            var context = CreateRouteContext("/Cool", loggerFactory);
+
+            // Act
+            await routes.RouteAsync(context);
+
+            return sink;
         }
 
         private static RouteCollection GetRouteCollectionWithNamedRoutes(IEnumerable<string> routeNames)
