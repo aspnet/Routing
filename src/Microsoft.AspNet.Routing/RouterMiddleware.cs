@@ -3,6 +3,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
+using Microsoft.AspNet.RequestContainer;
 using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Logging;
 using Microsoft.Framework.DependencyInjection;
@@ -35,6 +36,8 @@ namespace Microsoft.AspNet.Builder
         public async Task Invoke(HttpContext httpContext)
         {
             EnsureLogger(httpContext);
+
+            using (httpContext.EnsureRequestServices())
             using (_logger.BeginScope("RouterMiddleware.Invoke"))
             {
                 var context = new RouteContext(httpContext);
