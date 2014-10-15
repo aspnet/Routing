@@ -37,7 +37,7 @@ namespace Microsoft.AspNet.Builder
         {
             EnsureLogger(httpContext);
 
-            using (httpContext.EnsureRequestServices())
+            using (RequestServicesContainer.EnsureRequestServices(httpContext))
             using (_logger.BeginScope("RouterMiddleware.Invoke"))
             {
                 var context = new RouteContext(httpContext);
