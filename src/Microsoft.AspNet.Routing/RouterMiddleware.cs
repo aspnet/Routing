@@ -8,6 +8,7 @@ using Microsoft.AspNet.Routing;
 using Microsoft.AspNet.Routing.Logging;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.Logging;
+using System;
 
 namespace Microsoft.AspNet.Builder
 {
@@ -15,7 +16,7 @@ namespace Microsoft.AspNet.Builder
     {
         private ILogger _logger;
 
-        public RouterMiddleware(RequestDelegate next, IRouter router)
+        public RouterMiddleware(RequestDelegate next, IServiceProvider services, IRouter router)
         {
             Next = next;
             Router = router;
@@ -33,9 +34,15 @@ namespace Microsoft.AspNet.Builder
             set;
         }
 
+        private IServiceProvider Services
+        {
+            get;
+            set;
+        }
+
         public async Task Invoke(HttpContext httpContext)
         {
-            using (RequestServicesContainer.EnsureRequestServices(httpContext))
+            using (RequestServicesContainer.EnsureRequestServices(httpContext, Services))
             {
                 EnsureLogger(httpContext);
                 using (_logger.BeginScope("RouterMiddleware.Invoke"))
