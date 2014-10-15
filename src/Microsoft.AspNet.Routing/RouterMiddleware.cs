@@ -20,6 +20,7 @@ namespace Microsoft.AspNet.Builder
         {
             Next = next;
             Router = router;
+            Services = services;
         }
 
         private IRouter Router
