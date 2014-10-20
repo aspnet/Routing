@@ -122,7 +122,8 @@ namespace Microsoft.AspNet.Routing.Template
                 else
                 {
                     // Not currently doing anything to clean this up if it's not a match. Consider hardening this.
-                    context.RouteData.Values = values;
+                    var originalValues = context.RouteData.Values;
+                    context.RouteData.Values = MergeValues(originalValues, values);
 
                     if (RouteConstraintMatcher.Match(Constraints,
                                                      values,
@@ -156,8 +157,35 @@ namespace Microsoft.AspNet.Routing.Template
                                 handled: context.IsHandled));
                         }
                     }
+
+                    if (!context.IsHandled)
+                    {
+                        // Restore the original route data if we didn't handle the route to prevent
+                        // poluting the original route data with the values from this route.
+                        context.RouteData.Values = originalValues;
+                    }
                 }
             }
+        }
+
+        private static IDictionary<string, object> MergeValues(
+            IDictionary<string, object> originalValues,
+            IDictionary<string, object> values)
+        {
+            if (originalValues == null)
+            {
+                // There is nothing to merge
+                return values;
+            }
+
+            var result = new RouteValueDictionary(originalValues);
+            foreach (var kvp in values)
+            {
+                // This will replace the original value for the specified key.
+                result[kvp.Key] = kvp.Value;
+            }
+
+            return result;
         }
 
         public virtual string GetVirtualPath(VirtualPathContext context)
