@@ -190,7 +190,7 @@ namespace Microsoft.AspNet.Routing.Template
                     routeValues = ctx.RouteData.Values;
                     ctx.IsHandled = true;
                 })
-                .Returns(Task.FromResult(0));
+                .Returns(Task.FromResult(true));
 
             var route = new TemplateRoute(mockTarget.Object, template, _inlineConstraintResolver);
 
@@ -235,7 +235,7 @@ namespace Microsoft.AspNet.Routing.Template
                     routeValues = ctx.RouteData.Values;
                     ctx.IsHandled = false;
                 })
-                .Returns(Task.FromResult(0));
+                .Returns(Task.FromResult(true));
 
             var route = new TemplateRoute(mockTarget.Object, template, _inlineConstraintResolver);
 
@@ -255,6 +255,50 @@ namespace Microsoft.AspNet.Routing.Template
 
             Assert.Same(originalRouteDataValues, context.RouteData.Values);
         }
+
+        [Fact]
+        public async Task RouteAsync_CleansUpMergedRouteData_IfHandlerThrows()
+        {
+            // Arrange
+            var template = "{controller}/{action}/{id:int}";
+
+            var context = CreateRouteContext("/Home/Index/5");
+            var originalRouteDataValues = new Dictionary<string, object>
+            {
+                { "country", "USA" },
+            };
+            context.RouteData.Values = originalRouteDataValues;
+
+            IDictionary<string, object> routeValues = null;
+            var mockTarget = new Mock<IRouter>(MockBehavior.Strict);
+            mockTarget
+                .Setup(s => s.RouteAsync(It.IsAny<RouteContext>()))
+                .Callback<RouteContext>(ctx =>
+                {
+                    routeValues = ctx.RouteData.Values;
+                    ctx.IsHandled = false;
+                })
+                .Throws(new Exception());
+
+            var route = new TemplateRoute(mockTarget.Object, template, _inlineConstraintResolver);
+
+            // Act
+            var ex = await Assert.ThrowsAsync<Exception>(() => route.RouteAsync(context));
+
+            // Assert
+            Assert.NotNull(routeValues);
+
+            Assert.True(routeValues.ContainsKey("country"));
+            Assert.Equal("USA", routeValues["country"]);
+            Assert.True(routeValues.ContainsKey("id"));
+            Assert.Equal("5", routeValues["id"]);
+
+            Assert.True(context.RouteData.Values.ContainsKey("country"));
+            Assert.Equal("USA", context.RouteData.Values["country"]);
+
+            Assert.Same(originalRouteDataValues, context.RouteData.Values);
+        }
+
 
         [Fact]
         public async Task RouteAsync_MatchFailOnConstraints_DoesNotLogWhenDisabled()
