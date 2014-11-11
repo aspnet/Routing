@@ -21,7 +21,7 @@ namespace Microsoft.AspNet.Routing
         /// This should only be used where it can be exposed through a public API surface as 
         /// <see cref="IReadOnlyDictionary{TKey, TValue}"/>.
         /// </remarks>
-        internal static readonly RouteValueDictionary Empty = new RouteValueDictionary();
+        internal static readonly IReadOnlyDictionary<string, object> Empty = new RouteValueDictionary();
 
         private readonly Dictionary<string, object> _dictionary;
 
