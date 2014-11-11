@@ -516,6 +516,29 @@ namespace Microsoft.AspNet.Routing.Template
         }
 
         [Fact]
+        public async Task Match_Success_CopiesDataTokens()
+        {
+            // Arrange
+            var route = CreateRoute(
+                "{controller}/{action}", 
+                defaults: new { action = "Index" },
+                dataTokens: new { culture = "en-CA" });
+
+            var context = CreateRouteContext("/Home");
+
+            // Act
+            await route.RouteAsync(context);
+            Assert.True(context.IsHandled);
+
+            // This should not affect the route - RouteData.DataTokens is a copy
+            context.RouteData.DataTokens.Add("company", "contoso");
+
+            // Assert
+            Assert.Single(route.DataTokens);
+            Assert.Single(route.DataTokens, kvp => kvp.Key == "culture" && ((string)kvp.Value) == "en-CA");
+        }
+
+        [Fact]
         public async Task Match_Fails()
         {
             // Arrange
@@ -1195,7 +1218,7 @@ namespace Microsoft.AspNet.Routing.Template
                                      (constraints as IDictionary<string, object>) ??
                                             new RouteValueDictionary(constraints),
                                      (dataTokens as IDictionary<string, object>) ??
-                                            new RouteValueDictionary(constraints),
+                                            new RouteValueDictionary(dataTokens),
                                      _inlineConstraintResolver);
         }
 

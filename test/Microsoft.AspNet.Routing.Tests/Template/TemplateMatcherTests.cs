@@ -795,7 +795,11 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             return new TemplateMatcher(TemplateParser.Parse(template, _inlineConstraintResolver));
         }
 
-        private static void RunTest(string template, string path, IDictionary<string, object> defaults, IDictionary<string, object> expected)
+        private static void RunTest(
+            string template,
+            string path,
+            IReadOnlyDictionary<string, object> defaults,
+            IDictionary<string, object> expected)
         {
             // Arrange
             var matcher = new TemplateMatcher(TemplateParser.Parse(template, _inlineConstraintResolver));

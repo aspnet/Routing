@@ -26,7 +26,7 @@ namespace Microsoft.AspNet.Routing.Template
 
         public RouteTemplate Template { get; private set; }
 
-        public IDictionary<string, object> Match(string requestPath, IDictionary<string, object> defaults)
+        public IDictionary<string, object> Match(string requestPath, IReadOnlyDictionary<string, object> defaults)
         {
             var requestSegments = requestPath.Split(Delimiters);
 
@@ -174,7 +174,7 @@ namespace Microsoft.AspNet.Routing.Template
 
         private bool MatchComplexSegment(TemplateSegment routeSegment,
                                          string requestSegment,
-                                         IDictionary<string, object> defaults,
+                                         IReadOnlyDictionary<string, object> defaults,
                                          RouteValueDictionary values)
         {
             Contract.Assert(routeSegment != null);

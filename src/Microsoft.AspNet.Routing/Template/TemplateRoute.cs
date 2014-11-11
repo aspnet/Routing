@@ -14,9 +14,9 @@ namespace Microsoft.AspNet.Routing.Template
 {
     public class TemplateRoute : INamedRouter
     {
-        private readonly IDictionary<string, object> _defaults;
         private readonly IDictionary<string, IRouteConstraint> _constraints;
-        private readonly IDictionary<string, object> _dataTokens;
+        private readonly RouteValueDictionary _dataTokens;
+        private readonly RouteValueDictionary _defaults;
         private readonly IRouter _target;
         private readonly RouteTemplate _parsedTemplate;
         private readonly string _routeTemplate;
@@ -56,27 +56,31 @@ namespace Microsoft.AspNet.Routing.Template
             _target = target;
             _routeTemplate = routeTemplate ?? string.Empty;
             Name = routeName;
-            _defaults = defaults ?? new RouteValueDictionary();
+
+            // Do not use RouteValueDictionary.Empty for defaults, it might be modified inside
+            // UpdateInlineDefaultValuesAndConstraints()
+            _defaults = defaults == null ? new RouteValueDictionary() : new RouteValueDictionary(defaults);
+            _dataTokens = dataTokens == null ? RouteValueDictionary.Empty : new RouteValueDictionary(dataTokens);
+
             _constraints = RouteConstraintBuilder.BuildConstraints(constraints, _routeTemplate) ??
                                                             new Dictionary<string, IRouteConstraint>();
-            _dataTokens = dataTokens ?? new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
             // The parser will throw for invalid routes.
             _parsedTemplate = TemplateParser.Parse(RouteTemplate, inlineConstraintResolver);
             UpdateInlineDefaultValuesAndConstraints();
 
             _matcher = new TemplateMatcher(_parsedTemplate);
-            _binder = new TemplateBinder(_parsedTemplate, _defaults);
+            _binder = new TemplateBinder(_parsedTemplate, Defaults);
         }
 
         public string Name { get; private set; }
 
-        public IDictionary<string, object> Defaults
+        public IReadOnlyDictionary<string, object> Defaults
         {
             get { return _defaults; }
         }
 
-        public IDictionary<string, object> DataTokens
+        public IReadOnlyDictionary<string, object> DataTokens
         {
             get { return _dataTokens; }
         }
