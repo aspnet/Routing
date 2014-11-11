@@ -4,67 +4,97 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Routing.Constraints;
+using Microsoft.AspNet.Routing.Template;
 
 namespace Microsoft.AspNet.Routing
 {
     public class RouteConstraintBuilder
     {
-        public static IDictionary<string, IRouteConstraint>
-            BuildConstraints(IDictionary<string, object> inputConstraints)
+        private readonly IInlineConstraintResolver _inlineConstraintResolver;
+        private readonly string _template;
+
+        private readonly Dictionary<string, List<IRouteConstraint>> _constraints;
+
+        public RouteConstraintBuilder(
+            [NotNull] IInlineConstraintResolver inlineConstraintResolver,
+            [NotNull] string template)
         {
-            return BuildConstraintsCore(inputConstraints, routeTemplate: null);
+            _inlineConstraintResolver = inlineConstraintResolver;
+            _template = template;
+
+            _constraints = new Dictionary<string, List<IRouteConstraint>>(StringComparer.OrdinalIgnoreCase);
         }
 
-        public static IDictionary<string, IRouteConstraint>
-            BuildConstraints(IDictionary<string, object> inputConstraints, [NotNull] string routeTemplate)
+        public IReadOnlyDictionary<string, IRouteConstraint> Build()
         {
-            return BuildConstraintsCore(inputConstraints, routeTemplate);
-        }
-
-        private static IDictionary<string, IRouteConstraint>
-            BuildConstraintsCore(IDictionary<string, object> inputConstraints, string routeTemplate)
-        {
-            if (inputConstraints == null || inputConstraints.Count == 0)
+            var constraints = new Dictionary<string, IRouteConstraint>(StringComparer.OrdinalIgnoreCase);
+            foreach (var kvp in _constraints)
             {
-                return null;
-            }
-
-            var constraints = new Dictionary<string, IRouteConstraint>(inputConstraints.Count,
-                                                                       StringComparer.OrdinalIgnoreCase);
-
-            foreach (var kvp in inputConstraints)
-            {
-                var constraint = kvp.Value as IRouteConstraint;
-
-                if (constraint == null)
+                IRouteConstraint constraint;
+                if (kvp.Value.Count == 1)
                 {
-                    var regexPattern = kvp.Value as string;
-
-                    if (regexPattern == null)
-                    {
-                        if (routeTemplate != null)
-                        {
-                            throw new InvalidOperationException(
-                                Resources.FormatTemplateRoute_ValidationMustBeStringOrCustomConstraint(
-                                    kvp.Key, routeTemplate, typeof(IRouteConstraint)));
-                        }
-                        else
-                        {
-                            throw new InvalidOperationException(
-                                Resources.FormatGeneralConstraints_ValidationMustBeStringOrCustomConstraint(
-                                    kvp.Key, typeof(IRouteConstraint)));
-                        }
-                    }
-
-                    var constraintsRegEx = "^(" + regexPattern + ")$";
-
-                    constraint = new RegexRouteConstraint(constraintsRegEx);
+                    constraint = kvp.Value[0];
+                }
+                else
+                {
+                    constraint = new CompositeRouteConstraint(kvp.Value.ToArray());
                 }
 
                 constraints.Add(kvp.Key, constraint);
             }
 
             return constraints;
+        }
+
+        public void AddConstraint([NotNull] string key, [NotNull] object value)
+        {
+            var constraint = value as IRouteConstraint;
+            if (constraint == null)
+            {
+                var regexPattern = value as string;
+                if (regexPattern == null)
+                {
+                    throw new InvalidOperationException(
+                        Resources.FormatRouteConstraintBuilder_ValidationMustBeStringOrCustomConstraint(
+                            key,
+                            value,
+                            _template,
+                            typeof(IRouteConstraint)));
+                }
+
+                var constraintsRegEx = "^(" + regexPattern + ")$";
+                constraint = new RegexRouteConstraint(constraintsRegEx);
+            }
+
+            Add(key, constraint);
+        }
+
+        public void AddResolvedConstraint([NotNull] string key, [NotNull] string constraintText)
+        {
+            var constraint = _inlineConstraintResolver.ResolveConstraint(constraintText);
+            if (constraint == null)
+            {
+                throw new InvalidOperationException(
+                    Resources.FormatRouteConstraintBuilder_CouldNotResolveConstraint(
+                        key,
+                        constraintText,
+                        _template,
+                        _inlineConstraintResolver.GetType().Name));
+            }
+
+            Add(key, constraint);
+        }
+
+        private void Add(string key, IRouteConstraint constraint)
+        {
+            List<IRouteConstraint> list;
+            if (!_constraints.TryGetValue(key, out list))
+            {
+                list = new List<IRouteConstraint>();
+                _constraints.Add(key, list);
+            }
+
+            list.Add(constraint);
         }
     }
 }

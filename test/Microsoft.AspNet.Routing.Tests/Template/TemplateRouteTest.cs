@@ -1083,11 +1083,12 @@ namespace Microsoft.AspNet.Routing.Template
             var routeBuilder = CreateRouteBuilder();
 
             // Assert
-            ExceptionAssert.Throws<InvalidOperationException>(() => routeBuilder.MapRoute("mockName",
-                "{controller}/{action}",
-                defaults: null,
-                constraints: new { controller = "a.*", action = new Object() }),
-                "The constraint entry 'action' on the route with route template '{controller}/{action}' " +
+            ExceptionAssert.Throws<InvalidOperationException>(
+                () => routeBuilder.MapRoute("mockName",
+                    "{controller}/{action}",
+                    defaults: null,
+                    constraints: new { controller = "a.*", action = 17 }),
+                "The constraint entry 'action' - '17' on the route '{controller}/{action}' " +
                 "must have a string value or be of a type which implements '" +
                 typeof(IRouteConstraint) + "'.");
         }
