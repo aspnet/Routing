@@ -69,7 +69,7 @@ namespace Microsoft.AspNet.Routing.Template
             _parsedTemplate = TemplateParser.Parse(RouteTemplate, inlineConstraintResolver);
             UpdateInlineDefaultValuesAndConstraints();
 
-            _matcher = new TemplateMatcher(_parsedTemplate);
+            _matcher = new TemplateMatcher(_parsedTemplate, Defaults);
             _binder = new TemplateBinder(_parsedTemplate, Defaults);
         }
 
@@ -107,7 +107,7 @@ namespace Microsoft.AspNet.Routing.Template
                     requestPath = requestPath.Substring(1);
                 }
 
-                var values = _matcher.Match(requestPath, Defaults);
+                var values = _matcher.Match(requestPath);
 
                 if (values == null)
                 {
