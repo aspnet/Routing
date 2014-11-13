@@ -795,7 +795,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         private TemplateMatcher CreateMatcher(string template, object defaults = null)
         {
             return new TemplateMatcher(
-                TemplateParser.Parse(template, _inlineConstraintResolver),
+                TemplateParser.Parse(template),
                 new RouteValueDictionary(defaults));
         }
 
@@ -806,7 +806,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             IDictionary<string, object> expected)
         {
             // Arrange
-            var matcher = new TemplateMatcher(TemplateParser.Parse(template, _inlineConstraintResolver), defaults);
+            var matcher = new TemplateMatcher(TemplateParser.Parse(template), defaults);
 
             // Act
             var match = matcher.Match(path);
