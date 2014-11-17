@@ -46,9 +46,11 @@ namespace Microsoft.AspNet.Routing
 
             // Assert
             Assert.Equal(1, result.Count);
-            Assert.Equal("controller", result.First().Key);
 
-            Assert.Same(originalConstraint, Assert.Single(result).Value);
+            var kvp = Assert.Single(result);
+            Assert.Equal("controller", kvp.Key);
+
+            Assert.Same(originalConstraint, kvp.Value);
         }
 
         [Fact]
@@ -63,9 +65,11 @@ namespace Microsoft.AspNet.Routing
 
             // Assert
             Assert.Equal(1, result.Count);
-            Assert.Equal("controller", result.First().Key);
 
-            Assert.IsType<IntRouteConstraint>(Assert.Single(result).Value);
+            var kvp = Assert.Single(result);
+            Assert.Equal("controller", kvp.Key);
+
+            Assert.IsType<IntRouteConstraint>(kvp.Value);
         }
 
         [Fact]

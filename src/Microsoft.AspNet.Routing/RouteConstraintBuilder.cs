@@ -4,27 +4,42 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Routing.Constraints;
-using Microsoft.AspNet.Routing.Template;
 
 namespace Microsoft.AspNet.Routing
 {
+    /// <summary>
+    /// A builder for produding a mapping of keys to see <see cref="IRouteConstraint"/>.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="RouteConstraintBuilder"/> allows iterative building a set of route constraints, and will
+    /// merge multiple entries for the same key.
+    /// </remarks>
     public class RouteConstraintBuilder
     {
         private readonly IInlineConstraintResolver _inlineConstraintResolver;
-        private readonly string _template;
+        private readonly string _displayName;
 
         private readonly Dictionary<string, List<IRouteConstraint>> _constraints;
 
+        /// <summary>
+        /// Creates a new <see cref="RouteConstraintBuilder"/> instance.
+        /// </summary>
+        /// <param name="inlineConstraintResolver">The <see cref="IInlineConstraintResolver"/>.</param>
+        /// <param name="displayName">The display name (for use in error messages).</param>
         public RouteConstraintBuilder(
             [NotNull] IInlineConstraintResolver inlineConstraintResolver,
-            [NotNull] string template)
+            [NotNull] string displayName)
         {
             _inlineConstraintResolver = inlineConstraintResolver;
-            _template = template;
+            _displayName = displayName;
 
             _constraints = new Dictionary<string, List<IRouteConstraint>>(StringComparer.OrdinalIgnoreCase);
         }
 
+        /// <summary>
+        /// Builds a mapping of constraints.
+        /// </summary>
+        /// <returns>An <see cref="IReadOnlyDictionary{string, IRouteConstraint}"/> of the constraints.</returns>
         public IReadOnlyDictionary<string, IRouteConstraint> Build()
         {
             var constraints = new Dictionary<string, IRouteConstraint>(StringComparer.OrdinalIgnoreCase);
@@ -46,6 +61,19 @@ namespace Microsoft.AspNet.Routing
             return constraints;
         }
 
+        /// <summary>
+        /// Adds a constraint instance for the given key.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="value">
+        /// The constraint instance. Must either be a string or an instance of <see cref="IRouteConstraint"/>.
+        /// </param>
+        /// <remarks>
+        /// If the <paramref name="value"/> is a string, it will be converted to a <see cref="RegexRouteConstraint"/>.
+        /// 
+        /// For example, the string <code>Product[0-9]+</code> will be converted to the regular expression
+        /// <code>^(Product[0-9]+)</code>. See <see cref="System.Text.RegularExpressions.Regex"/> for more details.
+        /// </remarks>
         public void AddConstraint([NotNull] string key, [NotNull] object value)
         {
             var constraint = value as IRouteConstraint;
@@ -58,7 +86,7 @@ namespace Microsoft.AspNet.Routing
                         Resources.FormatRouteConstraintBuilder_ValidationMustBeStringOrCustomConstraint(
                             key,
                             value,
-                            _template,
+                            _displayName,
                             typeof(IRouteConstraint)));
                 }
 
@@ -69,6 +97,16 @@ namespace Microsoft.AspNet.Routing
             Add(key, constraint);
         }
 
+        /// <summary>
+        /// Adds a constraint for the given key, resolved by the <see cref="IInlineConstraintResolver"/>.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        /// <param name="constraintText">The text to be resolved by <see cref="IInlineConstraintResolver"/>.</param>
+        /// <remarks>
+        /// The <see cref="IInlineConstraintResolver"/> can create <see cref="IRouteConstraint"/> instances
+        /// based on <paramref name="constraintText"/>. See <see cref="RouteOptions.ConstraintMap"/> to register
+        /// custom constraint types.
+        /// </remarks>
         public void AddResolvedConstraint([NotNull] string key, [NotNull] string constraintText)
         {
             var constraint = _inlineConstraintResolver.ResolveConstraint(constraintText);
@@ -78,7 +116,7 @@ namespace Microsoft.AspNet.Routing
                     Resources.FormatRouteConstraintBuilder_CouldNotResolveConstraint(
                         key,
                         constraintText,
-                        _template,
+                        _displayName,
                         _inlineConstraintResolver.GetType().Name));
             }
 
