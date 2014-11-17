@@ -15,7 +15,7 @@ namespace Microsoft.AspNet.Routing.Template
     public class TemplateRoute : INamedRouter
     {
         private readonly IDictionary<string, IRouteConstraint> _constraints;
-        private readonly RouteValueDictionary _dataTokens;
+        private readonly IReadOnlyDictionary<string, object> _dataTokens;
         private readonly RouteValueDictionary _defaults;
         private readonly IRouter _target;
         private readonly RouteTemplate _parsedTemplate;
@@ -60,7 +60,10 @@ namespace Microsoft.AspNet.Routing.Template
             // Do not use RouteValueDictionary.Empty for defaults, it might be modified inside
             // UpdateInlineDefaultValuesAndConstraints()
             _defaults = defaults == null ? new RouteValueDictionary() : new RouteValueDictionary(defaults);
-            _dataTokens = dataTokens == null ? RouteValueDictionary.Empty : new RouteValueDictionary(dataTokens);
+            _dataTokens = 
+                dataTokens == null ? 
+                RouteValueDictionary.Empty : 
+                (IReadOnlyDictionary<string, object>)new RouteValueDictionary(dataTokens);
 
             _constraints = RouteConstraintBuilder.BuildConstraints(constraints, _routeTemplate) ??
                                                             new Dictionary<string, IRouteConstraint>();
@@ -314,6 +317,20 @@ namespace Microsoft.AspNet.Routing.Template
         private static void MergeValues(
             IDictionary<string, object> destination,
             IDictionary<string, object> values)
+        {
+            foreach (var kvp in values)
+            {
+                // This will replace the original value for the specified key.
+                // Values from the matched route will take preference over previous
+                // data in the route context.
+                destination[kvp.Key] = kvp.Value;
+            }
+        }
+
+        // Needed because IDictionary<> is not an IReadOnlyDictionary<>
+        private static void MergeValues(
+            IDictionary<string, object> destination,
+            IReadOnlyDictionary<string, object> values)
         {
             foreach (var kvp in values)
             {
