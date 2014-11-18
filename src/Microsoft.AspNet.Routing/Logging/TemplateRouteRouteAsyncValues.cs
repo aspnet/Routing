@@ -41,7 +41,7 @@ namespace Microsoft.AspNet.Routing.Logging
         /// <summary>
         /// The values produced by default.
         /// </summary>
-        public IDictionary<string, object> DefaultValues { get; set; }
+        public IReadOnlyDictionary<string, object> DefaultValues { get; set; }
 
         /// <summary>
         /// The values produced from the request.
