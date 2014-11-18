@@ -357,6 +357,10 @@ namespace Microsoft.AspNet.Routing.Template
                 if (_defaults != null)
                 {
                     _filters = new RouteValueDictionary(defaults);
+                    foreach (var kvp in _defaults)
+                    {
+                        _filters.Add(kvp.Key, kvp.Value);
+                    }
                 }
             }
 
