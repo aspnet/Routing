@@ -225,6 +225,82 @@ namespace Microsoft.AspNet.Routing.Template
         }
 
         [Fact]
+        public async Task RouteAsync_InlineConstrait_OptionalParameter()
+        {
+            // Arrange
+            var template = "{controller}/{action}/{id:int?}";
+
+            var context = CreateRouteContext("/Home/Index/5");
+
+            IDictionary<string, object> routeValues = null;
+            var mockTarget = new Mock<IRouter>(MockBehavior.Strict);
+            mockTarget
+                .Setup(s => s.RouteAsync(It.IsAny<RouteContext>()))
+                .Callback<RouteContext>(ctx =>
+                {
+                    routeValues = ctx.RouteData.Values;
+                    ctx.IsHandled = true;
+                })
+                .Returns(Task.FromResult(true));
+
+            var route = new TemplateRoute(
+                mockTarget.Object,
+                template,
+                defaults: null,
+                constraints: null,
+                dataTokens: null,
+                inlineConstraintResolver: _inlineConstraintResolver);
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.NotNull(routeValues);
+            Assert.True(routeValues.ContainsKey("id"));
+            Assert.Equal("5", routeValues["id"]);
+
+            Assert.True(context.RouteData.Values.ContainsKey("id"));
+            Assert.Equal("5", context.RouteData.Values["id"]);
+        }
+
+        [Fact]
+        public async Task RouteAsync_InlineConstrait_OptionalParameter_NotPresent()
+        {
+            // Arrange
+            var template = "{controller}/{action}/{id:int?}";
+
+            var context = CreateRouteContext("/Home/Index");
+
+            IDictionary<string, object> routeValues = null;
+            var mockTarget = new Mock<IRouter>(MockBehavior.Strict);
+            mockTarget
+                .Setup(s => s.RouteAsync(It.IsAny<RouteContext>()))
+                .Callback<RouteContext>(ctx =>
+                {
+                    routeValues = ctx.RouteData.Values;
+                    ctx.IsHandled = true;
+                })
+                .Returns(Task.FromResult(true));
+
+            var route = new TemplateRoute(
+                mockTarget.Object,
+                template,
+                defaults: null,
+                constraints: null,
+                dataTokens: null,
+                inlineConstraintResolver: _inlineConstraintResolver);
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.NotNull(routeValues);
+            Assert.False(routeValues.ContainsKey("id"));
+
+            Assert.False(context.RouteData.Values.ContainsKey("id"));
+        }
+
+        [Fact]
         public async Task RouteAsync_MergesExistingRouteData_PassedToConstraint()
         {
             // Arrange
