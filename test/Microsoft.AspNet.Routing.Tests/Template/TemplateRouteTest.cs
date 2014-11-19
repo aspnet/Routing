@@ -463,6 +463,175 @@ namespace Microsoft.AspNet.Routing.Template
             Assert.Equal(0, sink.Writes.Count);
         }
 
+        [Fact]
+        public async Task RouteAsync_InlineConstraint_OptionalParameter()
+        {
+            // Arrange
+            var template = "{controller}/{action}/{id:int?}";
+
+            var context = CreateRouteContext("/Home/Index/5");
+
+            IDictionary<string, object> routeValues = null;
+            var mockTarget = new Mock<IRouter>(MockBehavior.Strict);
+            mockTarget
+                .Setup(s => s.RouteAsync(It.IsAny<RouteContext>()))
+                .Callback<RouteContext>(ctx =>
+                {
+                    routeValues = ctx.RouteData.Values;
+                    ctx.IsHandled = true;
+                })
+                .Returns(Task.FromResult(true));
+
+            var route = new TemplateRoute(
+                mockTarget.Object,
+                template,
+                defaults: null,
+                constraints: null,
+                dataTokens: null,
+                inlineConstraintResolver: _inlineConstraintResolver);
+
+            Assert.NotEmpty(route.Constraints);
+            Assert.IsType<OptionalRouteConstraint>(route.Constraints["id"]);
+            
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            
+            Assert.True(routeValues.ContainsKey("id"));
+            Assert.Equal("5", routeValues["id"]);
+
+            Assert.True(context.RouteData.Values.ContainsKey("id"));
+            Assert.Equal("5", context.RouteData.Values["id"]);
+        }
+
+        [Fact]
+        public async Task RouteAsync_InlineConstraint_OptionalParameter_NotPresent()
+        {
+            // Arrange
+            var template = "{controller}/{action}/{id:int?}";
+
+            var context = CreateRouteContext("/Home/Index");
+
+            IDictionary<string, object> routeValues = null;
+            var mockTarget = new Mock<IRouter>(MockBehavior.Strict);
+            mockTarget
+                .Setup(s => s.RouteAsync(It.IsAny<RouteContext>()))
+                .Callback<RouteContext>(ctx =>
+                {
+                    routeValues = ctx.RouteData.Values;
+                    ctx.IsHandled = true;
+                })
+                .Returns(Task.FromResult(true));
+
+            var route = new TemplateRoute(
+                mockTarget.Object,
+                template,
+                defaults: null,
+                constraints: null,
+                dataTokens: null,
+                inlineConstraintResolver: _inlineConstraintResolver);
+
+            Assert.NotEmpty(route.Constraints);
+            Assert.IsType<OptionalRouteConstraint>(route.Constraints["id"]);
+
+            // Act
+            await Assert.DoesNotThrowAsync(() => route.RouteAsync(context));
+
+            // Assert
+            Assert.NotNull(routeValues);
+            Assert.False(routeValues.ContainsKey("id"));
+            Assert.False(context.RouteData.Values.ContainsKey("id"));
+        }
+
+        [Fact]
+        public async Task RouteAsync_InlineConstraint_OptionalParameter_WithInConstructorConstraint()
+        {
+            // Arrange
+            var template = "{controller}/{action}/{id:int?}";
+
+            var context = CreateRouteContext("/Home/Index/5");
+
+            IDictionary<string, object> routeValues = null;
+            var mockTarget = new Mock<IRouter>(MockBehavior.Strict);
+            mockTarget
+                .Setup(s => s.RouteAsync(It.IsAny<RouteContext>()))
+                .Callback<RouteContext>(ctx =>
+                {
+                    routeValues = ctx.RouteData.Values;
+                    ctx.IsHandled = true;
+                })
+                .Returns(Task.FromResult(true));
+
+            var constraints = new Dictionary<string, object>();
+            constraints.Add("id", new RangeRouteConstraint(1, 20));
+
+            var route = new TemplateRoute(
+                mockTarget.Object,
+                template,
+                defaults: null,
+                constraints: constraints, 
+                dataTokens: null,
+                inlineConstraintResolver: _inlineConstraintResolver);
+
+            Assert.NotEmpty(route.Constraints);
+            Assert.IsType<OptionalRouteConstraint>(route.Constraints["id"]);
+            var innerConstraint = ((OptionalRouteConstraint)route.Constraints["id"]).InnerConstraint;
+            Assert.IsType<CompositeRouteConstraint>(innerConstraint);
+            var compositeConstraint = (CompositeRouteConstraint)innerConstraint;
+            Assert.Equal(compositeConstraint.Constraints.Count<IRouteConstraint>(), 2);
+            
+            var intconstraint = compositeConstraint.Constraints.OfType<IntRouteConstraint>();
+            Assert.Equal(intconstraint.Count(), 1);
+            var rangeConstraint = compositeConstraint.Constraints.OfType<RangeRouteConstraint>();
+            Assert.Equal(rangeConstraint.Count(), 1);
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.True(routeValues.ContainsKey("id"));
+            Assert.Equal("5", routeValues["id"]);
+
+            Assert.True(context.RouteData.Values.ContainsKey("id"));
+            Assert.Equal("5", context.RouteData.Values["id"]);
+        }
+
+        [Fact]
+        public async Task RouteAsync_InlineConstraint_OptionalParameter_ConstraintFails()
+        {
+            // Arrange
+            var template = "{controller}/{action}/{id:range(1,20)?}";
+
+            var context = CreateRouteContext("/Home/Index/100");
+
+            IDictionary<string, object> routeValues = null;
+            var mockTarget = new Mock<IRouter>(MockBehavior.Strict);
+            mockTarget
+                .Setup(s => s.RouteAsync(It.IsAny<RouteContext>()))
+                .Callback<RouteContext>(ctx =>
+                {
+                    routeValues = ctx.RouteData.Values;
+                    ctx.IsHandled = true;
+                })
+                .Returns(Task.FromResult(true));
+
+            var route = new TemplateRoute(
+                mockTarget.Object,
+                template,
+                defaults: null,
+                constraints: null,
+                dataTokens: null,
+                inlineConstraintResolver: _inlineConstraintResolver);
+
+            Assert.NotEmpty(route.Constraints);
+            Assert.IsType<OptionalRouteConstraint>(route.Constraints["id"]);
+
+            await route.RouteAsync(context);
+            // Act            
+            Assert.False(context.IsHandled);
+        }
+
         #region Route Matching
 
         // PathString in HttpAbstractions guarantees a leading slash - so no value in testing other cases.
@@ -1263,6 +1432,7 @@ namespace Microsoft.AspNet.Routing.Template
         {
             var resolverMock = new Mock<IInlineConstraintResolver>();
             resolverMock.Setup(o => o.ResolveConstraint("int")).Returns(new IntRouteConstraint());
+            resolverMock.Setup(o => o.ResolveConstraint("range(1,20)")).Returns(new RangeRouteConstraint(1, 20));
             return resolverMock.Object;
         }
 
