@@ -34,7 +34,7 @@ namespace Microsoft.AspNet.Routing
             _displayName = displayName;
 
             _constraints = new Dictionary<string, List<IRouteConstraint>>(StringComparer.OrdinalIgnoreCase);
-            _optionalParameters = new HashSet<string>();
+            _optionalParameters = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         }
 
         /// <summary>
@@ -58,7 +58,7 @@ namespace Microsoft.AspNet.Routing
 
                 if (_optionalParameters.Contains(kvp.Key))
                 {
-                    OptionalRouteConstraint opConstraint = new OptionalRouteConstraint(constraint);
+                    var opConstraint = new OptionalRouteConstraint(constraint);
                     constraints.Add(kvp.Key, opConstraint);
                 }
                 else
@@ -131,9 +131,14 @@ namespace Microsoft.AspNet.Routing
 
             Add(key, constraint);
         }
-        public void SetOptional([NotNull] string name)
+
+        /// <summary>
+        /// Sets the given key as optional.
+        /// </summary>
+        /// <param name="key">The key.</param>
+        public void SetOptional([NotNull] string key)
         {
-            _optionalParameters.Add(name); 
+            _optionalParameters.Add(key); 
         }
 
         private void Add(string key, IRouteConstraint constraint)

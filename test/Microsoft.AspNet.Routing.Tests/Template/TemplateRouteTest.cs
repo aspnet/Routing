@@ -496,8 +496,8 @@ namespace Microsoft.AspNet.Routing.Template
             // Act
             await route.RouteAsync(context);
 
-            // Assert
-            
+            // Assert            
+            Assert.True(context.IsHandled);
             Assert.True(routeValues.ContainsKey("id"));
             Assert.Equal("5", routeValues["id"]);
 
@@ -536,9 +536,10 @@ namespace Microsoft.AspNet.Routing.Template
             Assert.IsType<OptionalRouteConstraint>(route.Constraints["id"]);
 
             // Act
-            await Assert.DoesNotThrowAsync(() => route.RouteAsync(context));
+            await route.RouteAsync(context);
 
             // Assert
+            Assert.True(context.IsHandled);
             Assert.NotNull(routeValues);
             Assert.False(routeValues.ContainsKey("id"));
             Assert.False(context.RouteData.Values.ContainsKey("id"));
@@ -581,15 +582,14 @@ namespace Microsoft.AspNet.Routing.Template
             var compositeConstraint = (CompositeRouteConstraint)innerConstraint;
             Assert.Equal(compositeConstraint.Constraints.Count<IRouteConstraint>(), 2);
             
-            var intconstraint = compositeConstraint.Constraints.OfType<IntRouteConstraint>();
-            Assert.Equal(intconstraint.Count(), 1);
-            var rangeConstraint = compositeConstraint.Constraints.OfType<RangeRouteConstraint>();
-            Assert.Equal(rangeConstraint.Count(), 1);
+            Assert.Single(compositeConstraint.Constraints, c => c is IntRouteConstraint);
+            Assert.Single(compositeConstraint.Constraints, c => c is RangeRouteConstraint);
 
             // Act
             await route.RouteAsync(context);
 
             // Assert
+            Assert.True(context.IsHandled);
             Assert.True(routeValues.ContainsKey("id"));
             Assert.Equal("5", routeValues["id"]);
 
@@ -627,8 +627,9 @@ namespace Microsoft.AspNet.Routing.Template
             Assert.NotEmpty(route.Constraints);
             Assert.IsType<OptionalRouteConstraint>(route.Constraints["id"]);
 
+            // Act
             await route.RouteAsync(context);
-            // Act            
+            
             Assert.False(context.IsHandled);
         }
 
@@ -1163,6 +1164,118 @@ namespace Microsoft.AspNet.Routing.Template
             Assert.Equal(expectedValues.OrderBy(kvp => kvp.Key), constraint.Values.OrderBy(kvp => kvp.Key));
         }
 
+        [Fact]
+        public void GetVirtualPath_InlineConstraints_Success()
+        {
+            // Arrange
+            var route = CreateRoute("{controller}/{action}/{id:int}");
+            var context = CreateVirtualPathContext(
+                values:  new { action = "Index",  controller = "Home", id = 4 });
+
+            // Act
+            var path = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal("Home/Index/4", path);
+        }
+
+        [Fact]
+        public void GetVirtualPath_InlineConstraints_NonMatchingvalue()
+        {
+            // Arrange
+            var route = CreateRoute("{controller}/{action}/{id:int}");
+            var context = CreateVirtualPathContext(
+                values: new { action = "Index", controller = "Home", id = "asf" });
+
+            // Act
+            var path = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Null(path);
+        }
+
+        [Fact]
+        public void GetVirtualPath_InlineConstraints_OptionalParameter_ValuePresent()
+        {
+            // Arrange
+            var route = CreateRoute("{controller}/{action}/{id:int?}");
+            var context = CreateVirtualPathContext(
+                values: new { action = "Index", controller = "Home", id = 98 });
+
+            // Act
+            var path = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal("Home/Index/98", path);
+        }
+
+        [Fact]
+        public void GetVirtualPath_InlineConstraints_OptionalParameter_ValueNotPresent()
+        {
+            // Arrange
+            var route = CreateRoute("{controller}/{action}/{id:int?}");
+            var context = CreateVirtualPathContext(
+                values: new { action = "Index", controller = "Home" });
+
+            // Act
+            var path = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal("Home/Index", path);
+        }
+
+        [Fact]
+        public void GetVirtualPath_InlineConstraints_OptionalParameter_ValuePresent_ConstraintFails()
+        {
+            // Arrange
+            var route = CreateRoute("{controller}/{action}/{id:int?}");
+            var context = CreateVirtualPathContext(
+                values: new { action = "Index", controller = "Home", id = "sdfd" });
+
+            // Act
+            var path = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Null(path);
+        }
+
+        [Fact]
+        public void GetVirtualPath_InlineConstraints_CompositeInlineConstraint()
+        {
+            // Arrange
+            var route = CreateRoute("{controller}/{action}/{id:int:range(1,20)}");
+            var context = CreateVirtualPathContext(
+                values: new { action = "Index", controller = "Home", id = 14 });
+
+            // Act
+            var path = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal("Home/Index/14", path);
+        }
+
+        [Fact]
+        public void GetVirtualPath_InlineConstraints_CompositeConstraint_FromConstructor()
+        {
+            // Arrange
+            var constraint = new MaxLengthRouteConstraint(20);
+            var route = CreateRoute(
+                template: "{controller}/{action}/{name:alpha}",
+                defaults: null,
+                accept: true,
+                constraints: new { name = constraint });
+
+            var context = CreateVirtualPathContext(
+                values: new { action = "Index", controller = "Home", name = "products" });
+
+            // Act
+            var path = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal("Home/Index/products", path);
+        }
+
+        
         private static VirtualPathContext CreateVirtualPathContext(object values)
         {
             return CreateVirtualPathContext(new RouteValueDictionary(values), null);
@@ -1433,6 +1546,8 @@ namespace Microsoft.AspNet.Routing.Template
             var resolverMock = new Mock<IInlineConstraintResolver>();
             resolverMock.Setup(o => o.ResolveConstraint("int")).Returns(new IntRouteConstraint());
             resolverMock.Setup(o => o.ResolveConstraint("range(1,20)")).Returns(new RangeRouteConstraint(1, 20));
+            resolverMock.Setup(o => o.ResolveConstraint("alpha")).Returns(new AlphaRouteConstraint());
+
             return resolverMock.Object;
         }
 
