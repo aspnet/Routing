@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNet.Routing.Template
 {
@@ -17,6 +18,7 @@ namespace Microsoft.AspNet.Routing.Template
         private const char QuestionMark = '?';
         private const char Asterisk = '*';
         private const string PeriodString = ".";
+        private const char CloseBracket = ')';
 
         public static RouteTemplate Parse(string routeTemplate)
         {
@@ -134,22 +136,29 @@ namespace Microsoft.AspNet.Routing.Template
 
             while (true)
             {
-                if (context.Current == Separator)
+                if (context.Current == OpenBrace)
                 {
-                    // This is a dangling open-brace, which is not allowed
-                    context.Error = Resources.TemplateRoute_MismatchedParameter;
-                    return false;
-                }
-                else if (context.Current == OpenBrace)
-                {
-                    // If we see a '{' while parsing a parameter name it's invalid. We'll just accept it for now
-                    // and let the validation code for the name find it.
+                    // This is an open brace inside of a parameter, it has to be escaped
+                    if (context.Next())
+                    {
+                        if (context.Current != OpenBrace)
+                        {
+                            context.Error = Resources.TemplateRoute_UnescapedBrace;
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        // This is a dangling open-brace, which is not allowed
+                        context.Error = Resources.TemplateRoute_MismatchedParameter;
+                        return false;
+                    }
                 }
                 else if (context.Current == CloseBrace)
                 {
+                    // This is a closed brace inside of a parameter. It needs to be escaped, to be valid inside the parameter
                     if (!context.Next())
                     {
-                        // This is the end of the string - and we have a valid parameter
                         context.Back();
                         break;
                     }
@@ -176,10 +185,11 @@ namespace Microsoft.AspNet.Routing.Template
             }
 
             var rawParameter = context.Capture();
+            var decoded = rawParameter.Replace("}}", "}").Replace("{{", "{");
 
             // At this point, we need to parse the raw name for inline constraint,
             // default values and optional parameters.
-            var templatePart = InlineRouteParameterParser.ParseRouteParameter(rawParameter);
+            var templatePart = InlineRouteParameterParser.ParseRouteParameter(decoded);
 
             if (templatePart.IsCatchAll && templatePart.IsOptional)
             {
@@ -272,7 +282,7 @@ namespace Microsoft.AspNet.Routing.Template
                 }
             }
 
-            var decoded = encoded.Replace("}}", "}").Replace("{{", "}");
+            var decoded = encoded.Replace("}}", "}").Replace("{{", "{");
             if (IsValidLiteral(context, decoded))
             {
                 segment.Parts.Add(TemplatePart.CreateLiteral(decoded));
