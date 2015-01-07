@@ -228,6 +228,231 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         }
 
         [Fact]
+        public void Parse_ComplexSegment_OptionalParameterFollowingPeriod()
+        {
+            // Arrange
+            var template = "{p1}.{p2?}";
+
+            var expected = new RouteTemplate(new List<TemplateSegment>());
+            expected.Segments.Add(new TemplateSegment());
+            expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1",
+                                                                        false,
+                                                                        false,
+                                                                        defaultValue: null,
+                                                                        inlineConstraints: null));
+            expected.Segments[0].Parts.Add(TemplatePart.CreateLiteral("."));
+            expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p2",
+                                                                        false,
+                                                                        true,
+                                                                        defaultValue: null,
+                                                                        inlineConstraints: null));
+
+            expected.Parameters.Add(expected.Segments[0].Parts[0]);
+            expected.Parameters.Add(expected.Segments[0].Parts[2]);
+
+            // Act
+            var actual = TemplateParser.Parse(template);
+
+            // Assert
+            Assert.Equal<RouteTemplate>(expected, actual, new TemplateEqualityComparer());
+        }
+
+        [Fact]
+        public void Parse_ComplexSegment_ParametersFollowingPeriod()
+        {
+            // Arrange
+            var template = "{p1}.{p2}";
+
+            var expected = new RouteTemplate(new List<TemplateSegment>());
+            expected.Segments.Add(new TemplateSegment());
+            expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1",
+                                                                        false,
+                                                                        false,
+                                                                        defaultValue: null,
+                                                                        inlineConstraints: null));
+            expected.Segments[0].Parts.Add(TemplatePart.CreateLiteral("."));
+            expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p2",
+                                                                        false,
+                                                                        false,
+                                                                        defaultValue: null,
+                                                                        inlineConstraints: null));
+
+            expected.Parameters.Add(expected.Segments[0].Parts[0]);
+            expected.Parameters.Add(expected.Segments[0].Parts[2]);
+
+            // Act
+            var actual = TemplateParser.Parse(template);
+
+            // Assert
+            Assert.Equal<RouteTemplate>(expected, actual, new TemplateEqualityComparer());
+        }
+
+        [Fact]
+        public void Parse_ComplexSegment_OptionalParameterFollowingPeriod_Threeparameters()
+        {
+            // Arrange
+            var template = "{p1}.{p2}.{p3?}";
+
+            var expected = new RouteTemplate(new List<TemplateSegment>());
+            expected.Segments.Add(new TemplateSegment());
+            expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1",
+                                                                        false,
+                                                                        false,
+                                                                        defaultValue: null,
+                                                                        inlineConstraints: null));
+            expected.Segments[0].Parts.Add(TemplatePart.CreateLiteral("."));
+            expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p2",
+                                                                        false,
+                                                                        false,
+                                                                        defaultValue: null,
+                                                                        inlineConstraints: null));
+
+            expected.Segments[0].Parts.Add(TemplatePart.CreateLiteral("."));
+            expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p3",
+                                                                        false,
+                                                                        true,
+                                                                        defaultValue: null,
+                                                                        inlineConstraints: null));
+
+
+            expected.Parameters.Add(expected.Segments[0].Parts[0]);
+            expected.Parameters.Add(expected.Segments[0].Parts[2]);
+            expected.Parameters.Add(expected.Segments[0].Parts[4]);
+
+            // Act
+            var actual = TemplateParser.Parse(template);
+
+            // Assert
+            Assert.Equal<RouteTemplate>(expected, actual, new TemplateEqualityComparer());
+        }
+
+        [Fact]
+        public void Parse_ComplexSegment_ThreeparametersSeperatedByPeriod()
+        {
+            // Arrange
+            var template = "{p1}.{p2}.{p3}";
+
+            var expected = new RouteTemplate(new List<TemplateSegment>());
+            expected.Segments.Add(new TemplateSegment());
+            expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1",
+                                                                        false,
+                                                                        false,
+                                                                        defaultValue: null,
+                                                                        inlineConstraints: null));
+            expected.Segments[0].Parts.Add(TemplatePart.CreateLiteral("."));
+            expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p2",
+                                                                        false,
+                                                                        false,
+                                                                        defaultValue: null,
+                                                                        inlineConstraints: null));
+
+            expected.Segments[0].Parts.Add(TemplatePart.CreateLiteral("."));
+            expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p3",
+                                                                        false,
+                                                                        false,
+                                                                        defaultValue: null,
+                                                                        inlineConstraints: null));
+
+
+            expected.Parameters.Add(expected.Segments[0].Parts[0]);
+            expected.Parameters.Add(expected.Segments[0].Parts[2]);
+            expected.Parameters.Add(expected.Segments[0].Parts[4]);
+
+            // Act
+            var actual = TemplateParser.Parse(template);
+
+            // Assert
+            Assert.Equal<RouteTemplate>(expected, actual, new TemplateEqualityComparer());
+        }
+
+        [Fact]
+        public void Parse_ComplexSegment_OptionalParameterFollowingPeriod_MiddleSegment()
+        {
+            // Arrange
+            var template = "{p1}.{p2?}/{p3}";
+
+            var expected = new RouteTemplate(new List<TemplateSegment>());
+            expected.Segments.Add(new TemplateSegment());
+            expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1",
+                                                                        false,
+                                                                        false,
+                                                                        defaultValue: null,
+                                                                        inlineConstraints: null));
+            expected.Segments[0].Parts.Add(TemplatePart.CreateLiteral("."));
+            expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p2",
+                                                                        false,
+                                                                        true,
+                                                                        defaultValue: null,
+                                                                        inlineConstraints: null));
+
+            expected.Parameters.Add(expected.Segments[0].Parts[0]);
+            expected.Parameters.Add(expected.Segments[0].Parts[2]);
+
+            expected.Segments.Add(new TemplateSegment());
+            expected.Segments[1].Parts.Add(TemplatePart.CreateParameter("p3",
+                                                                        false,
+                                                                        false,
+                                                                        null,
+                                                                        null));
+            expected.Parameters.Add(expected.Segments[1].Parts[0]);
+            // Act
+            var actual = TemplateParser.Parse(template);
+
+            // Assert
+            Assert.Equal<RouteTemplate>(expected, actual, new TemplateEqualityComparer());
+        }
+
+        public void Parse_ComplexSegment_OptionalParameterFollowingPeriod_LastSegment()
+        {
+            // Arrange
+            var template = "{p1}/{p2}.{p3?}";
+
+            var expected = new RouteTemplate(new List<TemplateSegment>());
+            expected.Segments.Add(new TemplateSegment());
+            expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1",
+                                                                        false,
+                                                                        false,
+                                                                        defaultValue: null,
+                                                                        inlineConstraints: null));
+
+            expected.Segments.Add(new TemplateSegment());            
+            expected.Segments[1].Parts.Add(TemplatePart.CreateParameter("p2",
+                                                                        false,
+                                                                        true,
+                                                                        defaultValue: null,
+                                                                        inlineConstraints: null));
+            expected.Segments[1].Parts.Add(TemplatePart.CreateLiteral("."));
+            expected.Segments[1].Parts.Add(TemplatePart.CreateParameter("p3",
+                                                                        false,
+                                                                        true,
+                                                                        null,
+                                                                        null));
+            expected.Parameters.Add(expected.Segments[0].Parts[0]);
+            expected.Parameters.Add(expected.Segments[1].Parts[0]);
+            expected.Parameters.Add(expected.Segments[1].Parts[2]);
+            
+            // Act
+            var actual = TemplateParser.Parse(template);
+
+            // Assert
+            Assert.Equal<RouteTemplate>(expected, actual, new TemplateEqualityComparer());
+        }
+
+        [Theory]        
+        [InlineData("{p1?}.{p2?}")]
+        [InlineData("{p1}.{p2?}.{p3}")]
+        [InlineData("{p1?}.{p2}/{p3}")]
+        [InlineData("{p3}.{p1?}.{p2?}")]
+        [InlineData("{p1}-{p2?}")]
+        [InlineData("{p1}..{p2?}")]
+        [InlineData("{p1}.abc.{p2?}")]
+        public void Parse_ComplexSegment_OptionalParametersSeperatedByPeriod_Invalid(string template)
+        {
+            // Act and Assert
+            Assert.Throws<ArgumentException>(() => TemplateParser.Parse(template));
+        }
+        
+        [Fact]
         public void InvalidTemplate_WithRepeatedParameter()
         {
             var ex = ExceptionAssert.Throws<ArgumentException>(

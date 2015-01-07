@@ -16,6 +16,7 @@ namespace Microsoft.AspNet.Routing.Template
         private const char EqualsSign = '=';
         private const char QuestionMark = '?';
         private const char Asterisk = '*';
+        private const string PeriodString = ".";
 
         public static RouteTemplate Parse(string routeTemplate)
         {
@@ -322,10 +323,27 @@ namespace Microsoft.AspNet.Routing.Template
             for (var i = 0; i < segment.Parts.Count; i++)
             {
                 var part = segment.Parts[i];
+                
                 if (part.IsParameter && part.IsOptional && segment.Parts.Count > 1)
                 {
-                    context.Error = Resources.TemplateRoute_CannotHaveOptionalParameterInMultiSegment;
-                    return false;
+                    // This is the last part
+                    if (i == segment.Parts.Count - 1)
+                    {
+                        if(segment.Parts[i-1].Text == PeriodString)
+                        {
+                            part.IsFollowingAPeriod = true;
+                        }
+                        else
+                        {
+                            context.Error = Resources.TemplateRoute_CannotHaveOptionalParameterInMultiSegment;
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        context.Error = Resources.TemplateRoute_CannotHaveOptionalParameterInMultiSegment;
+                        return false;
+                    }
                 }
             }
 
