@@ -40,7 +40,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
             var expected = new RouteTemplate(new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
-            expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p", false, false, defaultValue: null, inlineConstraints: null));
+            expected.Segments[0].Parts.Add(
+                TemplatePart.CreateParameter("p", false, false, defaultValue: null, inlineConstraints: null));
             expected.Parameters.Add(expected.Segments[0].Parts[0]);
 
             // Act
@@ -58,7 +59,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
             var expected = new RouteTemplate(new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
-            expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p", false, true, defaultValue: null, inlineConstraints: null));
+            expected.Segments[0].Parts.Add(
+                TemplatePart.CreateParameter("p", false, true, defaultValue: null, inlineConstraints: null));
             expected.Parameters.Add(expected.Segments[0].Parts[0]);
 
             // Act
@@ -288,7 +290,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         }
 
         [Fact]
-        public void Parse_ComplexSegment_OptionalParameterFollowingPeriod_Threeparameters()
+        public void Parse_ComplexSegment_OptionalParameterFollowingPeriod_ThreeParameters()
         {
             // Arrange
             var template = "{p1}.{p2}.{p3?}";
@@ -327,7 +329,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         }
 
         [Fact]
-        public void Parse_ComplexSegment_ThreeparametersSeperatedByPeriod()
+        public void Parse_ComplexSegment_ThreeParametersSeperatedByPeriod()
         {
             // Arrange
             var template = "{p1}.{p2}.{p3}";
@@ -438,6 +440,37 @@ namespace Microsoft.AspNet.Routing.Template.Tests
             Assert.Equal<RouteTemplate>(expected, actual, new TemplateEqualityComparer());
         }
 
+        [Fact]
+        public void Parse_ComplexSegment_OptionalParameterFollowingPeriod_PeriodAfterSlash()
+        {
+            // Arrange
+            var template = "{p2}/.{p3?}";
+
+            var expected = new RouteTemplate(new List<TemplateSegment>());
+            expected.Segments.Add(new TemplateSegment());
+            expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p2",
+                                                                        false,
+                                                                        false,
+                                                                        defaultValue: null,
+                                                                        inlineConstraints: null));
+
+            expected.Segments.Add(new TemplateSegment());
+            expected.Segments[1].Parts.Add(TemplatePart.CreateLiteral("."));
+            expected.Segments[1].Parts.Add(TemplatePart.CreateParameter("p3",
+                                                                        false,
+                                                                        true,
+                                                                        null,
+                                                                        null));
+            expected.Parameters.Add(expected.Segments[0].Parts[0]);
+            expected.Parameters.Add(expected.Segments[1].Parts[1]);            
+
+            // Act
+            var actual = TemplateParser.Parse(template);
+
+            // Assert
+            Assert.Equal<RouteTemplate>(expected, actual, new TemplateEqualityComparer());
+        }
+
         [Theory]        
         [InlineData("{p1?}.{p2?}")]
         [InlineData("{p1}.{p2?}.{p3}")]
@@ -445,11 +478,17 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [InlineData("{p3}.{p1?}.{p2?}")]
         [InlineData("{p1}-{p2?}")]
         [InlineData("{p1}..{p2?}")]
+        [InlineData("..{p2?}")]
         [InlineData("{p1}.abc.{p2?}")]
         public void Parse_ComplexSegment_OptionalParametersSeperatedByPeriod_Invalid(string template)
         {
             // Act and Assert
-            Assert.Throws<ArgumentException>(() => TemplateParser.Parse(template));
+            ExceptionAssert.Throws<ArgumentException>(
+                () => TemplateParser.Parse(template),
+                "In a path segment that contains more than one section, such as a literal section or a parameter, " + 
+                "there can only be one optional parameter. The optional parameter must be the last parameter in the " +
+                "segment and must be preceded by one single period (.)." + Environment.NewLine +
+                "Parameter name: routeTemplate");
         }
         
         [Fact]
@@ -457,7 +496,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             var ex = ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("{Controller}.mvc/{id}/{controller}"),
-                "The route parameter name 'controller' appears more than one time in the route template." + Environment.NewLine + "Parameter name: routeTemplate");
+                "The route parameter name 'controller' appears more than one time in the route template." + 
+                Environment.NewLine + "Parameter name: routeTemplate");
         }
 
         [Theory]
@@ -471,7 +511,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse(template),
-                @"There is an incomplete parameter in the route template. Check that each '{' character has a matching '}' character." + Environment.NewLine +
+                @"There is an incomplete parameter in the route template. Check that each '{' character has a " +
+                "matching '}' character." + Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
 
@@ -480,7 +521,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("123{a}abc{*moo}"),
-                "A path segment that contains more than one section, such as a literal section or a parameter, cannot contain a catch-all parameter." + Environment.NewLine +
+                "A path segment that contains more than one section, such as a literal section or a parameter, " + 
+                "cannot contain a catch-all parameter." + Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
 
@@ -489,7 +531,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("{*p1}/{*p2}"),
-                "A catch-all parameter can only appear as the last segment of the route template." + Environment.NewLine +
+                "A catch-all parameter can only appear as the last segment of the route template." + 
+                Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
 
@@ -498,7 +541,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("{*p1}abc{*p2}"),
-                "A path segment that contains more than one section, such as a literal section or a parameter, cannot contain a catch-all parameter." + Environment.NewLine +
+                "A path segment that contains more than one section, such as a literal section or a parameter, " +
+                "cannot contain a catch-all parameter." + Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
 
@@ -540,7 +584,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("foo/{{p1}"),
-                "There is an incomplete parameter in the route template. Check that each '{' character has a matching '}' character." + Environment.NewLine +
+                "There is an incomplete parameter in the route template. Check that each '{' character has a " +
+                "matching '}' character." + Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
 
@@ -549,7 +594,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("foo/{p1}}"),
-                "There is an incomplete parameter in the route template. Check that each '{' character has a matching '}' character." + Environment.NewLine +
+                "There is an incomplete parameter in the route template. Check that each '{' character has a " +
+                "matching '}' character." + Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
 
@@ -558,7 +604,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("{aaa}/{AAA}"),
-                "The route parameter name 'AAA' appears more than one time in the route template." + Environment.NewLine +
+                "The route parameter name 'AAA' appears more than one time in the route template." + 
+                Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
 
@@ -567,7 +614,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("{aaa}/{*AAA}"),
-                "The route parameter name 'AAA' appears more than one time in the route template." + Environment.NewLine +
+                "The route parameter name 'AAA' appears more than one time in the route template." + 
+                Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
 
@@ -576,7 +624,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("{a}/{aa}a}/{z}"),
-                "There is an incomplete parameter in the route template. Check that each '{' character has a matching '}' character." + Environment.NewLine +
+                "There is an incomplete parameter in the route template. Check that each '{' character has a " + 
+                "matching '}' character." + Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
 
@@ -621,7 +670,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("{a}//{z}"),
-                "The route template separator character '/' cannot appear consecutively. It must be separated by either a parameter or a literal value." + Environment.NewLine +
+                "The route template separator character '/' cannot appear consecutively. It must be separated by " +
+                "either a parameter or a literal value." + Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
 
@@ -630,7 +680,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("foo/{p1}/{*p2}/{p3}"),
-                "A catch-all parameter can only appear as the last segment of the route template." + Environment.NewLine +
+                "A catch-all parameter can only appear as the last segment of the route template." + 
+                Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
 
@@ -639,7 +690,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("foo/aa{p1}{p2}"),
-                "A path segment cannot contain two consecutive parameters. They must be separated by a '/' or by a literal string." + Environment.NewLine +
+                "A path segment cannot contain two consecutive parameters. They must be separated by a '/' or by " +
+                "a literal string." + Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
 
@@ -666,7 +718,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("foor?bar"),
-                "The literal section 'foor?bar' is invalid. Literal sections cannot contain the '?' character." + Environment.NewLine +
+                "The literal section 'foor?bar' is invalid. Literal sections cannot contain the '?' character." + 
+                Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
 
@@ -687,7 +740,9 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         {
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("{foorb?}-bar-{z}"),
-                "A path segment that contains more than one section, such as a literal section or a parameter, cannot contain an optional parameter." + Environment.NewLine +
+                "In a path segment that contains more than one section, such as a literal section or a parameter, " +
+                "there can only be one optional parameter. The optional parameter must be the last parameter in " + 
+                "the segment and must be preceded by one single period (.)." + Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
 

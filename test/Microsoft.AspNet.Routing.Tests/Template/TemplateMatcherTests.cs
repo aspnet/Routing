@@ -102,7 +102,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         }
 
         [Theory]
-        [InlineData("moo/{p1}.{p2?}", "moo/foo.bar", "foo", "bar")]
+        [InlineData("moo/{p1}.{p2?}", "moo/foo.bar", "foo", "bar")]        
         [InlineData("moo/{p1?}", "moo/foo", "foo", null)]
         [InlineData("moo/{p1?}", "moo", null, null)]
         [InlineData("moo/{p1}.{p2?}", "moo/foo", "foo", null)]
@@ -111,6 +111,10 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [InlineData("moo/{p1}.{p2}", "moo/foo.bar", "foo", "bar")]
         [InlineData("moo/foo.{p1}.{p2?}", "moo/foo.moo.bar", "moo", "bar")]
         [InlineData("moo/foo.{p1}.{p2?}", "moo/foo.moo", "moo", null)]
+        [InlineData("moo/.{p2?}", "moo/.foo", null, "foo")]
+        [InlineData("moo/.{p2?}", "moo", null, null)]
+        [InlineData("moo/{p1}.{p2?}", "moo/....", "..", ".")]
+        [InlineData("moo/{p1}.{p2?}", "moo/.bar", ".bar", null)]
         public void MatchRoute_OptionalParameter_FollowedByPeriod_Valid(
             string template, 
             string path, 
@@ -139,7 +143,8 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [InlineData("moo/{p1}.{p2}.{p3?}", "moo/foo.moo", "foo", "moo", null)]
         [InlineData("moo/{p1}.{p2}.{p3}.{p4?}", "moo/foo.moo.bar", "foo", "moo", "bar")]
         [InlineData("{p1}.{p2?}/{p3}", "foo.moo/bar", "foo", "moo", "bar")]
-        [InlineData("{p1}.{p2?}/{p3}", "foo/bar", "foo", null, "bar")]
+        [InlineData("{p1}.{p2?}/{p3}", "foo/bar", "foo", null, "bar")]        
+        [InlineData("{p1}.{p2?}/{p3}", ".foo/bar", ".foo", null, "bar")]
         public void MatchRoute_OptionalParameter_FollowedByPeriod_3Parameters_Valid(
             string template, 
             string path, 
@@ -170,9 +175,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
 
         [Theory]        
         [InlineData("moo/{p1}.{p2?}", "moo/foo.")]
-        [InlineData("moo/{p1}.{p2?}", "moo/.")]
-        [InlineData("moo/{p1}.{p2?}", "moo/.bar")]
-        [InlineData("moo/{p1}.{p2?}", "moo/....")]
+        [InlineData("moo/{p1}.{p2?}", "moo/.")]        
         [InlineData("moo/{p1}.{p2}", "foo.")]
         [InlineData("moo/{p1}.{p2}", "foo")]
         [InlineData("moo/{p1}.{p2}.{p3?}", "moo/foo.moo.")]
@@ -180,8 +183,9 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [InlineData("moo/foo.{p2}.{p3?}", "moo/kungfoo.moo.bar")]
         [InlineData("moo/foo.{p2}.{p3?}", "moo/kungfoo.moo")]
         [InlineData("moo/{p1}.{p2}.{p3?}", "moo/foo")]
-        [InlineData("{p1}.{p2?}/{p3}", "foo./bar")]
-        [InlineData("{p1}.{p2?}/{p3}", ".foo/bar")]
+        [InlineData("{p1}.{p2?}/{p3}", "foo./bar")]        
+        [InlineData("moo/.{p2?}", "moo/.")]
+        [InlineData("{p1}.{p2}/{p3}", ".foo/bar")]
         public void MatchRoute_OptionalParameter_FollowedByPeriod_Invalid(string template, string path)
         {
             // Arrange
