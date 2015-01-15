@@ -220,14 +220,21 @@ namespace Microsoft.AspNet.Routing.Template
                             // we won't necessarily add it to the URI we generate.
                             if (!context.Buffer(converted))
                             {
-                                return null;
+                                    return null;
                             }
                         }
                         else
                         {
                             if (!context.Accept(converted))
                             {
-                                return null;
+                                if (part.IsOptional && segment.Parts[j - 1].IsOptionalSeperator)
+                                {
+                                    context.Remove(segment.Parts[j - 1].Text);
+                                }
+                                else
+                                {
+                                    return null;
+                                }
                             }
                         }
                     }
@@ -470,6 +477,12 @@ namespace Microsoft.AspNet.Routing.Template
 
                 _uri.Append(value);
                 return true;
+            }
+
+            public void Remove(string literal)
+            {
+                int startIndex = _uri.Length - literal.Length;
+                _uri.Remove(startIndex, literal.Length);
             }
 
             public bool Buffer(string value)
