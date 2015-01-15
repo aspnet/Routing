@@ -786,6 +786,55 @@ namespace Microsoft.AspNet.Routing.Template
             Assert.Null(context.RouteData.Values["1controller"]);
         }
 
+        [Fact]
+        public async Task Match_Success_OptionalParameter_ValueProvided()
+        {
+            // Arrange
+            var route = CreateRoute("{controller}/{action}.{format?}", new { action = "Index" });
+            var context = CreateRouteContext("/Home/Create.xml");
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.True(context.IsHandled);
+            Assert.Equal(3, context.RouteData.Values.Count);
+            Assert.Equal("Home", context.RouteData.Values["controller"]);
+            Assert.Equal("Create", context.RouteData.Values["action"]);
+            Assert.Equal("xml", context.RouteData.Values["format"]);
+        }
+
+        [Fact]
+        public async Task Match_Success_OptionalParameter_ValueNotProvided()
+        {
+            // Arrange
+            var route = CreateRoute("{controller}/{action}.{format?}", new { action = "Index" });
+            var context = CreateRouteContext("/Home/Create");
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.True(context.IsHandled);
+            Assert.Equal(2, context.RouteData.Values.Count);
+            Assert.Equal("Home", context.RouteData.Values["controller"]);
+            Assert.Equal("Create", context.RouteData.Values["action"]);
+        }
+
+        [Fact]
+        public async Task Match_Success_OptionalParameter_EndsWithDot()
+        {
+            // Arrange
+            var route = CreateRoute("{controller}/{action}.{format?}", new { action = "Index" });
+            var context = CreateRouteContext("/Home/Create.");
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.False(context.IsHandled);
+        }
+
         private static RouteContext CreateRouteContext(string requestPath, ILoggerFactory factory = null)
         {
             if (factory == null)
@@ -995,7 +1044,8 @@ namespace Microsoft.AspNet.Routing.Template
 
             var route = CreateRoute(target.Object, "{controller}/{action}");
             var context = CreateVirtualPathContext(
-                new { action = "Store" }, new { Controller = "Home", action = "Blog" });
+                new { action = "Store" }, 
+                new { Controller = "Home", action = "Blog" });
 
             var expectedValues = new RouteValueDictionary(new { controller = "Home", action = "Store" });
 
@@ -1398,6 +1448,26 @@ namespace Microsoft.AspNet.Routing.Template
 
             // Assert
             Assert.Equal("Home/Index/", path);
+        }
+
+        [Fact]
+        public void GetVirtualPath_OptionalParameter_InSimpleSegment()
+        {
+            // Arrange            
+            var route = CreateRoute(
+                template: "{controller}/{action}/{name?}",
+                defaults: null,
+                accept: true,
+                constraints: null);
+
+            var context = CreateVirtualPathContext(
+                values: new { action = "Index", controller = "Home"});
+
+            // Act
+            var path = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal("Home/Index", path);
         }
 
         private static VirtualPathContext CreateVirtualPathContext(object values)

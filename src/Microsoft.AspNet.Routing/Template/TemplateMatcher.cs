@@ -170,8 +170,18 @@ namespace Microsoft.AspNet.Routing.Template
                                          RouteValueDictionary values)
         {
             var indexOfLastSegment = routeSegment.Parts.Count - 1;
-            if(routeSegment.Parts[indexOfLastSegment].IsOptional && 
-                routeSegment.Parts[indexOfLastSegment - 1].IsOptionalSeperator)
+
+            // We match the request to the template starting at the rightmost parameter
+            // If the last segment of template is optional, then request can match the 
+            // template with or without the last parameter. So we start with regular matching,
+            // but if it doesn't match, we start with next to last parameter. Example:
+            // Template: {p1}/{p2}.{p3?}. If the request is foo/bar.moo it will match right away
+            // giving p3 value of moo. But if the request is foo/bar, we start matching from the
+            // rightmost giving p3 the value of bar, then we end up not matching the segment.
+            // In this case we start again from p2 to match the request and we succeed giving
+            // the value bar to p2
+            if (routeSegment.Parts[indexOfLastSegment].IsOptional &&
+                routeSegment.Parts[indexOfLastSegment - 1].IsOptionalSeperator)            
             {
                 if (MatchComplexSegmentCore(routeSegment, requestSegment, Defaults, values, indexOfLastSegment))
                 {
@@ -179,16 +189,16 @@ namespace Microsoft.AspNet.Routing.Template
                 }
                 else
                 {
-                    if(requestSegment.EndsWith(routeSegment.Parts[indexOfLastSegment-1].Text))
+                    if (requestSegment.EndsWith(routeSegment.Parts[indexOfLastSegment - 1].Text))
                     {
                         return false;
                     }
-                    
+
                     return MatchComplexSegmentCore(
-                        routeSegment, 
-                        requestSegment, 
-                        Defaults, 
-                        values, 
+                        routeSegment,
+                        requestSegment,
+                        Defaults,
+                        values,
                         indexOfLastSegment - 2);
                 }
             }
@@ -209,8 +219,7 @@ namespace Microsoft.AspNet.Routing.Template
 
             // Find last literal segment and get its last index in the string
             var lastIndex = requestSegment.Length;
-            //var indexOfLastSegmentUsed = routeSegment.Parts.Count - 1;
-
+            
             TemplatePart parameterNeedsValue = null; // Keeps track of a parameter segment that is pending a value
             TemplatePart lastLiteral = null; // Keeps track of the left-most literal we've encountered
 
