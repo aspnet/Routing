@@ -822,6 +822,24 @@ namespace Microsoft.AspNet.Routing.Template
         }
 
         [Fact]
+        public async Task Match_Success_OptionalParameter_DefaultValue()
+        {
+            // Arrange
+            var route = CreateRoute("{controller}/{action}.{format?}", new { action = "Index", format = "xml" });
+            var context = CreateRouteContext("/Home/Create");
+
+            // Act
+            await route.RouteAsync(context);
+
+            // Assert
+            Assert.True(context.IsHandled);
+            Assert.Equal(3, context.RouteData.Values.Count);
+            Assert.Equal("Home", context.RouteData.Values["controller"]);
+            Assert.Equal("Create", context.RouteData.Values["action"]);
+            Assert.Equal("xml", context.RouteData.Values["format"]);
+        }
+
+        [Fact]
         public async Task Match_Success_OptionalParameter_EndsWithDot()
         {
             // Arrange
@@ -1388,6 +1406,26 @@ namespace Microsoft.AspNet.Routing.Template
 
             // Assert
             Assert.Equal("Home/Index/products.xml", path);
+        }
+
+        [Fact]
+        public void GetVirtualPath_OptionalParameter_ParameterNotPresentInValues_PresentInDefaults()
+        {
+            // Arrange            
+            var route = CreateRoute(
+                template: "{controller}/{action}/{name}.{format?}",
+                defaults: new { format = "json" },
+                accept: true,
+                constraints: null);
+
+            var context = CreateVirtualPathContext(
+                values: new { action = "Index", controller = "Home", name = "products"});
+
+            // Act
+            var path = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal("Home/Index/products", path);
         }
 
         [Fact]
