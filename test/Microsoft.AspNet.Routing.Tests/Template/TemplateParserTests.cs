@@ -4,6 +4,7 @@
 #if ASPNET50
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNet.Testing;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.DependencyInjection.Fallback;
@@ -472,22 +473,23 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         }
 
         [Theory]
-        [InlineData(@"{p1:regex(^\d{{3}}-\d{{3}}-\d{{4}}$)}")] // ssn
-        [InlineData(@"{p1:regex(^\d{{1,2}}\/\d{{1,2}}\/\d{{4}}$)}")] // date
-        [InlineData(@"{p1:regex(^\w+\@\w+\.\w+)}")] // email
-        [InlineData(@"{p1:regex(([}}])\w+}")] // Not balanced }
-        [InlineData(@"{p1:regex(([{{(])\w+}")] // Not balanced }
-        public void Parse_RegularExpressions(string template)
+        [InlineData(@"{p1:regex(^\d{{3}}-\d{{3}}-\d{{4}}$)}", @"regex(^\d{3}-\d{3}-\d{4}$)")] // ssn
+        [InlineData(@"{p1:regex(^\d{{1,2}}\/\d{{1,2}}\/\d{{4}}$)}", @"regex(^\d{1,2}\/\d{1,2}\/\d{4}$)")] // date
+        [InlineData(@"{p1:regex(^\w+\@\w+\.\w+)}", @"regex(^\w+\@\w+\.\w+)")] // email
+        [InlineData(@"{p1:regex(([}}])\w+)}", @"regex(([}])\w+)")] // Not balanced }
+        [InlineData(@"{p1:regex(([{{(])\w+)}", @"regex(([{(])\w+)")] // Not balanced {
+        public void Parse_RegularExpressions(string template, string constraint)
         {
             // Arrange
             var expected = new RouteTemplate(new List<TemplateSegment>());
             expected.Segments.Add(new TemplateSegment());
-            InlineConstraint c = new InlineConstraint(template);
-            expected.Segments[0].Parts.Add(TemplatePart.CreateParameter("p1",
-                                                                        false,
-                                                                        false,
-                                                                        defaultValue: null,
-                                                                        inlineConstraints: null));
+            var c = new InlineConstraint(constraint);
+            expected.Segments[0].Parts.Add(
+                TemplatePart.CreateParameter("p1",
+                                            false,
+                                            false,
+                                            defaultValue: null,
+                                            inlineConstraints: new List<InlineConstraint> { c }));
             expected.Parameters.Add(expected.Segments[0].Parts[0]);
 
             // Act
@@ -503,6 +505,7 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [InlineData(@"{{p1:regex(^\d{{3}}-\d{{3}}-\d{{4}}$)}")] // extra { at the begining
         [InlineData(@"{p1:regex(([}])\w+}")] // Not escaped }
         [InlineData(@"{p1:regex(^\d{{3}}-\d{{3}}-\d{{4}$)}")] // Not escaped }
+        [InlineData(@"{p1:regex(abc)")]
         public void Parse_RegularExpressions_Invalid(string template)
         {
             // Act and Assert
@@ -619,7 +622,12 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         [InlineData("{*a*=5}", "a*")]
         [InlineData("{*a*b=5}", "a*b")]
         [InlineData("{p1?}.{p2/}/{p3}", "p2/")]
-        public void ParseRouteParameter_ThrowsIf_ParameterContainsAsterisk(string template, string parameterName)
+        [InlineData("{p{{}", "p{")]
+        [InlineData("{p}}}", "p}")]
+        [InlineData("{p/}", "p/")]
+        public void ParseRouteParameter_ThrowsIf_ParameterContainsSpecialCharacters(
+            string template, 
+            string parameterName)
         {
             // Arrange
             var expectedMessage = "The route parameter name '" + parameterName + "' is invalid. Route parameter " +
@@ -865,11 +873,31 @@ namespace Microsoft.AspNet.Routing.Template.Tests
                     x.IsCatchAll != y.IsCatchAll ||
                     x.IsOptional != y.IsOptional ||
                     !String.Equals(x.Name, y.Name, StringComparison.Ordinal) ||
-                    !String.Equals(x.Name, y.Name, StringComparison.Ordinal))
+                    !String.Equals(x.Name, y.Name, StringComparison.Ordinal) ||
+                    (x.InlineConstraints == null && y.InlineConstraints != null) ||
+                    (x.InlineConstraints != null && y.InlineConstraints == null))
                 {
                     return false;
                 }
 
+                if (x.InlineConstraints == null && y.InlineConstraints == null)
+                {
+                    return true;
+                }
+
+                if (x.InlineConstraints.Count() != y.InlineConstraints.Count())
+                {
+                    return false;
+                }
+
+                foreach (var xconstraint in x.InlineConstraints)
+                {
+                    if (!y.InlineConstraints.Any<InlineConstraint>(
+                        c => string.Equals(c.Constraint, xconstraint.Constraint)))
+                    {
+                        return false;
+                    }
+                }
 
                 return true;
             }

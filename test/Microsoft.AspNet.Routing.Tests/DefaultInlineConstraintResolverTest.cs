@@ -298,6 +298,21 @@ namespace Microsoft.AspNet.Routing.Tests
                          ex.Message);
         }
 
+        // These are cases which parsing does not catch and we'll end up here
+        [Theory]
+        [InlineData("regex(abc")]
+        [InlineData("int/")]
+        [InlineData("in{t")]
+        public void ResolveConstraint_Invalid_Throws(string constraint)
+        {
+            // Arrange
+            var routeOptions = new RouteOptions();
+            var resolver = GetInlineConstraintResolver(routeOptions);
+
+            // Act & Assert
+            Assert.Null(resolver.ResolveConstraint(constraint));
+        }
+
         [Fact]
         public void ResolveConstraint_NoMatchingConstructor_Throws()
         {

@@ -39,6 +39,28 @@ namespace Microsoft.AspNet.Routing.Template
         }
 
         [Fact]
+        public void CreateTemplate_InlineConstraint_Regex_Malformed()
+        {
+            // Arrange
+            var template = @"{controller}/{action}/ {p1:regex(abc} ";
+            var mockTarget = new Mock<IRouter>(MockBehavior.Strict);
+            var expected = "The constraint entry 'p1' - 'regex(abc' on the route " +
+                "'{controller}/{action}/ {p1:regex(abc} ' could not be resolved by the constraint resolver of type " +
+                "'IInlineConstraintResolverProxy'.";
+
+            var exception = Assert.Throws<InvalidOperationException>(
+                () => new TemplateRoute(
+                    mockTarget.Object,
+                    template,
+                    defaults: null,
+                    constraints: null,
+                    dataTokens: null,
+                    inlineConstraintResolver: _inlineConstraintResolver));
+
+            Assert.Equal(expected, exception.Message);
+        }
+
+        [Fact]
         public async Task RouteAsync_MatchSuccess_LogsCorrectValues()
         {
             // Arrange & Act

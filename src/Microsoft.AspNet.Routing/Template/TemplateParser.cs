@@ -18,7 +18,6 @@ namespace Microsoft.AspNet.Routing.Template
         private const char QuestionMark = '?';
         private const char Asterisk = '*';
         private const string PeriodString = ".";
-        private const char CloseBracket = ')';
 
         public static RouteTemplate Parse(string routeTemplate)
         {
@@ -143,6 +142,7 @@ namespace Microsoft.AspNet.Routing.Template
                     {
                         if (context.Current != OpenBrace)
                         {
+                            // If we see something like "{p1:regex(^\d{3", we will come here.
                             context.Error = Resources.TemplateRoute_UnescapedBrace;
                             return false;
                         }
@@ -150,23 +150,26 @@ namespace Microsoft.AspNet.Routing.Template
                     else
                     {
                         // This is a dangling open-brace, which is not allowed
+                        // Example: "{p1:regex(^\d{"
                         context.Error = Resources.TemplateRoute_MismatchedParameter;
                         return false;
                     }
                 }
                 else if (context.Current == CloseBrace)
                 {
-                    // This is a closed brace inside of a parameter. It needs to be escaped, to be valid inside the parameter
+                    // When we encounter Closed brace here, it either means end of the parameter or it is a closed 
+                    // brace in the parameter, in that case it needs to be escaped.
+                    // Example: {p1:regex(([}}])\w+}. First pair is escaped one and last marks end of the parameter
                     if (!context.Next())
                     {
+                        // This is the end of the string -and we have a valid parameter
                         context.Back();
                         break;
                     }
 
                     if (context.Current == CloseBrace)
                     {
-                        // This is an 'escaped' brace in a parameter name, which is not allowed.
-                        // We'll just accept it for now and let the validation code for the name find it.
+                        // This is an 'escaped' brace in a parameter name
                     }
                     else
                     {
