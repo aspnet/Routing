@@ -917,7 +917,7 @@ namespace Microsoft.AspNet.Routing.Template
 
             // Assert
             Assert.False(context.IsBound);
-            Assert.Null(path);
+            Assert.Equal("Home", path);
         }
 
         [Fact]
@@ -961,7 +961,7 @@ namespace Microsoft.AspNet.Routing.Template
             // Arrange
             var context = CreateVirtualPathContext(new { p1 = "hello", p2 = "1234" });
 
-            TemplateRoute r = CreateRoute(
+            var r = CreateRoute(
                 "{p1}/{p2}",
                 new { p2 = "catchall" },
                 true,
