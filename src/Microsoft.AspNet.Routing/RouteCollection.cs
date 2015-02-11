@@ -11,6 +11,7 @@ using Microsoft.AspNet.Routing.Logging.Internal;
 using Microsoft.Framework.DependencyInjection;
 using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.Logging;
+using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Routing
 {
@@ -197,7 +198,28 @@ namespace Microsoft.AspNet.Routing
             }
         }
 
-        private void EnsureLogger(HttpContext context)
+        private string NormalizeVirtualPath(String url)
+        {
+            if (_routeOptions.LowercaseUrls)
+            {
+                string lowercaseUrl = url;
+                string queryString = "";
+
+                int index = url.IndexOfAny(new char[] { '?', '#' });
+                if (index >= 0)
+                {
+                    lowercaseUrl = url.Substring(0, index);
+                    queryString = url.Substring(index);
+                }
+
+                lowercaseUrl = lowercaseUrl.ToLowerInvariant();
+                url = lowercaseUrl + queryString;
+            }
+
+            return url;
+    }
+
+    private void EnsureLogger(HttpContext context)
         {
             if (_logger == null)
             {

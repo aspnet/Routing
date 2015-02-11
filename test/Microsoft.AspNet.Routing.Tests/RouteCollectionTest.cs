@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing.Logging;
+using Microsoft.AspNet.Routing.Template;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
 using Moq;
@@ -17,6 +18,32 @@ namespace Microsoft.AspNet.Routing
 {
     public class RouteCollectionTest
     {
+        [Theory]
+        [InlineData(@"Home/Index/23", "home/index/23", true)]
+        [InlineData(@"Home/Index/23", "Home/Index/23", false)]
+        [InlineData(@"Home/Index/23?Param1=ABC&Param2=Xyz", "Home/Index/23?Param1=ABC&Param2=Xyz", false)]
+        [InlineData(@"Home/Index/23?Param1=ABC&Param2=Xyz", "home/index/23?Param1=ABC&Param2=Xyz", true)]
+        [InlineData(@"Home/Index/23#Param1=ABC&Param2=Xyz", "Home/Index/23#Param1=ABC&Param2=Xyz", false)]
+        [InlineData(@"Home/Index/23#Param1=ABC&Param2=Xyz", "home/index/23#Param1=ABC&Param2=Xyz", true)]
+        public void GetVirtualPathTests(string returnUrl, string lowercaseUrl, bool lowercaseUrls)
+        {
+            // Arrange
+            var target = new Mock<IRouter>(MockBehavior.Strict);
+            target
+                .Setup(e => e.GetVirtualPath(It.IsAny<VirtualPathContext>()))
+                .Returns(returnUrl);
+
+            var routeCollection = new RouteCollection(GetIOptionsWithRouteOptions(lowercaseUrls));
+            routeCollection.Add(target.Object);
+            var virtualPathContext = new VirtualPathContext(null, null, null, null);
+
+            // Act
+            var stringVirtualPath = routeCollection.GetVirtualPath(virtualPathContext);
+
+            // Assert
+            Assert.Equal(lowercaseUrl, stringVirtualPath);
+        }
+
         [Fact]
         public async Task RouteAsync_LogsCorrectValuesWhenHandled()
         {
@@ -98,7 +125,7 @@ namespace Microsoft.AspNet.Routing
         public async Task RouteAsync_FirstMatches()
         {
             // Arrange
-            var routes = new RouteCollection();
+            var routes = new RouteCollection(GetIOptionsWithRouteOptions());
 
             var route1 = CreateRoute(accept: true);
             routes.Add(route1.Object);
@@ -124,8 +151,8 @@ namespace Microsoft.AspNet.Routing
         public async Task RouteAsync_SecondMatches()
         {
             // Arrange
-            var routes = new RouteCollection();
 
+            var routes = new RouteCollection(GetIOptionsWithRouteOptions());
             var route1 = CreateRoute(accept: false);
             routes.Add(route1.Object);
 
@@ -150,8 +177,7 @@ namespace Microsoft.AspNet.Routing
         public async Task RouteAsync_NoMatch()
         {
             // Arrange
-            var routes = new RouteCollection();
-
+            var routes = new RouteCollection(GetIOptionsWithRouteOptions());
             var route1 = CreateRoute(accept: false);
             routes.Add(route1.Object);
 
@@ -171,18 +197,22 @@ namespace Microsoft.AspNet.Routing
             Assert.Empty(context.RouteData.Routers);
         }
 
-        [Fact]
-        public void NamedRouteTests_GetNamedRoute_ReturnsValue()
+        [Theory]
+        [InlineData(false, "RouteName")]
+        [InlineData(true, "routename")]
+        public void NamedRouteTests_GetNamedRoute_ReturnsValue(bool lowercaseUrls, string expectedUrl)
         {
             // Arrange
-            var routeCollection = GetNestedRouteCollection(new string[] { "Route1", "Route2", "RouteName", "Route3" });
+            var routeCollection = GetNestedRouteCollection(
+                new string[] { "Route1", "Route2", "RouteName", "Route3" },
+                lowercaseUrls);
             var virtualPathContext = CreateVirtualPathContext("RouteName");
 
             // Act
             var stringVirtualPath = routeCollection.GetVirtualPath(virtualPathContext);
 
             // Assert
-            Assert.Equal("RouteName", stringVirtualPath);
+            Assert.Equal(expectedUrl, stringVirtualPath);
         }
 
         [Fact]
@@ -213,7 +243,7 @@ namespace Microsoft.AspNet.Routing
             var stringVirtualPath = routeCollection.GetVirtualPath(virtualPathContext);
 
             // Assert
-            Assert.Equal("Route1", stringVirtualPath);
+            Assert.Equal("route1", stringVirtualPath);
         }
 
         [Fact]
@@ -229,7 +259,9 @@ namespace Microsoft.AspNet.Routing
 
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(() => routeCollection.GetVirtualPath(virtualPathContext));
-            Assert.Equal("The supplied route name 'ambiguousRoute' is ambiguous and matched more than one route.", ex.Message);
+            Assert.Equal(
+                "The supplied route name 'ambiguousRoute' is ambiguous and matched more than one route.", 
+                ex.Message);
         }
 
         [Fact]
@@ -526,6 +558,75 @@ namespace Microsoft.AspNet.Routing
             route3.Verify(r => r.GetVirtualPath(It.IsAny<VirtualPathContext>()), Times.Once());
         }
 
+        // "Integration" tests for RouteCollection
+
+        public static IEnumerable<object[]> DataTokens
+        {
+            get
+            {
+                yield return new object[] {
+                    "{controller}/{action}",
+                    new RouteValueDictionary { { "controller", "Home" }, { "action", "Index" } },
+                    "home/index",
+                    true };
+
+                yield return new object[] {
+                    "{controller}/{action}/",
+                    new RouteValueDictionary { { "controller", "Home" }, { "action", "Index" } },
+                    "Home/Index",
+                    false };
+
+                yield return new object[] {
+                    "api/{action}/",
+                    new RouteValueDictionary { { "action", "Create" } },
+                    "api/create",
+                    true };
+
+                yield return new object[] {
+                    "api/{action}/{id}",
+                    new RouteValueDictionary {
+                        { "action", "Create" },
+                        { "id", "23" },
+                        { "Param1", "Value1" },
+                        { "Param2", "Value2" } },
+                    "api/create/23?Param1=Value1&Param2=Value2",
+                    true };
+
+                yield return new object[] {
+                    "api/{action}/{id}",
+                    new RouteValueDictionary {
+                        { "action", "Create" },
+                        { "id", "23" },
+                        { "Param1", "Value1" },
+                        { "Param2", "Value2" } },
+                    "api/Create/23?Param1=Value1&Param2=Value2",
+                    false };
+            }
+        }
+
+        [Theory]
+        [MemberData("DataTokens")]
+        public void GetVirtualPath_Success(
+            string template,
+            RouteValueDictionary values,
+            string expectedUrl,
+            bool lowercaseUrls
+            )
+        {
+            // Arrange
+            var routeCollection = new RouteCollection(GetIOptionsWithRouteOptions(lowercaseUrls));
+            var route = CreateTemplateRoute(template);
+            routeCollection.Add(route);
+            var context = CreateVirtualPathContext(values);
+
+            // Act
+            var path = routeCollection.GetVirtualPath(context);
+
+            // Assert
+            Assert.True(context.IsBound);
+            Assert.Equal(expectedUrl, path);
+        }
+
         private static async Task<TestSink> SetUp(bool enabled, bool handled)
         {
             // Arrange
@@ -534,7 +635,7 @@ namespace Microsoft.AspNet.Routing
                 TestSink.EnableWithTypeName<RouteCollection>);
             var loggerFactory = new TestLoggerFactory(sink, enabled);
 
-            var routes = new RouteCollection();
+            var routes = new RouteCollection(GetIOptionsWithRouteOptions());
             var route = CreateRoute(accept: handled);
             routes.Add(route.Object);
 
@@ -546,9 +647,11 @@ namespace Microsoft.AspNet.Routing
             return sink;
         }
 
-        private static RouteCollection GetRouteCollectionWithNamedRoutes(IEnumerable<string> routeNames)
+        private static RouteCollection GetRouteCollectionWithNamedRoutes(
+            IEnumerable<string> routeNames, 
+            bool lowercaseUrls = true)
         {
-            var routes = new RouteCollection();
+            var routes = new RouteCollection(GetIOptionsWithRouteOptions(lowercaseUrls));
             foreach (var routeName in routeNames)
             {
                 var route1 = CreateNamedRoute(routeName, accept: true);
@@ -558,17 +661,17 @@ namespace Microsoft.AspNet.Routing
             return routes;
         }
 
-        private static RouteCollection GetNestedRouteCollection(string[] routeNames)
+        private static RouteCollection GetNestedRouteCollection(string[] routeNames, bool lowercaseUrls = true)
         {
             var random = new Random();
             int index = random.Next(0, routeNames.Length - 1);
             var first = routeNames.Take(index).ToArray();
             var second = routeNames.Skip(index).ToArray();
 
-            var rc1 = GetRouteCollectionWithNamedRoutes(first);
-            var rc2 = GetRouteCollectionWithNamedRoutes(second);
-            var rc3 = new RouteCollection();
-            var rc4 = new RouteCollection();
+            var rc1 = GetRouteCollectionWithNamedRoutes(first, lowercaseUrls);
+            var rc2 = GetRouteCollectionWithNamedRoutes(second, lowercaseUrls);
+            var rc3 = new RouteCollection(GetIOptionsWithRouteOptions(lowercaseUrls));
+            var rc4 = new RouteCollection(GetIOptionsWithRouteOptions(lowercaseUrls));
 
             rc1.Add(rc3);
             rc4.Add(rc2);
@@ -581,7 +684,7 @@ namespace Microsoft.AspNet.Routing
             rc4.Add(CreateRoute(accept: false).Object);
             rc4.Add(CreateRoute(accept: false).Object);
 
-            var routeCollection = new RouteCollection();
+            var routeCollection = new RouteCollection(GetIOptionsWithRouteOptions(lowercaseUrls));
             routeCollection.Add(rc1);
             routeCollection.Add(rc4);
 
@@ -615,6 +718,19 @@ namespace Microsoft.AspNet.Routing
             return target.Object;
         }
 
+        private static TemplateRoute CreateTemplateRoute(string template)
+        {
+            var target = new Mock<IRouter>(MockBehavior.Strict);
+            target
+                .Setup(e => e.GetVirtualPath(It.IsAny<VirtualPathContext>()))
+                .Callback<VirtualPathContext>(c => c.IsBound = true)
+                .Returns<VirtualPathContext>(rc => null);
+
+            var resolverMock = new Mock<IInlineConstraintResolver>();
+            return new TemplateRoute(target.Object, template, resolverMock.Object);
+        }
+
+        private static VirtualPathContext CreateVirtualPathContext(string routeName)
         private static VirtualPathContext CreateVirtualPathContext(
             string routeName = null,
             ILoggerFactory loggerFactory = null,
@@ -646,6 +762,19 @@ namespace Microsoft.AspNet.Routing
             return new VirtualPathContext(context.Object, null, null, routeName);
         }
 
+        private static VirtualPathContext CreateVirtualPathContext(
+            RouteValueDictionary values)
+        {
+            //var valueDictionary = new RouteValueDictionary(values);
+            var context = new Mock<HttpContext>(MockBehavior.Strict);
+            context.Setup(m => m.RequestServices.GetService(typeof(ILoggerFactory)))
+                .Returns(NullLoggerFactory.Instance);
+
+            return new VirtualPathContext(context.Object, null, values);
+        }
+
+
+        private static RouteContext CreateRouteContext(string requestPath, ILoggerFactory factory = null)
         private static RouteContext CreateRouteContext(
             string requestPath,
             ILoggerFactory loggerFactory = null,
@@ -696,6 +825,15 @@ namespace Microsoft.AspNet.Routing
                 .Verifiable();
 
             return target;
+        }
+
+        private static IOptions<RouteOptions> GetIOptionsWithRouteOptions(bool lowerCaseUrls = true)
+        {
+            RouteOptions routeOptions = new RouteOptions();
+            routeOptions.LowercaseUrls = lowerCaseUrls;
+            var iOptions = new Mock<IOptions<RouteOptions>>();
+            iOptions.Setup(o => o.Options).Returns(routeOptions);
+            return iOptions.Object;
         }
     }
 }
