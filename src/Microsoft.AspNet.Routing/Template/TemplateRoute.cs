@@ -210,12 +210,12 @@ namespace Microsoft.AspNet.Routing.Template
                 return path;
             }
 
-			// If we can produce a value go ahead and do it, the caller can check context.IsBound
-			// to see if the values were validated.
+            // If we can produce a value go ahead and do it, the caller can check context.IsBound
+            // to see if the values were validated.
             path = _binder.BindValues(values.AcceptedValues);
-			context.IsBound = childContext.IsBound;
+            context.IsBound = childContext.IsBound;
 
-			return path;
+            return path;
         }
 
         private VirtualPathContext CreateChildVirtualPathContext(
@@ -276,7 +276,7 @@ namespace Microsoft.AspNet.Routing.Template
                 foreach (var inlineConstraint in parameter.InlineConstraints)
                 {
                     constraintBuilder.AddResolvedConstraint(parameter.Name, inlineConstraint.Constraint);
-                }                
+                }
             }
 
             return constraintBuilder.Build();

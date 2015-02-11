@@ -906,7 +906,7 @@ namespace Microsoft.AspNet.Routing.Template
         }
 
         [Fact]
-        public void GetVirtualPath_RejectedByHandler()
+        public void GetVirtualPath_ValuesRejectedByHandler_StillGeneratesPath()
         {
             // Arrange
             var route = CreateRoute("{controller}", accept: false);

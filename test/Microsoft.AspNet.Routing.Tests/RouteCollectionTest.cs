@@ -265,10 +265,10 @@ namespace Microsoft.AspNet.Routing
             var noMatch = CreateNamedRoute("NoMatch", accept: true, matchValue: "bad");
 
             var routeCollection = new RouteCollection();
-            routeCollection.Add(noMatch);
+            routeCollection.Add(bestMatch);
 
             var innerRouteCollection = new RouteCollection();
-            innerRouteCollection.Add(bestMatch);
+            innerRouteCollection.Add(noMatch);
             routeCollection.Add(innerRouteCollection);
 
             var options = new RouteOptions()
@@ -288,7 +288,7 @@ namespace Microsoft.AspNet.Routing
         public void GetVirtualPath_NamedRoute_BestEffort_BestMatchInNestedCollection()
         {
             // Arrange
-            var bestMatch = CreateNamedRoute("NoMatch", accept: true, matchValue: "bar");
+            var bestMatch = CreateNamedRoute("NoMatch", accept: true, matchValue: "bad");
             var noMatch = CreateNamedRoute("Match", accept: true, matchValue: "best");
 
             var routeCollection = new RouteCollection();
@@ -677,13 +677,11 @@ namespace Microsoft.AspNet.Routing
             return new RouteContext(context.Object);
         }
 
-        private static Mock<IRouter> CreateRoute(bool accept = true, bool match = false, string matchValue = null)
+        private static Mock<IRouter> CreateRoute(
+            bool accept = true,
+            bool match = false,
+            string matchValue = "value")
         {
-            if (matchValue == null)
-            {
-                matchValue = "value";
-            }
-
             var target = new Mock<IRouter>(MockBehavior.Strict);
             target
                 .Setup(e => e.GetVirtualPath(It.IsAny<VirtualPathContext>()))
