@@ -3,8 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.OptionsModel;
 
 namespace Microsoft.AspNet.Routing
 {
@@ -27,7 +25,7 @@ namespace Microsoft.AspNet.Routing
 
         public IRouter Build()
         {
-            var routeCollection = new RouteCollection(ServiceProvider.GetRequiredService<IOptions<RouteOptions>>());
+            var routeCollection = new RouteCollection();
 
             foreach (var route in Routes)
             {

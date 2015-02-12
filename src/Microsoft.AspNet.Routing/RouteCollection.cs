@@ -9,9 +9,9 @@ using Microsoft.AspNet.Http;
 using Microsoft.AspNet.Routing.Logging;
 using Microsoft.AspNet.Routing.Logging.Internal;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.OptionsModel;
 using Microsoft.Framework.Logging;
 using Microsoft.Framework.OptionsModel;
+
 
 namespace Microsoft.AspNet.Routing
 {
@@ -155,7 +155,7 @@ namespace Microsoft.AspNet.Routing
                 if (isValidated || useBestEffort)
                 {
                     context.IsBound = isValidated;
-                    return bestPath;
+                    return NormalizeVirtualPath(bestPath);
                 }
                 else
                 {
@@ -178,7 +178,7 @@ namespace Microsoft.AspNet.Routing
                     if (context.IsBound)
                     {
                         // This route has validated route values, short circuit.
-                        return path;
+                        return NormalizeVirtualPath(path);
                     }
                     else if (bestPath == null)
                     {
@@ -189,7 +189,7 @@ namespace Microsoft.AspNet.Routing
 
                 if (useBestEffort)
                 {
-                    return bestPath;
+                    return NormalizeVirtualPath(bestPath);
                 }
                 else
                 {
@@ -200,20 +200,25 @@ namespace Microsoft.AspNet.Routing
 
         private string NormalizeVirtualPath(String url)
         {
-            if (_routeOptions.LowercaseUrls)
+            if (string.IsNullOrEmpty(url)) return url;
+
+            if (_options.LowercaseUrls)
             {
-                string lowercaseUrl = url;
-                string queryString = "";
+                var indexOfSeparator = url.IndexOfAny(new char[] { '?', '#' });
 
-                int index = url.IndexOfAny(new char[] { '?', '#' });
-                if (index >= 0)
+                // No query string, lowercase the url
+                if (indexOfSeparator == -1)
                 {
-                    lowercaseUrl = url.Substring(0, index);
-                    queryString = url.Substring(index);
+                    return url.ToLowerInvariant();
                 }
+                else
+                {
+                    var lowercaseUrl = url.Substring(0, indexOfSeparator).ToLowerInvariant();
+                    var queryString = url.Substring(indexOfSeparator);
 
-                lowercaseUrl = lowercaseUrl.ToLowerInvariant();
-                url = lowercaseUrl + queryString;
+                    // queryString will contain the delimiter ? or # as the first character, so it's safe to append.
+                    return lowercaseUrl + queryString;
+                }
             }
 
             return url;

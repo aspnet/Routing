@@ -6,7 +6,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.OptionsModel;
 using Moq;
 
 namespace Microsoft.AspNet.Routing.Tests
@@ -17,7 +16,7 @@ namespace Microsoft.AspNet.Routing.Tests
         {
             var context = new Mock<HttpContext>();
 
-            var route = new RouteCollection(GetIOptionsWithRouteOptions());
+            var route = new RouteCollection();
 
             if (routeConfig != null)
             {
@@ -28,15 +27,6 @@ namespace Microsoft.AspNet.Routing.Tests
             var values = new Dictionary<string, object>() { { parameterName, value } };
             var routeDirection = RouteDirection.IncomingRequest;
             return constraint.Match(context.Object, route, parameterName, values, routeDirection);
-        }
-
-        private static IOptions<RouteOptions> GetIOptionsWithRouteOptions(bool lowerCaseUrls = true)
-        {
-            RouteOptions routeOptions = new RouteOptions();
-            routeOptions.LowercaseUrls = lowerCaseUrls;
-            var iOptions = new Mock<IOptions<RouteOptions>>();
-            iOptions.Setup(o => o.Options).Returns(iOptions.Object.Options);
-            return iOptions.Object;
         }
     }
 }
