@@ -189,4 +189,10 @@
   <data name="TemplateRoute_UnescapedBrace" xml:space="preserve">
     <value>In a route parameter, '{' and '}' must be escaped with '{{' and '}}'</value>
   </data>
+  <data name="TemplateRoute_OptionalParameterCanbBePrecededByPeriod" xml:space="preserve">
+    <value>In the complex segment '{0}',  the optional parameter '{1}' is preceded by an invalid segment '{2}'. Only valid literal to precede an optional parameter is a period (.).</value>
+  </data>
+  <data name="TemplateRoute_OptionalParameterHasTobeTheLast" xml:space="preserve">
+    <value>In the complex segment '{0}', optional parameter '{1}' should be the last parameter. No literal or parameter is not allowed after optional parameter.</value>
+  </data>
 </root>

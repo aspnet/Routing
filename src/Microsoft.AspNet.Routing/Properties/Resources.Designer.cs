@@ -394,6 +394,38 @@ namespace Microsoft.AspNet.Routing
             return GetString("TemplateRoute_UnescapedBrace");
         }
 
+        /// <summary>
+        /// The complex segment '{0}' has an optional parameter preceded by an invalid segment '{1}'. Only valid literal to precede an optional parameter is a period (.).
+        /// </summary>
+        internal static string TemplateRoute_OptionalParameterCanbBePrecededByPeriod
+        {
+            get { return GetString("TemplateRoute_OptionalParameterCanbBePrecededByPeriod"); }
+        }
+
+        /// <summary>
+        /// The complex segment '{0}' has an optional parameter preceded by an invalid segment '{1}'. Only valid literal to precede an optional parameter is a period (.).
+        /// </summary>
+        internal static string FormatTemplateRoute_OptionalParameterCanbBePrecededByPeriod(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TemplateRoute_OptionalParameterCanbBePrecededByPeriod"), p0, p1);
+        }
+
+        /// <summary>
+        /// In the complex segment '{0}', optional parameter '{1}' should be the last parameter. No literal or parameter is not allowed after optional parameter.
+        /// </summary>
+        internal static string TemplateRoute_OptionalParameterHasTobeTheLast
+        {
+            get { return GetString("TemplateRoute_OptionalParameterHasTobeTheLast"); }
+        }
+
+        /// <summary>
+        /// In the complex segment '{0}', optional parameter '{1}' should be the last parameter. No literal or parameter is not allowed after optional parameter.
+        /// </summary>
+        internal static string FormatTemplateRoute_OptionalParameterHasTobeTheLast(object p0, object p1)
+        {
+            return string.Format(CultureInfo.CurrentCulture, GetString("TemplateRoute_OptionalParameterHasTobeTheLast"), p0, p1);
+        }
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
