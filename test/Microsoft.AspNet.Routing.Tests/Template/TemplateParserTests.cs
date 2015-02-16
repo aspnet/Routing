@@ -528,17 +528,22 @@ namespace Microsoft.AspNet.Routing.Template.Tests
         }
 
         [Theory]
-        [InlineData("{p1}.{p2?}.{p3}", "p2")]
-        [InlineData("{p1?}.{p2}", "p1")]
-        [InlineData("{p1?}{p2?}", "p1")]
-        public void Parse_ComplexSegment_OptionalParameter_NotTheLastPart(string template, string parameter)
+        [InlineData("{p1}.{p2?}.{p3}", "p2", ".")]
+        [InlineData("{p1?}{p2}", "p1", "p2")]
+        [InlineData("{p1?}{p2?}", "p1", "p2")]
+        [InlineData("{p1}.{p2?})", "p2", ")")]
+        [InlineData("{foorb?}-bar-{z}", "foorb", "-bar-")]
+        public void Parse_ComplexSegment_OptionalParameter_NotTheLastPart(
+            string template, 
+            string parameter, 
+            string invalid)
         {
             // Act and Assert
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse(template),
-                "In the complex segment '" + template + "', optional parameter '" + parameter + "' should be the last " +
-                "parameter. No literal or parameter is not allowed after optional parameter." + Environment.NewLine +
-                "Parameter name: routeTemplate");
+                "An optional parameter must be at the end of the segment. In the segment '" + template +
+                "', optional parameter '" + parameter + "' is followed by '" + invalid + "'."
+                 + Environment.NewLine + "Parameter name: routeTemplate");
         }
 
         [InlineData("{p1}-{p2?}", "-")]
@@ -800,16 +805,6 @@ namespace Microsoft.AspNet.Routing.Template.Tests
                 " contain these characters: '{', '}', '/'. The '?' character marks a parameter as optional, and" +
                 " can occur only at the end of the parameter. The '*' character marks a parameter as catch-all," +
                 " and can occur only at the start of the parameter." + Environment.NewLine +
-                "Parameter name: routeTemplate");
-        }
-
-        [Fact]
-        public void InvalidTemplate_MultiSegmentParameterCannotContainOptionalParameter()
-        {
-            ExceptionAssert.Throws<ArgumentException>(
-                () => TemplateParser.Parse("{foorb?}-bar-{z}"),
-                @"In the complex segment '{foorb?}-bar-{z}', optional parameter 'foorb' should be the last " +
-                "parameter. No literal or parameter is not allowed after optional parameter." + Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
 

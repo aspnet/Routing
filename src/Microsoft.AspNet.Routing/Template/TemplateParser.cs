@@ -366,17 +366,20 @@ namespace Microsoft.AspNet.Routing.Template
                             return false;
                         }
                     }
-                    // This optional parameter is not the last one in the segment
                     else
                     {
+                        // This optional parameter is not the last one in the segment
                         // Example:
-                        //In the complex segment "{RouteValue?})" optional parameter "RouteValue" should be the 
-                        //last parameter.No literal or parameter is not allowed after optional parameter.
+                        // An optional parameter must be at the end of the segment.In the segment '{RouteValue?})', 
+                        // optional parameter 'RouteValue' is followed by ')'
+                        var nextPart = segment.Parts[i + 1];
+                        var invalidPartText = nextPart.IsParameter ? nextPart.Name : nextPart.Text;
+
                         context.Error = string.Format(
                             Resources.TemplateRoute_OptionalParameterHasTobeTheLast,
                             segment.DebuggerToString(),
                             segment.Parts[i].Name,
-                            segment.Parts[i+1].Name
+                            invalidPartText
                             );
 
                         return false;

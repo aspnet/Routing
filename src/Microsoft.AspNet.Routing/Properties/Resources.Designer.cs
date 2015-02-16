@@ -379,7 +379,7 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <summary>
-        /// In the segment '{0}', the optional parameter '{1}' is preceded by an invalid segment '{2}'. Only valid literal to precede an optional parameter is a period (.).
+        /// In the segment '{0}', the optional parameter '{1}' is preceded by an invalid segment '{2}'.  Only a period (.) can precede an optional parameter.
         /// </summary>
         internal static string TemplateRoute_OptionalParameterCanbBePrecededByPeriod
         {
@@ -387,7 +387,7 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <summary>
-        /// In the segment '{0}', the optional parameter '{1}' is preceded by an invalid segment '{2}'. Only valid literal to precede an optional parameter is a period (.).
+        /// In the segment '{0}', the optional parameter '{1}' is preceded by an invalid segment '{2}'.  Only a period (.) can precede an optional parameter.
         /// </summary>
         internal static string FormatTemplateRoute_OptionalParameterCanbBePrecededByPeriod(object p0, object p1, object p2)
         {
@@ -395,7 +395,7 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <summary>
-        /// In the segment '{0}', optional parameter '{1}' should be the last parameter. An optional parameter must be at the end of the segment, it was followed by '{2}'
+        /// An optional parameter must be at the end of the segment. In the segment '{0}', optional parameter '{1}' is followed by '{2}'.
         /// </summary>
         internal static string TemplateRoute_OptionalParameterHasTobeTheLast
         {
@@ -403,7 +403,7 @@ namespace Microsoft.AspNet.Routing
         }
 
         /// <summary>
-        /// In the segment '{0}', optional parameter '{1}' should be the last parameter. An optional parameter must be at the end of the segment, it was followed by '{2}'
+        /// An optional parameter must be at the end of the segment. In the segment '{0}', optional parameter '{1}' is followed by '{2}'.
         /// </summary>
         internal static string FormatTemplateRoute_OptionalParameterHasTobeTheLast(object p0, object p1, object p2)
         {

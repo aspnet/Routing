@@ -187,9 +187,9 @@
     <value>In a route parameter, '{' and '}' must be escaped with '{{' and '}}'</value>
   </data>
   <data name="TemplateRoute_OptionalParameterCanbBePrecededByPeriod" xml:space="preserve">
-    <value>In the segment '{0}', the optional parameter '{1}' is preceded by an invalid segment '{2}'. Only valid literal to precede an optional parameter is a period (.).</value>
+    <value>In the segment '{0}', the optional parameter '{1}' is preceded by an invalid segment '{2}'.  Only a period (.) can precede an optional parameter.</value>
   </data>
   <data name="TemplateRoute_OptionalParameterHasTobeTheLast" xml:space="preserve">
-    <value>In the segment '{0}', optional parameter '{1}' should be the last parameter. An optional parameter must be at the end of the segment, it was followed by '{2}'</value>
+    <value>An optional parameter must be at the end of the segment. In the segment '{0}', optional parameter '{1}' is followed by '{2}'.</value>
   </data>
 </root>
