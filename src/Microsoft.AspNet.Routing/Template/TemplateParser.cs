@@ -375,7 +375,9 @@ namespace Microsoft.AspNet.Routing.Template
                         context.Error = string.Format(
                             Resources.TemplateRoute_OptionalParameterHasTobeTheLast,
                             segment.DebuggerToString(),
-                            segment.Parts[i].Name);
+                            segment.Parts[i].Name,
+                            segment.Parts[i+1].Name
+                            );
 
                         return false;
                     }
