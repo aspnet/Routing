@@ -180,7 +180,7 @@ namespace Microsoft.AspNet.Routing.Template
             }
         }
 
-        public virtual string GetVirtualPath(VirtualPathContext context)
+        public virtual VirtualPathData GetVirtualPath(VirtualPathContext context)
         {
             var values = _binder.GetValues(context.AmbientValues, context.Values);
             if (values == null)
@@ -203,19 +203,31 @@ namespace Microsoft.AspNet.Routing.Template
             // Validate that the target can accept these values.
             var childContext = CreateChildVirtualPathContext(context, values.AcceptedValues);
 
-            var path = _target.GetVirtualPath(childContext);
-            if (path != null)
+            var pathData = _target.GetVirtualPath(childContext);
+            if (pathData != null)
             {
                 // If the target generates a value then that can short circuit.
-                return path;
+                return pathData;
             }
 
             // If we can produce a value go ahead and do it, the caller can check context.IsBound
             // to see if the values were validated.
-            path = _binder.BindValues(values.AcceptedValues);
+            var tempDataTokens = new RouteValueDictionary();
+            if (DataTokens != null)
+            {
+                foreach (var dataToken in DataTokens)
+                {
+                    tempDataTokens.Add(dataToken.Key, dataToken.Value);
+                }
+            }
+            pathData = new VirtualPathData(
+                router: this,
+                virtualPath: _binder.BindValues(values.AcceptedValues),
+                dataTokens: tempDataTokens);
+
             context.IsBound = childContext.IsBound;
 
-            return path;
+            return pathData;
         }
 
         private VirtualPathContext CreateChildVirtualPathContext(
