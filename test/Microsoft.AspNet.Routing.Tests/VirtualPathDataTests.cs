@@ -10,27 +10,39 @@ namespace Microsoft.AspNet.Routing
     public class VirtualPathDataTests
     {
         [Fact]
-        public void Constructor_InitializeProperties()
+        public void Constructor_CreatesEmptyDataTokensIfNull()
         {
             // Arrange
             var router = new Mock<IRouter>().Object;
             var path = "virtual path";
 
             // Act
-            var pathData = new VirtualPathData(router, path);
+            var pathData1 = new VirtualPathData(router, path);
+            var pathData2 = new VirtualPathData(router, path, null);
 
             // Assert
-            Assert.Same(router, pathData.Router);
-            Assert.Same(path, pathData.VirtualPath);
-            Assert.NotNull(pathData.DataTokens);
-            Assert.Empty(pathData.DataTokens);
+            Assert.Same(router, pathData1.Router);
+            Assert.Same(path, pathData1.VirtualPath);
+            Assert.NotNull(pathData1.DataTokens);
+            Assert.Empty(pathData1.DataTokens);
 
+            Assert.Same(router, pathData2.Router);
+            Assert.Same(path, pathData2.VirtualPath);
+            Assert.NotNull(pathData2.DataTokens);
+            Assert.Empty(pathData2.DataTokens);
+        }
+
+        [Fact]
+        public void Constructor_SetDataTokens()
+        {
             // Arrange
+            var router = new Mock<IRouter>().Object;
+            var path = "virtual path";
             var dataTokens = new RouteValueDictionary();
             dataTokens["TestKey"] = "TestValue";
 
             // Act
-            pathData = new VirtualPathData(router, path, dataTokens);
+            var pathData = new VirtualPathData(router, path, dataTokens);
 
             // Assert
             Assert.Same(router, pathData.Router);
@@ -38,15 +50,6 @@ namespace Microsoft.AspNet.Routing
             Assert.NotNull(pathData.DataTokens);
             Assert.Equal("TestValue", pathData.DataTokens["TestKey"]);
             Assert.Same(dataTokens, pathData.DataTokens);
-
-            // Arrange & Act
-            pathData = new VirtualPathData(router, path, null);
-
-            // Asset
-            Assert.Same(router, pathData.Router);
-            Assert.Same(path, pathData.VirtualPath);
-            Assert.NotNull(pathData.DataTokens);
-            Assert.Empty(pathData.DataTokens);
         }
 
         [Fact]

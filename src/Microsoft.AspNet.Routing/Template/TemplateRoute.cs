@@ -212,18 +212,22 @@ namespace Microsoft.AspNet.Routing.Template
 
             // If we can produce a value go ahead and do it, the caller can check context.IsBound
             // to see if the values were validated.
-            var tempDataTokens = new RouteValueDictionary();
+
+            // When we still cannot produce a value, this should return null.
+            var tempPath = _binder.BindValues(values.AcceptedValues);
+            if (tempPath == null)
+            {
+                return null;
+            }
+
+            pathData = new VirtualPathData(this, tempPath);
             if (DataTokens != null)
             {
                 foreach (var dataToken in DataTokens)
                 {
-                    tempDataTokens.Add(dataToken.Key, dataToken.Value);
+                    pathData.DataTokens.Add(dataToken.Key, dataToken.Value);
                 }
             }
-            pathData = new VirtualPathData(
-                router: this,
-                virtualPath: _binder.BindValues(values.AcceptedValues),
-                dataTokens: tempDataTokens);
 
             context.IsBound = childContext.IsBound;
 

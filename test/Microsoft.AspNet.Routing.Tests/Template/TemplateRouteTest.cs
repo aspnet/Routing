@@ -975,8 +975,8 @@ namespace Microsoft.AspNet.Routing.Template
 
         [Theory]
         [MemberData("DataTokensTestData")]
-        public void GetVirtualPath_ReturnsDataTokensWhenTargetReturnsVirtualPathData
-            (RouteValueDictionary dataTokens)
+        public void GetVirtualPath_ReturnsDataTokensWhenTargetReturnsVirtualPathData(
+            RouteValueDictionary dataTokens)
         {
             // Arrange
             var path = "TestPath";
@@ -1015,8 +1015,8 @@ namespace Microsoft.AspNet.Routing.Template
 
         [Theory]
         [MemberData("DataTokensTestData")]
-        public void GetVirtualPath_ReturnsDataTokens_WhenTargetReturnsNullVirtualPathData
-            (RouteValueDictionary dataTokens)
+        public void GetVirtualPath_ReturnsDataTokens_WhenTargetReturnsNullVirtualPathData(
+            RouteValueDictionary dataTokens)
         {
             // Arrange
             var path = "TestPath";

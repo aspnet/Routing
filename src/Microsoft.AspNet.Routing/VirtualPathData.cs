@@ -12,7 +12,7 @@ namespace Microsoft.AspNet.Routing
     public class VirtualPathData
     {
         private string _virtualPath;
-        private readonly IReadOnlyDictionary<string, object> _dataToken;
+        private readonly IDictionary<string, object> _dataToken;
 
         /// <summary>
         ///  Initializes a new instance of the <see cref="VirtualPathData"/> class.
@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Routing
         /// <param name="router">The object that is used to generate the URL.</param>
         /// <param name="virtualPath">The generated URL.</param>
         public VirtualPathData([NotNull] IRouter router, string virtualPath)
-            : this(router, virtualPath, dataTokens: RouteValueDictionary.Empty)
+            : this(router, virtualPath, dataTokens: new RouteValueDictionary())
         {
         }
 
@@ -33,9 +33,9 @@ namespace Microsoft.AspNet.Routing
         public VirtualPathData(
             [NotNull] IRouter router,
             string virtualPath,
-            IReadOnlyDictionary<string, object> dataTokens)
+            IDictionary<string, object> dataTokens)
         {
-            _dataToken = dataTokens ?? RouteValueDictionary.Empty;
+            _dataToken = dataTokens ?? new RouteValueDictionary();
             Router = router;
             VirtualPath = virtualPath;
         }
@@ -43,7 +43,7 @@ namespace Microsoft.AspNet.Routing
         /// <summary>
         /// Gets the collection of custom values for the <see cref="Router"/>.
         /// </summary>
-        public IReadOnlyDictionary<string, object> DataTokens
+        public IDictionary<string, object> DataTokens
         {
             get { return _dataToken; }
         }
