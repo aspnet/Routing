@@ -39,9 +39,9 @@ namespace Microsoft.AspNet.Routing
             VirtualPath = virtualPath;
 
             _dataToken = new RouteValueDictionary();
-            if(dataTokens != null)
+            if (dataTokens != null)
             {
-                foreach(var dataToken in dataTokens)
+                foreach (var dataToken in dataTokens)
                 {
                     _dataToken.Add(dataToken.Key, dataToken.Value);
                 }
