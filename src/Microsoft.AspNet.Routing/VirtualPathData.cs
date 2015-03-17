@@ -35,9 +35,17 @@ namespace Microsoft.AspNet.Routing
             string virtualPath,
             IDictionary<string, object> dataTokens)
         {
-            _dataToken = dataTokens ?? new RouteValueDictionary();
             Router = router;
             VirtualPath = virtualPath;
+
+            _dataToken = new RouteValueDictionary();
+            if(dataTokens != null)
+            {
+                foreach(var dataToken in dataTokens)
+                {
+                    _dataToken.Add(dataToken.Key, dataToken.Value);
+                }
+            }
         }
 
         /// <summary>

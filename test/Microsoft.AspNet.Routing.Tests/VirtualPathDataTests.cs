@@ -49,7 +49,7 @@ namespace Microsoft.AspNet.Routing
             Assert.Same(path, pathData.VirtualPath);
             Assert.NotNull(pathData.DataTokens);
             Assert.Equal("TestValue", pathData.DataTokens["TestKey"]);
-            Assert.Same(dataTokens, pathData.DataTokens);
+            Assert.NotSame(dataTokens, pathData.DataTokens);
         }
 
         [Fact]
