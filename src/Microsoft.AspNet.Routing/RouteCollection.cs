@@ -213,18 +213,18 @@ namespace Microsoft.AspNet.Routing
             }
         }
 
-        private string NormalizeVirtualPath(String url)
+        private PathString NormalizeVirtualPath(PathString path)
         {
-            if (string.IsNullOrEmpty(url)) return url;
+            var url = path.Value;
 
-            if (_options.LowercaseUrls)
+            if (!string.IsNullOrEmpty(url) && _options.LowercaseUrls)
             {
                 var indexOfSeparator = url.IndexOfAny(new char[] { '?', '#' });
 
                 // No query string, lowercase the url
                 if (indexOfSeparator == -1)
                 {
-                    return url.ToLowerInvariant();
+                    url = url.ToLowerInvariant();
                 }
                 else
                 {
@@ -232,11 +232,13 @@ namespace Microsoft.AspNet.Routing
                     var queryString = url.Substring(indexOfSeparator);
 
                     // queryString will contain the delimiter ? or # as the first character, so it's safe to append.
-                    return lowercaseUrl + queryString;
+                    url = lowercaseUrl + queryString;
                 }
+
+                return new PathString(url);
             }
 
-            return url;
+            return path;
         }
 
         private void EnsureLogger(HttpContext context)
