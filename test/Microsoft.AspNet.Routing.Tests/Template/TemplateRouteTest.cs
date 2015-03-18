@@ -1,4 +1,4 @@
-﻿// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
+// Copyright (c) Microsoft Open Technologies, Inc. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 #if DNX451
@@ -563,7 +563,7 @@ namespace Microsoft.AspNet.Routing.Template
             // Act
             await route.RouteAsync(context);
 
-            // Assert            
+            // Assert
             Assert.True(context.IsHandled);
             Assert.True(routeValues.ContainsKey("ssn"));
             Assert.Equal("123-456-7890", routeValues["ssn"]);
@@ -949,11 +949,13 @@ namespace Microsoft.AspNet.Routing.Template
             var context = CreateVirtualPathContext(new { controller = "Home" });
 
             // Act
-            var path = route.GetVirtualPath(context);
+            var pathData = route.GetVirtualPath(context);
 
             // Assert
             Assert.True(context.IsBound);
-            Assert.Equal("Home", path);
+            Assert.Equal("Home", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
         }
 
         [Fact]
@@ -971,6 +973,86 @@ namespace Microsoft.AspNet.Routing.Template
             Assert.Null(path);
         }
 
+        [Theory]
+        [MemberData("DataTokensTestData")]
+        public void GetVirtualPath_ReturnsDataTokensWhenTargetReturnsVirtualPathData(
+            RouteValueDictionary dataTokens)
+        {
+            // Arrange
+            var path = "TestPath";
+
+            var target = new Mock<IRouter>(MockBehavior.Strict);
+            target
+                .Setup(r => r.GetVirtualPath(It.IsAny<VirtualPathContext>()))
+                .Callback<VirtualPathContext>(c => c.IsBound = true)
+                .Returns(() => new VirtualPathData(target.Object, path, dataTokens));
+
+            var route = CreateRoute(
+                target.Object,
+                "{controller}",
+                defaults: null,
+                dataTokens: dataTokens);
+            var context = CreateVirtualPathContext(new { controller = path });
+
+            var expectedDataTokens = dataTokens ?? new RouteValueDictionary();
+
+            // Act
+            var pathData = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.NotNull(pathData);
+            Assert.Same(target.Object, pathData.Router);
+            Assert.Equal(path, pathData.VirtualPath);
+            Assert.NotNull(pathData.DataTokens);
+
+            Assert.Equal(expectedDataTokens.Count, pathData.DataTokens.Count);
+            foreach (var dataToken in expectedDataTokens)
+            {
+                Assert.True(pathData.DataTokens.ContainsKey(dataToken.Key));
+                Assert.Equal(dataToken.Value, pathData.DataTokens[dataToken.Key]);
+            }
+        }
+
+        [Theory]
+        [MemberData("DataTokensTestData")]
+        public void GetVirtualPath_ReturnsDataTokens_WhenTargetReturnsNullVirtualPathData(
+            RouteValueDictionary dataTokens)
+        {
+            // Arrange
+            var path = "TestPath";
+
+            var target = new Mock<IRouter>(MockBehavior.Strict);
+            target
+                .Setup(r => r.GetVirtualPath(It.IsAny<VirtualPathContext>()))
+                .Callback<VirtualPathContext>(c => c.IsBound = true)
+                .Returns(() => null);
+
+            var route = CreateRoute(
+                target.Object,
+                "{controller}",
+                defaults: null,
+                dataTokens: dataTokens);
+            var context = CreateVirtualPathContext(new { controller = path });
+
+            var expectedDataTokens = dataTokens ?? new RouteValueDictionary();
+
+            // Act
+            var pathData = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.NotNull(pathData);
+            Assert.Same(route, pathData.Router);
+            Assert.Equal(path, pathData.VirtualPath);
+            Assert.NotNull(pathData.DataTokens);
+
+            Assert.Equal(expectedDataTokens.Count, pathData.DataTokens.Count);
+            foreach (var dataToken in expectedDataTokens)
+            {
+                Assert.True(pathData.DataTokens.ContainsKey(dataToken.Key));
+                Assert.Equal(dataToken.Value, pathData.DataTokens[dataToken.Key]);
+            }
+        }
+
         [Fact]
         public void GetVirtualPath_ValuesRejectedByHandler_StillGeneratesPath()
         {
@@ -979,11 +1061,13 @@ namespace Microsoft.AspNet.Routing.Template
             var context = CreateVirtualPathContext(new { controller = "Home" });
 
             // Act
-            var path = route.GetVirtualPath(context);
+            var pathData = route.GetVirtualPath(context);
 
             // Assert
             Assert.False(context.IsBound);
-            Assert.Equal("Home", path);
+            Assert.Equal("Home", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
         }
 
         [Fact]
@@ -994,11 +1078,13 @@ namespace Microsoft.AspNet.Routing.Template
             var context = CreateVirtualPathContext(new { action = "Index" }, new { controller = "Home" });
 
             // Act
-            var path = route.GetVirtualPath(context);
+            var pathData = route.GetVirtualPath(context);
 
             // Assert
             Assert.True(context.IsBound);
-            Assert.Equal("Home/Index", path);
+            Assert.Equal("Home/Index", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
         }
 
         [Fact]
@@ -1027,19 +1113,21 @@ namespace Microsoft.AspNet.Routing.Template
             // Arrange
             var context = CreateVirtualPathContext(new { p1 = "hello", p2 = "1234" });
 
-            var r = CreateRoute(
+            var route = CreateRoute(
                 "{p1}/{p2}",
                 new { p2 = "catchall" },
                 true,
                 new RouteValueDictionary(new { p2 = "\\d{4}" }));
 
             // Act
-            var virtualPath = r.GetVirtualPath(context);
+            var pathData = route.GetVirtualPath(context);
 
             // Assert
             Assert.True(context.IsBound);
-            Assert.NotNull(virtualPath);
-            Assert.Equal("hello/1234", virtualPath);
+            Assert.NotNull(pathData);
+            Assert.Equal("hello/1234", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
         }
 
         [Fact]
@@ -1066,22 +1154,23 @@ namespace Microsoft.AspNet.Routing.Template
         public void RouteWithCatchAllAcceptsConstraints()
         {
             // Arrange
-            // Arrange
             var context = CreateVirtualPathContext(new { p1 = "hello", p2 = "1234" });
 
-            TemplateRoute r = CreateRoute(
+            TemplateRoute route = CreateRoute(
                 "{p1}/{*p2}",
                 new { p2 = "catchall" },
                 true,
                 new RouteValueDictionary(new { p2 = "\\d{4}" }));
 
             // Act
-            var virtualPath = r.GetVirtualPath(context);
+            var pathData = route.GetVirtualPath(context);
 
             // Assert
             Assert.True(context.IsBound);
-            Assert.NotNull(virtualPath);
-            Assert.Equal("hello/1234", virtualPath);
+            Assert.NotNull(pathData);
+            Assert.Equal("hello/1234", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
         }
 
         [Fact]
@@ -1099,19 +1188,21 @@ namespace Microsoft.AspNet.Routing.Template
                 .Returns(true)
                 .Verifiable();
 
-            TemplateRoute r = CreateRoute(
+            TemplateRoute route = CreateRoute(
                 "{p1}/{p2}",
                 new { p2 = "catchall" },
                 true,
                 new RouteValueDictionary(new { p2 = target.Object }));
 
             // Act
-            var virtualPath = r.GetVirtualPath(context);
+            var pathData = route.GetVirtualPath(context);
 
             // Assert
             Assert.True(context.IsBound);
-            Assert.NotNull(virtualPath);
-            Assert.Equal("hello/1234", virtualPath);
+            Assert.NotNull(pathData);
+            Assert.Equal("hello/1234", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
 
             target.VerifyAll();
         }
@@ -1135,10 +1226,13 @@ namespace Microsoft.AspNet.Routing.Template
             var expectedValues = new RouteValueDictionary(new { controller = "Home", action = "Store" });
 
             // Act
-            var path = route.GetVirtualPath(context);
+            var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("Home/Store", path);
+            Assert.Equal("Home/Store", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
+
             Assert.Equal(expectedValues, childContext.ProvidedValues);
         }
 
@@ -1161,10 +1255,13 @@ namespace Microsoft.AspNet.Routing.Template
                 new { controller = "Home", action = "Store", area = "Admin" });
 
             // Act
-            var path = route.GetVirtualPath(context);
+            var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("Admin/Home/Store", path);
+            Assert.Equal("Admin/Home/Store", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
+
             Assert.Equal(expectedValues, childContext.ProvidedValues);
         }
 
@@ -1186,10 +1283,13 @@ namespace Microsoft.AspNet.Routing.Template
             var expectedValues = new RouteValueDictionary(new { controller = "Home", action = "Store" });
 
             // Act
-            var path = route.GetVirtualPath(context);
+            var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("Home/Store?id=5", path);
+            Assert.Equal("Home/Store?id=5", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
+
             Assert.Equal(expectedValues, childContext.ProvidedValues);
         }
 
@@ -1214,10 +1314,13 @@ namespace Microsoft.AspNet.Routing.Template
                 new { controller = "Home", action = "Store", extra = "42" });
 
             // Act
-            var path = route.GetVirtualPath(context);
+            var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("slug/Home/Store", path);
+            Assert.Equal("slug/Home/Store", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
+
             Assert.Equal(expectedValues, constraint.Values);
         }
 
@@ -1242,10 +1345,13 @@ namespace Microsoft.AspNet.Routing.Template
                 new { controller = "Home", action = "Store" });
 
             // Act
-            var path = route.GetVirtualPath(context);
+            var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("slug/Home/Store", path);
+            Assert.Equal("slug/Home/Store", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
+
             Assert.Equal(expectedValues, constraint.Values);
         }
 
@@ -1269,10 +1375,13 @@ namespace Microsoft.AspNet.Routing.Template
                 new { controller = "Shopping", action = "Index" });
 
             // Act
-            var path = route.GetVirtualPath(context);
+            var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("slug/Shopping", path);
+            Assert.Equal("slug/Shopping", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
+
             Assert.Equal(expectedValues, constraint.Values);
         }
 
@@ -1297,10 +1406,13 @@ namespace Microsoft.AspNet.Routing.Template
                 new { controller = "Home", action = "Store", otherthing = "17", thirdthing = "13" });
 
             // Act
-            var path = route.GetVirtualPath(context);
+            var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("slug/Home/Store", path);
+            Assert.Equal("slug/Home/Store", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
+
             Assert.Equal(expectedValues.OrderBy(kvp => kvp.Key), constraint.Values.OrderBy(kvp => kvp.Key));
         }
 
@@ -1313,10 +1425,12 @@ namespace Microsoft.AspNet.Routing.Template
                 values: new { action = "Index", controller = "Home", id = 4 });
 
             // Act
-            var path = route.GetVirtualPath(context);
+            var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("Home/Index/4", path);
+            Assert.Equal("Home/Index/4", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
         }
 
         [Fact]
@@ -1343,10 +1457,12 @@ namespace Microsoft.AspNet.Routing.Template
                 values: new { action = "Index", controller = "Home", id = 98 });
 
             // Act
-            var path = route.GetVirtualPath(context);
+            var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("Home/Index/98", path);
+            Assert.Equal("Home/Index/98", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
         }
 
         [Fact]
@@ -1358,10 +1474,12 @@ namespace Microsoft.AspNet.Routing.Template
                 values: new { action = "Index", controller = "Home" });
 
             // Act
-            var path = route.GetVirtualPath(context);
+            var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("Home/Index", path);
+            Assert.Equal("Home/Index", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
         }
 
         [Fact]
@@ -1388,10 +1506,12 @@ namespace Microsoft.AspNet.Routing.Template
                 values: new { action = "Index", controller = "Home", id = 14 });
 
             // Act
-            var path = route.GetVirtualPath(context);
+            var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("Home/Index/14", path);
+            Assert.Equal("Home/Index/14", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
         }
 
         [Fact]
@@ -1409,16 +1529,18 @@ namespace Microsoft.AspNet.Routing.Template
                 values: new { action = "Index", controller = "Home", name = "products" });
 
             // Act
-            var path = route.GetVirtualPath(context);
+            var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("Home/Index/products", path);
+            Assert.Equal("Home/Index/products", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
         }
 
         [Fact]
         public void GetVirtualPath_OptionalParameter_ParameterPresentInValues()
         {
-            // Arrange            
+            // Arrange
             var route = CreateRoute(
                 template: "{controller}/{action}/{name}.{format?}",
                 defaults: null,
@@ -1429,16 +1551,18 @@ namespace Microsoft.AspNet.Routing.Template
                 values: new { action = "Index", controller = "Home", name = "products", format = "xml" });
 
             // Act
-            var path = route.GetVirtualPath(context);
+            var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("Home/Index/products.xml", path);
+            Assert.Equal("Home/Index/products.xml", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
         }
 
         [Fact]
         public void GetVirtualPath_OptionalParameter_ParameterNotPresentInValues()
         {
-            // Arrange            
+            // Arrange
             var route = CreateRoute(
                 template: "{controller}/{action}/{name}.{format?}",
                 defaults: null,
@@ -1449,16 +1573,18 @@ namespace Microsoft.AspNet.Routing.Template
                 values: new { action = "Index", controller = "Home", name = "products" });
 
             // Act
-            var path = route.GetVirtualPath(context);
+            var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("Home/Index/products", path);
+            Assert.Equal("Home/Index/products", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
         }
 
         [Fact]
         public void GetVirtualPath_OptionalParameter_ParameterPresentInValuesAndDefaults()
         {
-            // Arrange            
+            // Arrange
             var route = CreateRoute(
                 template: "{controller}/{action}/{name}.{format?}",
                 defaults: new { format = "json" },
@@ -1469,16 +1595,18 @@ namespace Microsoft.AspNet.Routing.Template
                 values: new { action = "Index", controller = "Home", name = "products", format = "xml" });
 
             // Act
-            var path = route.GetVirtualPath(context);
+            var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("Home/Index/products.xml", path);
+            Assert.Equal("Home/Index/products.xml", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
         }
 
         [Fact]
         public void GetVirtualPath_OptionalParameter_ParameterNotPresentInValues_PresentInDefaults()
         {
-            // Arrange            
+            // Arrange
             var route = CreateRoute(
                 template: "{controller}/{action}/{name}.{format?}",
                 defaults: new { format = "json" },
@@ -1489,16 +1617,18 @@ namespace Microsoft.AspNet.Routing.Template
                 values: new { action = "Index", controller = "Home", name = "products" });
 
             // Act
-            var path = route.GetVirtualPath(context);
+            var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("Home/Index/products", path);
+            Assert.Equal("Home/Index/products", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
         }
 
         [Fact]
         public void GetVirtualPath_OptionalParameter_ParameterNotPresentInTemplate_PresentInValues()
         {
-            // Arrange            
+            // Arrange
             var route = CreateRoute(
                 template: "{controller}/{action}/{name}",
                 defaults: null,
@@ -1509,16 +1639,18 @@ namespace Microsoft.AspNet.Routing.Template
                 values: new { action = "Index", controller = "Home", name = "products", format = "json" });
 
             // Act
-            var path = route.GetVirtualPath(context);
+            var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("Home/Index/products?format=json", path);
+            Assert.Equal("Home/Index/products?format=json", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
         }
 
         [Fact]
         public void GetVirtualPath_OptionalParameter_FollowedByDotAfterSlash_ParameterPresent()
         {
-            // Arrange            
+            // Arrange
             var route = CreateRoute(
                 template: "{controller}/{action}/.{name?}",
                 defaults: null,
@@ -1529,16 +1661,18 @@ namespace Microsoft.AspNet.Routing.Template
                 values: new { action = "Index", controller = "Home", name = "products" });
 
             // Act
-            var path = route.GetVirtualPath(context);
+            var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("Home/Index/.products", path);
+            Assert.Equal("Home/Index/.products", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
         }
 
         [Fact]
         public void GetVirtualPath_OptionalParameter_FollowedByDotAfterSlash_ParameterNotPresent()
         {
-            // Arrange            
+            // Arrange
             var route = CreateRoute(
                 template: "{controller}/{action}/.{name?}",
                 defaults: null,
@@ -1549,16 +1683,18 @@ namespace Microsoft.AspNet.Routing.Template
                 values: new { action = "Index", controller = "Home" });
 
             // Act
-            var path = route.GetVirtualPath(context);
+            var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("Home/Index/", path);
+            Assert.Equal("Home/Index/", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
         }
 
         [Fact]
         public void GetVirtualPath_OptionalParameter_InSimpleSegment()
         {
-            // Arrange            
+            // Arrange
             var route = CreateRoute(
                 template: "{controller}/{action}/{name?}",
                 defaults: null,
@@ -1569,10 +1705,12 @@ namespace Microsoft.AspNet.Routing.Template
                 values: new { action = "Index", controller = "Home" });
 
             // Act
-            var path = route.GetVirtualPath(context);
+            var pathData = route.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal("Home/Index", path);
+            Assert.Equal("Home/Index", pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
         }
 
         private static VirtualPathContext CreateVirtualPathContext(object values)
@@ -1771,6 +1909,17 @@ namespace Microsoft.AspNet.Routing.Template
 
         #endregion
 
+        // DataTokens test data for TemplateRoute.GetVirtualPath
+        public static IEnumerable<object[]> DataTokensTestData
+        {
+            get
+            {
+                yield return new object[] { null };
+                yield return new object[] { new RouteValueDictionary() };
+                yield return new object[] { new RouteValueDictionary() { { "tokenKeyA", "tokenValueA" } } };
+            }
+        }
+
         private static IRouteBuilder CreateRouteBuilder()
         {
             var routeBuilder = new RouteBuilder();
@@ -1816,13 +1965,17 @@ namespace Microsoft.AspNet.Routing.Template
                                      inlineConstraintResolver: _inlineConstraintResolver);
         }
 
-        private static TemplateRoute CreateRoute(IRouter target, string template, object defaults)
+        private static TemplateRoute CreateRoute(
+            IRouter target,
+            string template,
+            object defaults,
+            RouteValueDictionary dataTokens = null)
         {
             return new TemplateRoute(target,
                                      template,
                                      new RouteValueDictionary(defaults),
                                      constraints: null,
-                                     dataTokens: null,
+                                     dataTokens: dataTokens,
                                      inlineConstraintResolver: _inlineConstraintResolver);
         }
 
