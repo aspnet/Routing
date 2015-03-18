@@ -160,7 +160,7 @@ namespace Microsoft.AspNet.Routing
                     {
                         bestPathData = new VirtualPathData(
                             bestPathData.Router,
-                            NormalizeVirtualPath(bestPathData.VirtualPath),
+                            NormalizeVirtualPath(bestPathData.VirtualPath.Value),
                             bestPathData.DataTokens);
                     }
 
@@ -189,7 +189,7 @@ namespace Microsoft.AspNet.Routing
                         // This route has validated route values, short circuit.
                         return new VirtualPathData(
                             pathData.Router,
-                            NormalizeVirtualPath(pathData.VirtualPath),
+                            NormalizeVirtualPath(pathData.VirtualPath.Value),
                             pathData.DataTokens);
                     }
                     else if (bestPathData == null)
@@ -203,7 +203,7 @@ namespace Microsoft.AspNet.Routing
                 {
                     return new VirtualPathData(
                         bestPathData.Router,
-                        NormalizeVirtualPath(bestPathData.VirtualPath),
+                        NormalizeVirtualPath(bestPathData.VirtualPath.Value),
                         bestPathData.DataTokens);
                 }
                 else
