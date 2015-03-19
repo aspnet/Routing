@@ -975,7 +975,7 @@ namespace Microsoft.AspNet.Routing.Template
 
         [Theory]
         [MemberData("DataTokensTestData")]
-        public void GetVirtualPath_ReturnsDataTokensWhenTargetReturnsVirtualPathData(
+        public void GetVirtualPath_ReturnsDataTokens_WhenTargetReturnsVirtualPathData(
             RouteValueDictionary dataTokens)
         {
             // Arrange
@@ -987,11 +987,14 @@ namespace Microsoft.AspNet.Routing.Template
                 .Callback<VirtualPathContext>(c => c.IsBound = true)
                 .Returns(() => new VirtualPathData(target.Object, path, dataTokens));
 
+            var routeDataTokens =
+                new RouteValueDictionary() { { "ThisShouldBeIgnored", "" } };
+
             var route = CreateRoute(
                 target.Object,
                 "{controller}",
                 defaults: null,
-                dataTokens: dataTokens);
+                dataTokens: routeDataTokens);
             var context = CreateVirtualPathContext(new { controller = path });
 
             var expectedDataTokens = dataTokens ?? new RouteValueDictionary();
