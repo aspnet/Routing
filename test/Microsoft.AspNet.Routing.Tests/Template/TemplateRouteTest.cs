@@ -1008,6 +1008,8 @@ namespace Microsoft.AspNet.Routing.Template
             Assert.Equal(path, pathData.VirtualPath);
             Assert.NotNull(pathData.DataTokens);
 
+            Assert.DoesNotContain(routeDataTokens.First().Key, pathData.DataTokens.Keys);
+
             Assert.Equal(expectedDataTokens.Count, pathData.DataTokens.Count);
             foreach (var dataToken in expectedDataTokens)
             {
