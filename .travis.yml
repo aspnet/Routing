@@ -1,4 +1,4 @@
 language: csharp
-solution: Routing.sln
+solution: ./Routing.sln
 script:
   - ./build.sh verify
