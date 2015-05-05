@@ -20,7 +20,7 @@ namespace Microsoft.AspNet.Routing.Template
         {
             if (template == null)
             {
-                throw new ArgumentNullException("template");
+                throw new ArgumentNullException(nameof(template));
             }
 
             _template = template;
@@ -361,7 +361,7 @@ namespace Microsoft.AspNet.Routing.Template
             {
                 if (values == null)
                 {
-                    throw new ArgumentNullException("values");
+                    throw new ArgumentNullException(nameof(values));
                 }
 
                 _defaults = defaults;
