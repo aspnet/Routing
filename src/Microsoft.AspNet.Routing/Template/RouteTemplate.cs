@@ -17,7 +17,7 @@ namespace Microsoft.AspNet.Routing.Template
         {
             if (segments == null)
             {
-                throw new ArgumentNullException("segments");
+                throw new ArgumentNullException(nameof(segments));
             }
 
             Segments = segments;
