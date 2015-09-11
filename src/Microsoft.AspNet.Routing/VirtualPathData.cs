@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNet.Http;
-using Microsoft.Framework.Internal;
 
 namespace Microsoft.AspNet.Routing
 {
@@ -21,9 +20,13 @@ namespace Microsoft.AspNet.Routing
         /// </summary>
         /// <param name="router">The object that is used to generate the URL.</param>
         /// <param name="virtualPath">The generated URL.</param>
-        public VirtualPathData([NotNull] IRouter router, string virtualPath)
+        public VirtualPathData(IRouter router, string virtualPath)
             : this(router, virtualPath, dataTokens: new RouteValueDictionary())
         {
+            if (router == null)
+            {
+                throw new ArgumentNullException(nameof(router));
+            }
         }
 
         /// <summary>
@@ -33,12 +36,16 @@ namespace Microsoft.AspNet.Routing
         /// <param name="virtualPath">The generated URL.</param>
         /// <param name="dataTokens">The collection of custom values.</param>
         public VirtualPathData(
-            [NotNull] IRouter router,
+            IRouter router,
             string virtualPath,
             IDictionary<string, object> dataTokens)
                 : this(router, CreatePathString(virtualPath), dataTokens)
 
         {
+            if (router == null)
+            {
+                throw new ArgumentNullException(nameof(router));
+            }
         }
 
         /// <summary>
@@ -48,10 +55,15 @@ namespace Microsoft.AspNet.Routing
         /// <param name="virtualPath">The generated URL.</param>
         /// <param name="dataTokens">The collection of custom values.</param>
         public VirtualPathData(
-            [NotNull] IRouter router,
+            IRouter router,
             PathString virtualPath,
             IDictionary<string, object> dataTokens)
         {
+            if (router == null)
+            {
+                throw new ArgumentNullException(nameof(router));
+            }
+
             Router = router;
             VirtualPath = virtualPath;
 

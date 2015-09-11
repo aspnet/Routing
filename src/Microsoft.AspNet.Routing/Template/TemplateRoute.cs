@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.DependencyInjection;
-using Microsoft.Framework.Internal;
 using Microsoft.Framework.Logging;
 
 namespace Microsoft.AspNet.Routing.Template
@@ -25,7 +24,7 @@ namespace Microsoft.AspNet.Routing.Template
         private ILogger _constraintLogger;
 
         public TemplateRoute(
-            [NotNull] IRouter target,
+            IRouter target,
             string routeTemplate,
             IInlineConstraintResolver inlineConstraintResolver)
                         : this(target,
@@ -35,9 +34,13 @@ namespace Microsoft.AspNet.Routing.Template
                                dataTokens: null,
                                inlineConstraintResolver: inlineConstraintResolver)
         {
+            if (target == null)
+            {
+                throw new ArgumentNullException(nameof(target));
+            }
         }
 
-        public TemplateRoute([NotNull] IRouter target,
+        public TemplateRoute(IRouter target,
                              string routeTemplate,
                              IDictionary<string, object> defaults,
                              IDictionary<string, object> constraints,
@@ -45,9 +48,13 @@ namespace Microsoft.AspNet.Routing.Template
                              IInlineConstraintResolver inlineConstraintResolver)
             : this(target, null, routeTemplate, defaults, constraints, dataTokens, inlineConstraintResolver)
         {
+            if (target == null)
+            {
+                throw new ArgumentNullException(nameof(target));
+            }
         }
 
-        public TemplateRoute([NotNull] IRouter target,
+        public TemplateRoute(IRouter target,
                              string routeName,
                              string routeTemplate,
                              IDictionary<string, object> defaults,
@@ -55,6 +62,11 @@ namespace Microsoft.AspNet.Routing.Template
                              IDictionary<string, object> dataTokens,
                              IInlineConstraintResolver inlineConstraintResolver)
         {
+            if (target == null)
+            {
+                throw new ArgumentNullException(nameof(target));
+            }
+
             _target = target;
             _routeTemplate = routeTemplate ?? string.Empty;
             Name = routeName;
@@ -94,8 +106,13 @@ namespace Microsoft.AspNet.Routing.Template
             get { return _constraints; }
         }
 
-        public async virtual Task RouteAsync([NotNull] RouteContext context)
+        public async virtual Task RouteAsync(RouteContext context)
         {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             EnsureLoggers(context.HttpContext);
 
             var requestPath = context.HttpContext.Request.Path.Value;
