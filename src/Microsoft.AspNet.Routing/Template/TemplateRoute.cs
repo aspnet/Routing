@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNet.Http;
 using Microsoft.Framework.DependencyInjection;
@@ -15,6 +16,7 @@ namespace Microsoft.AspNet.Routing.Template
         private readonly IReadOnlyDictionary<string, IRouteConstraint> _constraints;
         private readonly IReadOnlyDictionary<string, object> _dataTokens;
         private readonly IReadOnlyDictionary<string, object> _defaults;
+        private readonly IReadOnlyDictionary<string, bool> _optionals;
         private readonly IRouter _target;
         private readonly RouteTemplate _parsedTemplate;
         private readonly string _routeTemplate;
@@ -74,6 +76,7 @@ namespace Microsoft.AspNet.Routing.Template
 
             _constraints = GetConstraints(inlineConstraintResolver, RouteTemplate, _parsedTemplate, constraints);
             _defaults = GetDefaults(_parsedTemplate, defaults);
+            _optionals = GetOptionals(_parsedTemplate);
 
             _matcher = new TemplateMatcher(_parsedTemplate, Defaults);
             _binder = new TemplateBinder(_parsedTemplate, Defaults);
@@ -89,6 +92,11 @@ namespace Microsoft.AspNet.Routing.Template
         public IReadOnlyDictionary<string, object> DataTokens
         {
             get { return _dataTokens; }
+        }
+
+        public IReadOnlyDictionary<string, bool> Optionals
+        {
+            get { return _optionals; }
         }
 
         public string RouteTemplate
@@ -308,6 +316,12 @@ namespace Microsoft.AspNet.Routing.Template
             }
 
             return result;
+        }
+        
+        private static IReadOnlyDictionary<string, bool> GetOptionals(RouteTemplate parsedTemplate)
+        {
+            return parsedTemplate.Parameters
+                .ToDictionary(parameter => parameter.Name, parameter => parameter.IsOptional);
         }
 
         private static void MergeValues(
