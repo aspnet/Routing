@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.AspNet.Http;
 
 namespace Microsoft.AspNet.Routing
@@ -13,8 +12,6 @@ namespace Microsoft.AspNet.Routing
     /// </summary>
     public class VirtualPathData
     {
-        private readonly IDictionary<string, object> _dataTokens;
-
         /// <summary>
         ///  Initializes a new instance of the <see cref="VirtualPathData"/> class.
         /// </summary>
@@ -34,7 +31,7 @@ namespace Microsoft.AspNet.Routing
         public VirtualPathData(
             IRouter router,
             string virtualPath,
-            IDictionary<string, object> dataTokens)
+            RouteValueDictionary dataTokens)
             : this(router, CreatePathString(virtualPath), dataTokens)
         {
         }
@@ -48,7 +45,7 @@ namespace Microsoft.AspNet.Routing
         public VirtualPathData(
             IRouter router,
             PathString virtualPath,
-            IDictionary<string, object> dataTokens)
+            RouteValueDictionary dataTokens)
         {
             if (router == null)
             {
@@ -57,24 +54,13 @@ namespace Microsoft.AspNet.Routing
 
             Router = router;
             VirtualPath = virtualPath;
-
-            _dataTokens = new RouteValueDictionary();
-            if (dataTokens != null)
-            {
-                foreach (var dataToken in dataTokens)
-                {
-                    _dataTokens.Add(dataToken.Key, dataToken.Value);
-                }
-            }
+            DataTokens = dataTokens;
         }
 
         /// <summary>
         /// Gets the collection of custom values for the <see cref="Router"/>.
         /// </summary>
-        public IDictionary<string, object> DataTokens
-        {
-            get { return _dataTokens; }
-        }
+        public RouteValueDictionary DataTokens { get; }
 
         /// <summary>
         /// Gets or sets the <see cref="IRouter"/> that was used to generate the URL.

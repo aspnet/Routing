@@ -8,17 +8,19 @@ namespace Microsoft.AspNet.Routing
 {
     public class VirtualPathContext
     {
-        public VirtualPathContext(HttpContext httpContext,
-                                  IDictionary<string, object> ambientValues,
-                                  IDictionary<string, object> values)
+        public VirtualPathContext(
+            HttpContext httpContext,
+            RouteValueDictionary ambientValues,
+            RouteValueDictionary values)
             : this(httpContext, ambientValues, values, null)
         {
         }
 
-        public VirtualPathContext(HttpContext context,
-                                  IDictionary<string, object> ambientValues,
-                                  IDictionary<string, object> values,
-                                  string routeName)
+        public VirtualPathContext(
+            HttpContext context,
+            RouteValueDictionary ambientValues,
+            RouteValueDictionary values,
+            string routeName)
         {
             Context = context;
             AmbientValues = ambientValues;
@@ -30,12 +32,12 @@ namespace Microsoft.AspNet.Routing
 
         public IDictionary<string, object> ProvidedValues { get; set; }
 
-        public IDictionary<string, object> AmbientValues { get; private set; }
+        public RouteValueDictionary AmbientValues { get; private set; }
 
         public HttpContext Context { get; private set; }
 
         public bool IsBound { get; set; }
 
-        public IDictionary<string, object> Values { get; private set; }
+        public RouteValueDictionary Values { get; private set; }
     }
 }
