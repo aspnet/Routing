@@ -28,16 +28,16 @@ namespace Microsoft.AspNet.Routing
             RouteName = routeName;
         }
 
-        public string RouteName { get; private set; }
+        public string RouteName { get; }
 
         public IDictionary<string, object> ProvidedValues { get; set; }
 
-        public RouteValueDictionary AmbientValues { get; private set; }
+        public RouteValueDictionary AmbientValues { get; }
 
-        public HttpContext Context { get; private set; }
+        public HttpContext Context { get; }
 
         public bool IsBound { get; set; }
 
-        public RouteValueDictionary Values { get; private set; }
+        public RouteValueDictionary Values { get; }
     }
 }

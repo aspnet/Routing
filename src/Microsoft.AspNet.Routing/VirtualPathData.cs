@@ -12,13 +12,15 @@ namespace Microsoft.AspNet.Routing
     /// </summary>
     public class VirtualPathData
     {
+        private RouteValueDictionary _dataTokens;
+
         /// <summary>
         ///  Initializes a new instance of the <see cref="VirtualPathData"/> class.
         /// </summary>
         /// <param name="router">The object that is used to generate the URL.</param>
         /// <param name="virtualPath">The generated URL.</param>
         public VirtualPathData(IRouter router, string virtualPath)
-            : this(router, virtualPath, dataTokens: new RouteValueDictionary())
+            : this(router, virtualPath, dataTokens: null)
         {
         }
 
@@ -54,13 +56,24 @@ namespace Microsoft.AspNet.Routing
 
             Router = router;
             VirtualPath = virtualPath;
-            DataTokens = dataTokens;
+            _dataTokens = dataTokens == null ? null : new RouteValueDictionary(dataTokens);
         }
 
         /// <summary>
         /// Gets the collection of custom values for the <see cref="Router"/>.
         /// </summary>
-        public RouteValueDictionary DataTokens { get; }
+        public RouteValueDictionary DataTokens
+        {
+            get
+            {
+                if (_dataTokens == null)
+                {
+                    _dataTokens = new RouteValueDictionary();
+                }
+
+                return _dataTokens;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the <see cref="IRouter"/> that was used to generate the URL.

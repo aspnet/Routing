@@ -18,10 +18,6 @@ namespace Microsoft.AspNet.Routing
         /// </summary>
         internal static readonly IReadOnlyDictionary<string, object> Empty = new RouteValueDictionary();
 
-        private Dictionary<string, object> _dictionary;
-        private readonly PropertyHelper[] _properties;
-        private readonly object _value;
-
         /// <summary>
         /// Creates an empty <see cref="RouteValueDictionary"/>.
         /// </summary>
@@ -47,23 +43,23 @@ namespace Microsoft.AspNet.Routing
             var otherDictionary = values as RouteValueDictionary;
             if (otherDictionary != null)
             {
-                if (otherDictionary._dictionary != null)
+                if (otherDictionary.InnerDictionary != null)
                 {
-                    _dictionary = new Dictionary<string, object>(
-                        otherDictionary._dictionary.Count,
+                    InnerDictionary = new Dictionary<string, object>(
+                        otherDictionary.InnerDictionary.Count,
                         StringComparer.OrdinalIgnoreCase);
 
-                    foreach (var kvp in otherDictionary._dictionary)
+                    foreach (var kvp in otherDictionary.InnerDictionary)
                     {
-                        _dictionary[kvp.Key] = kvp.Value;
+                        InnerDictionary[kvp.Key] = kvp.Value;
                     }
 
                     return;
                 }
-                else if (otherDictionary._properties != null)
+                else if (otherDictionary.Properties != null)
                 {
-                    _properties = otherDictionary._properties;
-                    _value = otherDictionary._value;
+                    Properties = otherDictionary.Properties;
+                    Value = otherDictionary.Value;
                     return;
                 }
                 else
@@ -75,11 +71,11 @@ namespace Microsoft.AspNet.Routing
             var keyValuePairCollection = values as IEnumerable<KeyValuePair<string, object>>;
             if (keyValuePairCollection != null)
             {
-                _dictionary = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                InnerDictionary = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 
                 foreach (var kvp in keyValuePairCollection)
                 {
-                    _dictionary[kvp.Key] = kvp.Value;
+                    InnerDictionary[kvp.Key] = kvp.Value;
                 }
 
                 return;
@@ -87,12 +83,18 @@ namespace Microsoft.AspNet.Routing
 
             if (values != null)
             {
-                _properties = PropertyHelper.GetVisibleProperties(values);
-                _value = values;
+                Properties = PropertyHelper.GetVisibleProperties(values);
+                Value = values;
 
                 return;
             }
         }
+
+        private Dictionary<string, object> InnerDictionary { get; set; }
+
+        private PropertyHelper[] Properties { get; }
+
+        private object Value { get; }
 
         /// <inheritdoc />
         public object this[string key]
@@ -117,7 +119,7 @@ namespace Microsoft.AspNet.Routing
                 }
 
                 EnsureWritable();
-                _dictionary[key] = value;
+                InnerDictionary[key] = value;
             }
         }
 
@@ -130,13 +132,7 @@ namespace Microsoft.AspNet.Routing
         public IEqualityComparer<string> Comparer => StringComparer.OrdinalIgnoreCase;
 
         /// <inheritdoc />
-        public int Count
-        {
-            get
-            {
-                return _dictionary?.Count ?? _properties?.Length ?? 0;
-            }
-        }
+        public int Count => InnerDictionary?.Count ?? Properties?.Length ?? 0;
 
         /// <inheritdoc />
         bool ICollection<KeyValuePair<string, object>>.IsReadOnly => false;
@@ -147,7 +143,7 @@ namespace Microsoft.AspNet.Routing
             get
             {
                 EnsureWritable();
-                return _dictionary.Keys;
+                return InnerDictionary.Keys;
             }
         }
 
@@ -156,7 +152,7 @@ namespace Microsoft.AspNet.Routing
             get
             {
                 EnsureWritable();
-                return _dictionary.Keys;
+                return InnerDictionary.Keys;
             }
         }
 
@@ -166,7 +162,7 @@ namespace Microsoft.AspNet.Routing
             get
             {
                 EnsureWritable();
-                return _dictionary.Values;
+                return InnerDictionary.Values;
             }
         }
 
@@ -175,7 +171,7 @@ namespace Microsoft.AspNet.Routing
             get
             {
                 EnsureWritable();
-                return _dictionary.Values;
+                return InnerDictionary.Values;
             }
         }
 
@@ -183,7 +179,7 @@ namespace Microsoft.AspNet.Routing
         void ICollection<KeyValuePair<string, object>>.Add(KeyValuePair<string, object> item)
         {
             EnsureWritable();
-            ((ICollection<KeyValuePair<string, object>>)_dictionary).Add(item);
+            ((ICollection<KeyValuePair<string, object>>)InnerDictionary).Add(item);
         }
 
         /// <inheritdoc />
@@ -195,21 +191,21 @@ namespace Microsoft.AspNet.Routing
             }
 
             EnsureWritable();
-            _dictionary.Add(key, value);
+            InnerDictionary.Add(key, value);
         }
 
         /// <inheritdoc />
         public void Clear()
         {
             EnsureWritable();
-            _dictionary.Clear();
+            InnerDictionary.Clear();
         }
 
         /// <inheritdoc />
         bool ICollection<KeyValuePair<string, object>>.Contains(KeyValuePair<string, object> item)
         {
             EnsureWritable();
-            return ((ICollection<KeyValuePair<string, object>>)_dictionary).Contains(item);
+            return ((ICollection<KeyValuePair<string, object>>)InnerDictionary).Contains(item);
         }
 
         /// <inheritdoc />
@@ -220,21 +216,21 @@ namespace Microsoft.AspNet.Routing
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (_dictionary != null)
+            if (InnerDictionary != null)
             {
-                return _dictionary.ContainsKey(key);
+                return InnerDictionary.ContainsKey(key);
             }
-            else if (_properties != null)
+            else if (Properties != null)
             {
-                for (var i = 0; i < _properties.Length; i++)
+                for (var i = 0; i < Properties.Length; i++)
                 {
-                    var property = _properties[i];
+                    var property = Properties[i];
                     if (Comparer.Equals(property.Name, key))
                     {
                         return true;
                     }
                 }
-                
+
                 return false;
             }
             else
@@ -254,7 +250,7 @@ namespace Microsoft.AspNet.Routing
             }
 
             EnsureWritable();
-            ((ICollection<KeyValuePair<string, object>>)_dictionary).CopyTo(array, arrayIndex);
+            ((ICollection<KeyValuePair<string, object>>)InnerDictionary).CopyTo(array, arrayIndex);
         }
 
         /// <inheritdoc />
@@ -279,7 +275,7 @@ namespace Microsoft.AspNet.Routing
         bool ICollection<KeyValuePair<string, object>>.Remove(KeyValuePair<string, object> item)
         {
             EnsureWritable();
-            return ((ICollection<KeyValuePair<string, object>>)_dictionary).Remove(item);
+            return ((ICollection<KeyValuePair<string, object>>)InnerDictionary).Remove(item);
         }
 
         /// <inheritdoc />
@@ -291,7 +287,7 @@ namespace Microsoft.AspNet.Routing
             }
 
             EnsureWritable();
-            return _dictionary.Remove(key);
+            return InnerDictionary.Remove(key);
         }
 
         /// <inheritdoc />
@@ -302,18 +298,18 @@ namespace Microsoft.AspNet.Routing
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (_dictionary != null)
+            if (InnerDictionary != null)
             {
-                return _dictionary.TryGetValue(key, out value);
+                return InnerDictionary.TryGetValue(key, out value);
             }
-            else if (_properties != null)
+            else if (Properties != null)
             {
-                for (var i = 0; i < _properties.Length; i++)
+                for (var i = 0; i < Properties.Length; i++)
                 {
-                    var property = _properties[i];
+                    var property = Properties[i];
                     if (Comparer.Equals(property.Name, key))
                     {
-                        value = property.ValueGetter(_value);
+                        value = property.ValueGetter(Value);
                         return true;
                     }
                 }
@@ -330,18 +326,18 @@ namespace Microsoft.AspNet.Routing
 
         private void EnsureWritable()
         {
-            if (_dictionary == null && _properties == null)
+            if (InnerDictionary == null && Properties == null)
             {
-                _dictionary = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+                InnerDictionary = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             }
-            else if (_dictionary == null)
+            else if (InnerDictionary == null)
             {
-                _dictionary = new Dictionary<string, object>(_properties.Length + 1, StringComparer.OrdinalIgnoreCase);
+                InnerDictionary = new Dictionary<string, object>(Properties.Length, StringComparer.OrdinalIgnoreCase);
 
-                for (var i = 0; i < _properties.Length; i++)
+                for (var i = 0; i < Properties.Length; i++)
                 {
-                    var property = _properties[i];
-                    _dictionary.Add(property.Property.Name, property.ValueGetter(_value));
+                    var property = Properties[i];
+                    InnerDictionary.Add(property.Property.Name, property.ValueGetter(Value));
                 }
             }
         }
@@ -357,16 +353,16 @@ namespace Microsoft.AspNet.Routing
             {
                 if (dictionary == null)
                 {
-                    throw new InvalidOperationException();
+                    throw new ArgumentNullException();
                 }
 
                 _dictionary = dictionary;
 
                 Current = default(KeyValuePair<string, object>);
                 _index = -1;
-                _enumerator = _dictionary._dictionary == null ? 
-                    default(Dictionary<string, object>.Enumerator) : 
-                    _dictionary._dictionary.GetEnumerator();
+                _enumerator = _dictionary.InnerDictionary == null ?
+                    default(Dictionary<string, object>.Enumerator) :
+                    _dictionary.InnerDictionary.GetEnumerator();
             }
 
             public KeyValuePair<string, object> Current { get; private set; }
@@ -379,48 +375,37 @@ namespace Microsoft.AspNet.Routing
 
             public bool MoveNext()
             {
-                if (_dictionary?._dictionary != null)
+                if (_dictionary?.InnerDictionary != null)
                 {
                     if (_enumerator.MoveNext())
                     {
                         Current = _enumerator.Current;
                         return true;
                     }
-                    else
-                    {
-                        Current = default(KeyValuePair<string, object>);
-                        return false;
-                    }
                 }
-                else if (_dictionary?._properties != null)
+                else if (_dictionary?.Properties != null)
                 {
-                    if (++_index < _dictionary._properties.Length)
+                    _index++;
+                    if (_index < _dictionary.Properties.Length)
                     {
-                        var property = _dictionary._properties[_index];
-                        var value = property.ValueGetter(_dictionary._value);
+                        var property = _dictionary.Properties[_index];
+                        var value = property.ValueGetter(_dictionary.Value);
                         Current = new KeyValuePair<string, object>(property.Name, value);
                         return true;
                     }
-                    else
-                    {
-                        Current = default(KeyValuePair<string, object>);
-                        return false;
-                    }
                 }
-                else
-                {
-                    Current = default(KeyValuePair<string, object>);
-                    return false;
-                }
+
+                Current = default(KeyValuePair<string, object>);
+                return false;
             }
 
             public void Reset()
             {
                 Current = default(KeyValuePair<string, object>);
                 _index = -1;
-                _enumerator = _dictionary?._dictionary == null ?
+                _enumerator = _dictionary?.InnerDictionary == null ?
                     default(Dictionary<string, object>.Enumerator) :
-                    _dictionary._dictionary.GetEnumerator();
+                    _dictionary.InnerDictionary.GetEnumerator();
             }
         }
     }
