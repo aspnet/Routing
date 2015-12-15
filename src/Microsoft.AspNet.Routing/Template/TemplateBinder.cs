@@ -414,20 +414,22 @@ namespace Microsoft.AspNet.Routing.Template
             private readonly StringBuilder _uri;
 
             // Holds the 'optional' parts of the uri. We need a secondary buffer to handle cases where an optional
-            // segment is in the middle of the uri. We don't know whether or not we need to write it out - if it's
+            // segment is in the middle of the uri. We don't know if we need to write it out - if it's
             // followed by other optional segments than we will just throw it away.
-            private readonly StringBuilder _buffer;
+            private readonly List<BufferValue> _buffer;
             private readonly UrlEncoder _urlEncoder;
             private readonly StringWriter _uriWriter;
 
             private bool _hasEmptySegment;
+            private int _lastValueOffset;
 
             public UriBuildingContext(UrlEncoder urlEncoder)
             {
                 _urlEncoder = urlEncoder;
                 _uri = new StringBuilder();
-                _buffer = new StringBuilder();
+                _buffer = new List<BufferValue>();
                 _uriWriter = new StringWriter(_uri);
+                _lastValueOffset = -1;
 
                 BufferState = SegmentState.Beginning;
                 UriState = SegmentState.Beginning;
@@ -458,7 +460,17 @@ namespace Microsoft.AspNet.Routing.Template
                     return false;
                 }
 
-                _uri.Append(_buffer);
+                for (var i = 0; i < _buffer.Count; i++)
+                {
+                    if (_buffer[i].RequiresEncoding)
+                    {
+                        _urlEncoder.Encode(_uriWriter, _buffer[i].Value);
+                    }
+                    else
+                    {
+                        _uri.Append(_buffer[i].Value);
+                    }
+                }
                 _buffer.Clear();
 
                 if (UriState == SegmentState.Beginning && BufferState == SegmentState.Beginning)
@@ -472,6 +484,7 @@ namespace Microsoft.AspNet.Routing.Template
                 BufferState = SegmentState.Inside;
                 UriState = SegmentState.Inside;
 
+                _lastValueOffset = _uri.Length;
                 // Allow the first segment to have a leading slash.
                 // This prevents the leading slash from PathString segments from being encoded.
                 if (_uri.Length == 0 && value.Length > 0 && value[0] == '/')
@@ -489,7 +502,9 @@ namespace Microsoft.AspNet.Routing.Template
 
             public void Remove(string literal)
             {
-                _uri.Length -= _urlEncoder.Encode(literal).Length;
+                Debug.Assert(_lastValueOffset != -1, "Cannot invoke Remove more than once.");
+                _uri.Length = _lastValueOffset;
+                _lastValueOffset = -1;
             }
 
             public bool Buffer(string value)
@@ -528,15 +543,15 @@ namespace Microsoft.AspNet.Routing.Template
 
                 if (UriState == SegmentState.Beginning && BufferState == SegmentState.Beginning)
                 {
-                    if (_uri.Length != 0 || _buffer.Length != 0)
+                    if (_uri.Length != 0 || _buffer.Count != 0)
                     {
-                        _buffer.Append("/");
+                        _buffer.Add(new BufferValue("/", requiresEncoding: false));
                     }
 
                     BufferState = SegmentState.Inside;
                 }
 
-                _buffer.Append(_urlEncoder.Encode(value));
+                _buffer.Add(new BufferValue(value, requiresEncoding: true));
                 return true;
             }
 
@@ -554,7 +569,7 @@ namespace Microsoft.AspNet.Routing.Template
 
             private string DebuggerToString()
             {
-                return string.Format("{{Accepted: '{0}' Buffered: '{1}'}}", _uri.ToString(), _buffer.ToString());
+                return string.Format("{{Accepted: '{0}' Buffered: '{1}'}}", _uri, string.Join("", _buffer));
             }
         }
 
@@ -568,6 +583,19 @@ namespace Microsoft.AspNet.Routing.Template
         {
             Beginning,
             Inside,
+        }
+
+        private struct BufferValue
+        {
+            public BufferValue(string value, bool requiresEncoding)
+            {
+                Value = value;
+                RequiresEncoding = requiresEncoding;
+            }
+
+            public bool RequiresEncoding { get; }
+
+            public string Value { get; }
         }
     }
 }
