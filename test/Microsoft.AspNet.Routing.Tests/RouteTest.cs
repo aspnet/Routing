@@ -631,6 +631,78 @@ namespace Microsoft.AspNet.Routing
             Assert.Null(path);
         }
 
+        [Fact]
+        public void GetVirtualPath_ForListOfStrings()
+        {
+            // Arrange
+            var route = CreateRoute("{controller}/{action}");
+            var context = CreateVirtualPathContext(
+                new { color = new List<string> { "red", "green", "blue" } },
+                new { controller = "Home", action = "Index" });
+
+            // Act
+            var pathData = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal(new PathString("/Home/Index?color=red&color=green&color=blue"), pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
+        }
+
+        [Fact]
+        public void GetVirtualPath_ForListOfInts()
+        {
+            // Arrange
+            var route = CreateRoute("{controller}/{action}");
+            var context = CreateVirtualPathContext(
+                new { items = new List<int> { 10, 20, 30 } },
+                new { controller = "Home", action = "Index" });
+
+            // Act
+            var pathData = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal(new PathString("/Home/Index?items=10&items=20&items=30"), pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
+        }
+
+        [Fact]
+        public void GetVirtualPath_ForList_Empty()
+        {
+            // Arrange
+            var route = CreateRoute("{controller}/{action}");
+            var context = CreateVirtualPathContext(
+                new { color = new List<string> { } },
+                new { controller = "Home", action = "Index" });
+
+            // Act
+            var pathData = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal(new PathString("/Home/Index"), pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
+        }
+        
+        [Fact]
+        public void GetVirtualPath_ForList_StringWorkaround()
+        {
+            // Arrange
+            var route = CreateRoute("{controller}/{action}");
+            var context = CreateVirtualPathContext(
+                new { page = 1, color = new List<string> { "red", "green", "blue" }, message = "textfortest" },
+                new { controller = "Home", action = "Index" });
+
+            // Act
+            var pathData = route.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal(new PathString("/Home/Index?page=1&color=red&color=green&color=blue&message=textfortest"), pathData.VirtualPath);
+            Assert.Same(route, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
+        }
+
         [Theory]
         [MemberData("DataTokensTestData")]
         public void GetVirtualPath_ReturnsDataTokens_WhenTargetReturnsVirtualPathData(
