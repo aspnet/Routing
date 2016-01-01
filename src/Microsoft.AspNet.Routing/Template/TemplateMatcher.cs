@@ -14,11 +14,14 @@ namespace Microsoft.AspNet.Routing.Template
         private const string SeparatorString = "/";
         private const char SeparatorChar = '/';
 
+        // Perf: This is a cache to avoid looking things up in 'Defaults' each request.
+        private readonly object[] _simpleParameterDefaultValues;
+
         private static readonly char[] Delimiters = new char[] { SeparatorChar };
 
         public TemplateMatcher(
             RouteTemplate template,
-            IReadOnlyDictionary<string, object> defaults)
+            RouteValueDictionary defaults)
         {
             if (template == null)
             {
@@ -27,11 +30,34 @@ namespace Microsoft.AspNet.Routing.Template
 
             Template = template;
             Defaults = defaults ?? new RouteValueDictionary();
+
+            // Perf: cache the default value for each 'simple' parameter.
+            _simpleParameterDefaultValues = new object[Template.Segments.Count];
+            for (var i = 0; i < Template.Segments.Count; i++)
+            {
+                var segment = Template.Segments[i];
+                if (!segment.IsSimple)
+                {
+                    continue;
+                }
+
+                var part = segment.Parts[0];
+                if (!part.IsParameter || part.IsCatchAll)
+                {
+                    continue;
+                }
+
+                object value;
+                if (Defaults.TryGetValue(part.Name, out value))
+                {
+                    _simpleParameterDefaultValues[i] = value;
+                }
+            }
         }
 
-        public IReadOnlyDictionary<string, object> Defaults { get; private set; }
+        public RouteValueDictionary Defaults { get; }
 
-        public RouteTemplate Template { get; private set; }
+        public RouteTemplate Template { get; }
 
         public RouteValueDictionary Match(PathString path)
         {
@@ -77,7 +103,7 @@ namespace Microsoft.AspNet.Routing.Template
                     // For a parameter, validate that it's a has some length, or we have a default, or it's optional.
                     var part = routeSegment.Parts[0];
                     if (requestSegment.Length == 0 &&
-                        !Defaults.ContainsKey(part.Name) &&
+                        _simpleParameterDefaultValues[i] == null &&
                         !part.IsOptional)
                     {
                         // There's no value for this parameter, the route can't match.
@@ -125,7 +151,7 @@ namespace Microsoft.AspNet.Routing.Template
                 // If we get here, this is a simple segment with a parameter. We need it to be optional, or for the
                 // defaults to have a value.
                 Debug.Assert(routeSegment.IsSimple && part.IsParameter);
-                if (!Defaults.ContainsKey(part.Name) && !part.IsOptional)
+                if (_simpleParameterDefaultValues[i] == null && !part.IsOptional)
                 {
                     // There's no default for this (non-optional) parameter so it can't match.
                     return null;
@@ -172,8 +198,8 @@ namespace Microsoft.AspNet.Routing.Template
                     }
                     else
                     {
-                        object defaultValue;
-                        if (Defaults.TryGetValue(part.Name, out defaultValue))
+                        var defaultValue = _simpleParameterDefaultValues[i];
+                        if (defaultValue != null)
                         {
                             values.Add(part.Name, defaultValue);
                         }
