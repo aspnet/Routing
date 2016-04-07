@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         private static IInlineConstraintResolver _inlineConstraintResolver = GetInlineConstraintResolver();
 
         [Fact]
-        public void MatchSingleRoute()
+        public void TryMatch_Success()
         {
             // Arrange
             var matcher = CreateMatcher("{controller}/{action}/{id}");
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void NoMatchSingleRoute()
+        public void TryMatch_Fails()
         {
             // Arrange
             var matcher = CreateMatcher("{controller}/{action}/{id}");
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void MatchSingleRouteWithDefaults()
+        public void TryMatch_WithDefaults_Success()
         {
             // Arrange
             var matcher = CreateMatcher("{controller}/{action}/{id}", new { id = "default id" });
@@ -58,13 +58,14 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             var match = matcher.TryMatch("/Bank/DoAction", values);
 
             // Assert
+            Assert.True(match);
             Assert.Equal("Bank", values["controller"]);
             Assert.Equal("DoAction", values["action"]);
             Assert.Equal("default id", values["id"]);
         }
 
         [Fact]
-        public void NoMatchSingleRouteWithDefaults()
+        public void TryMatch_WithDefaults_Fails()
         {
             // Arrange
             var matcher = CreateMatcher("{controller}/{action}/{id}", new { id = "default id" });
@@ -79,7 +80,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void MatchRouteWithLiterals()
+        public void TryMatch_WithLiterals_Success()
         {
             // Arrange
             var matcher = CreateMatcher("moo/{p1}/bar/{p2}", new { p2 = "default p2" });
@@ -90,12 +91,13 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             var match = matcher.TryMatch("/moo/111/bar/222", values);
 
             // Assert
+            Assert.True(match);
             Assert.Equal("111", values["p1"]);
             Assert.Equal("222", values["p2"]);
         }
 
         [Fact]
-        public void MatchRouteWithLiteralsAndDefaults()
+        public void TryMatch_RouteWithLiteralsAndDefaults_Success()
         {
             // Arrange
             var matcher = CreateMatcher("moo/{p1}/bar/{p2}", new { p2 = "default p2" });
@@ -106,6 +108,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             var match = matcher.TryMatch("/moo/111/bar/", values);
 
             // Assert
+            Assert.True(match);
             Assert.Equal("111", values["p1"]);
             Assert.Equal("default p2", values["p2"]);
         }
@@ -115,7 +118,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         [InlineData(@"{p1:regex(^\w+\@\w+\.\w+)}", "/asd@assds.com")] // email
         [InlineData(@"{p1:regex(([}}])\w+)}", "/}sda")] // Not balanced }
         [InlineData(@"{p1:regex(([{{)])\w+)}", "/})sda")] // Not balanced {
-        public void MatchRoute_RegularExpression_Valid(
+        public void TryMatch_RegularExpressionConstraint_Valid(
             string template,
             string path)
         {
@@ -145,7 +148,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         [InlineData("moo/.{p2?}", "/moo", null, null)]
         [InlineData("moo/{p1}.{p2?}", "/moo/....", "..", ".")]
         [InlineData("moo/{p1}.{p2?}", "/moo/.bar", ".bar", null)]
-        public void MatchRoute_OptionalParameter_FollowedByPeriod_Valid(
+        public void TryMatch_OptionalParameter_FollowedByPeriod_Valid(
             string template,
             string path,
             string p1,
@@ -160,6 +163,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             var match = matcher.TryMatch(path, values);
 
             // Assert
+            Assert.True(match);
             if (p1 != null)
             {
                 Assert.Equal(p1, values["p1"]);
@@ -178,7 +182,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         [InlineData("{p1}.{p2?}/{p3}", "/foo/bar", "foo", null, "bar")]
         [InlineData("{p1}.{p2?}/{p3}", "/.foo/bar", ".foo", null, "bar")]
         [InlineData("{p1}/{p2}/{p3?}", "/foo/bar/baz", "foo", "bar", "baz")]
-        public void MatchRoute_OptionalParameter_FollowedByPeriod_3Parameters_Valid(
+        public void TryMatch_OptionalParameter_FollowedByPeriod_3Parameters_Valid(
             string template,
             string path,
             string p1,
@@ -194,6 +198,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             var match = matcher.TryMatch(path, values);
 
             // Assert
+            Assert.True(match);
             Assert.Equal(p1, values["p1"]);
 
             if (p2 != null)
@@ -220,7 +225,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         [InlineData("{p1}.{p2?}/{p3}", "/foo./bar")]
         [InlineData("moo/.{p2?}", "/moo/.")]
         [InlineData("{p1}.{p2}/{p3}", "/.foo/bar")]
-        public void MatchRoute_OptionalParameter_FollowedByPeriod_Invalid(string template, string path)
+        public void TryMatch_OptionalParameter_FollowedByPeriod_Invalid(string template, string path)
         {
             // Arrange
             var matcher = CreateMatcher(template);
@@ -235,7 +240,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void MatchRouteWithOnlyLiterals()
+        public void TryMatch_RouteWithOnlyLiterals_Success()
         {
             // Arrange
             var matcher = CreateMatcher("moo/bar");
@@ -251,7 +256,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void NoMatchRouteWithOnlyLiterals()
+        public void TryMatch_RouteWithOnlyLiterals_Fails()
         {
             // Arrange
             var matcher = CreateMatcher("moo/bars");
@@ -266,7 +271,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void MatchRouteWithExtraSeparators()
+        public void TryMatch_RouteWithExtraSeparators_Success()
         {
             // Arrange
             var matcher = CreateMatcher("moo/bar");
@@ -282,7 +287,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void MatchRouteUrlWithExtraSeparators()
+        public void TryMatch_UrlWithExtraSeparators_Success()
         {
             // Arrange
             var matcher = CreateMatcher("moo/bar/");
@@ -298,7 +303,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void MatchRouteUrlWithParametersAndExtraSeparators()
+        public void TryMatch_RouteWithParametersAndExtraSeparators_Success()
         {
             // Arrange
             var matcher = CreateMatcher("{p1}/{p2}/");
@@ -315,7 +320,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void NoMatchRouteUrlWithDifferentLiterals()
+        public void TryMatch_RouteWithDifferentLiterals_Fails()
         {
             // Arrange
             var matcher = CreateMatcher("{p1}/{p2}/baz");
@@ -330,7 +335,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void NoMatchLongerUrl()
+        public void TryMatch_LongerUrl_Fails()
         {
             // Arrange
             var matcher = CreateMatcher("{p1}");
@@ -345,7 +350,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void MatchSimpleFilename()
+        public void TryMatch_SimpleFilename_Success()
         {
             // Arrange
             var matcher = CreateMatcher("DEFAULT.ASPX");
@@ -368,7 +373,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         [InlineData("{prefix}xyz{suffix}", "/xyzxyzxyz")]
         [InlineData("{prefix}aa{suffix}", "/aaaaa")]
         [InlineData("{prefix}aaa{suffix}", "/aaaaa")]
-        public void VerifyRouteMatchesWithContext(string template, string path)
+        public void TryMatch_RouteWithComplexSegment_Success(string template, string path)
         {
             var matcher = CreateMatcher(template);
 
@@ -382,7 +387,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void MatchRouteWithExtraDefaultValues()
+        public void TryMatch_RouteWithExtraDefaultValues_Success()
         {
             // Arrange
             var matcher = CreateMatcher("{p1}/{p2}", new { p2 = (string)null, foo = "bar" });
@@ -401,7 +406,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void MatchPrettyRouteWithExtraDefaultValues()
+        public void TryMatch_PrettyRouteWithExtraDefaultValues_Success()
         {
             // Arrange
             var matcher = CreateMatcher(
@@ -424,7 +429,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithMultiSegmentParamsOnBothEndsMatches()
+        public void TryMatch_WithMultiSegmentParamsOnBothEndsMatches()
         {
             RunTest(
                 "language/{lang}-{region}",
@@ -434,7 +439,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithMultiSegmentParamsOnLeftEndMatches()
+        public void TryMatch_WithMultiSegmentParamsOnLeftEndMatches()
         {
             RunTest(
                 "language/{lang}-{region}a",
@@ -444,7 +449,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithMultiSegmentParamsOnRightEndMatches()
+        public void TryMatch_WithMultiSegmentParamsOnRightEndMatches()
         {
             RunTest(
                 "language/a{lang}-{region}",
@@ -454,7 +459,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithMultiSegmentParamsOnNeitherEndMatches()
+        public void TryMatch_WithMultiSegmentParamsOnNeitherEndMatches()
         {
             RunTest(
                 "language/a{lang}-{region}a",
@@ -464,7 +469,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithMultiSegmentParamsOnNeitherEndDoesNotMatch()
+        public void TryMatch_WithMultiSegmentParamsOnNeitherEndDoesNotMatch()
         {
             RunTest(
                 "language/a{lang}-{region}a",
@@ -474,7 +479,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithMultiSegmentParamsOnNeitherEndDoesNotMatch2()
+        public void TryMatch_WithMultiSegmentParamsOnNeitherEndDoesNotMatch2()
         {
             RunTest(
                 "language/a{lang}-{region}a",
@@ -484,7 +489,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithSimpleMultiSegmentParamsOnBothEndsMatches()
+        public void TryMatch_WithSimpleMultiSegmentParamsOnBothEndsMatches()
         {
             RunTest(
                 "language/{lang}",
@@ -494,7 +499,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithSimpleMultiSegmentParamsOnBothEndsTrailingSlashDoesNotMatch()
+        public void TryMatch_WithSimpleMultiSegmentParamsOnBothEndsTrailingSlashDoesNotMatch()
         {
             RunTest(
                 "language/{lang}",
@@ -504,7 +509,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithSimpleMultiSegmentParamsOnBothEndsDoesNotMatch()
+        public void TryMatch_WithSimpleMultiSegmentParamsOnBothEndsDoesNotMatch()
         {
             RunTest(
                 "language/{lang}",
@@ -514,7 +519,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithSimpleMultiSegmentParamsOnLeftEndMatches()
+        public void TryMatch_WithSimpleMultiSegmentParamsOnLeftEndMatches()
         {
             RunTest(
                 "language/{lang}-",
@@ -524,7 +529,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithSimpleMultiSegmentParamsOnRightEndMatches()
+        public void TryMatch_WithSimpleMultiSegmentParamsOnRightEndMatches()
         {
             RunTest(
                 "language/a{lang}",
@@ -534,7 +539,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithSimpleMultiSegmentParamsOnNeitherEndMatches()
+        public void TryMatch_WithSimpleMultiSegmentParamsOnNeitherEndMatches()
         {
             RunTest(
                 "language/a{lang}a",
@@ -544,7 +549,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithMultiSegmentStandamatchMvcRouteMatches()
+        public void TryMatch_WithMultiSegmentStandamatchMvcRouteMatches()
         {
             RunTest(
                 "{controller}.mvc/{action}/{id}",
@@ -554,7 +559,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithMultiSegmentParamsOnBothEndsWithDefaultValuesMatches()
+        public void TryMatch_WithMultiSegmentParamsOnBothEndsWithDefaultValuesMatches()
         {
             RunTest(
                 "language/{lang}-{region}",
@@ -564,7 +569,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithUrlWithMultiSegmentWithRepeatedDots()
+        public void TryMatch_WithUrlWithMultiSegmentWithRepeatedDots()
         {
             RunTest(
                 "{Controller}..mvc/{id}/{Param1}",
@@ -574,7 +579,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithUrlWithTwoRepeatedDots()
+        public void TryMatch_WithUrlWithTwoRepeatedDots()
         {
             RunTest(
                 "{Controller}.mvc/../{action}",
@@ -584,7 +589,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithUrlWithThreeRepeatedDots()
+        public void TryMatch_WithUrlWithThreeRepeatedDots()
         {
             RunTest(
                 "{Controller}.mvc/.../{action}",
@@ -594,7 +599,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithUrlWithManyRepeatedDots()
+        public void TryMatch_WithUrlWithManyRepeatedDots()
         {
             RunTest(
                 "{Controller}.mvc/../../../{action}",
@@ -604,7 +609,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithUrlWithExclamationPoint()
+        public void TryMatch_WithUrlWithExclamationPoint()
         {
             RunTest(
                 "{Controller}.mvc!/{action}",
@@ -614,7 +619,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithUrlWithStartingDotDotSlash()
+        public void TryMatch_WithUrlWithStartingDotDotSlash()
         {
             RunTest(
                 "../{Controller}.mvc",
@@ -624,7 +629,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithUrlWithStartingBackslash()
+        public void TryMatch_WithUrlWithStartingBackslash()
         {
             RunTest(
                 @"\{Controller}.mvc",
@@ -634,7 +639,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithUrlWithBackslashSeparators()
+        public void TryMatch_WithUrlWithBackslashSeparators()
         {
             RunTest(
                 @"{Controller}.mvc\{id}\{Param1}",
@@ -644,7 +649,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithUrlWithParenthesesLiterals()
+        public void TryMatch_WithUrlWithParenthesesLiterals()
         {
             RunTest(
                 @"(Controller).mvc",
@@ -654,7 +659,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithUrlWithTrailingSlashSpace()
+        public void TryMatch_WithUrlWithTrailingSlashSpace()
         {
             RunTest(
                 @"Controller.mvc/ ",
@@ -664,7 +669,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithUrlWithTrailingSpace()
+        public void TryMatch_WithUrlWithTrailingSpace()
         {
             RunTest(
                 @"Controller.mvc ",
@@ -674,7 +679,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithCatchAllCapturesDots()
+        public void TryMatch_WithCatchAllCapturesDots()
         {
             // DevDiv Bugs 189892: UrlRouting: Catch all parameter cannot capture url segments that contain the "."
             RunTest(
@@ -691,7 +696,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void RouteWithCatchAllClauseCapturesManySlashes()
+        public void TryMatch_RouteWithCatchAllClauseCapturesManySlashes()
         {
             // Arrange
             var matcher = CreateMatcher("{p1}/{*p2}");
@@ -709,7 +714,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void RouteWithCatchAllClauseCapturesTrailingSlash()
+        public void TryMatch_RouteWithCatchAllClauseCapturesTrailingSlash()
         {
             // Arrange
             var matcher = CreateMatcher("{p1}/{*p2}");
@@ -727,7 +732,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void RouteWithCatchAllClauseCapturesEmptyContent()
+        public void TryMatch_RouteWithCatchAllClauseCapturesEmptyContent()
         {
             // Arrange
             var matcher = CreateMatcher("{p1}/{*p2}");
@@ -745,7 +750,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void RouteWithCatchAllClauseUsesDefaultValueForEmptyContent()
+        public void TryMatch_RouteWithCatchAllClauseUsesDefaultValueForEmptyContent()
         {
             // Arrange
             var matcher = CreateMatcher("{p1}/{*p2}", new { p2 = "catchall" });
@@ -763,7 +768,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void RouteWithCatchAllClauseIgnoresDefaultValueForNonEmptyContent()
+        public void TryMatch_RouteWithCatchAllClauseIgnoresDefaultValueForNonEmptyContent()
         {
             // Arrange
             var matcher = CreateMatcher("{p1}/{*p2}", new { p2 = "catchall" });
@@ -781,7 +786,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataDoesNotMatchOnlyLeftLiteralMatch()
+        public void TryMatch_DoesNotMatchOnlyLeftLiteralMatch()
         {
             // DevDiv Bugs 191180: UrlRouting: Wrong template getting matched if a url segment is a substring of the requested url
             RunTest(
@@ -792,7 +797,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataDoesNotMatchOnlyRightLiteralMatch()
+        public void TryMatch_DoesNotMatchOnlyRightLiteralMatch()
         {
             // DevDiv Bugs 191180: UrlRouting: Wrong template getting matched if a url segment is a substring of the requested url
             RunTest(
@@ -803,7 +808,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataDoesNotMatchMiddleLiteralMatch()
+        public void TryMatch_DoesNotMatchMiddleLiteralMatch()
         {
             // DevDiv Bugs 191180: UrlRouting: Wrong template getting matched if a url segment is a substring of the requested url
             RunTest(
@@ -814,7 +819,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataDoesMatchesExactLiteralMatch()
+        public void TryMatch_DoesMatchesExactLiteralMatch()
         {
             // DevDiv Bugs 191180: UrlRouting: Wrong template getting matched if a url segment is a substring of the requested url
             RunTest(
@@ -825,7 +830,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataWithWeimatchParameterNames()
+        public void TryMatch_WithWeimatchParameterNames()
         {
             RunTest(
                 "foo/{ }/{.!$%}/{dynamic.data}/{op.tional}",
@@ -835,7 +840,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataDoesNotMatchRouteWithLiteralSeparatomatchefaultsButNoValue()
+        public void TryMatch_DoesNotMatchRouteWithLiteralSeparatomatchefaultsButNoValue()
         {
             RunTest(
                 "{controller}/{language}-{locale}",
@@ -845,7 +850,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataDoesNotMatchesRouteWithLiteralSeparatomatchefaultsAndLeftValue()
+        public void TryMatch_DoesNotMatchesRouteWithLiteralSeparatomatchefaultsAndLeftValue()
         {
             RunTest(
                 "{controller}/{language}-{locale}",
@@ -855,7 +860,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataDoesNotMatchesRouteWithLiteralSeparatomatchefaultsAndRightValue()
+        public void TryMatch_DoesNotMatchesRouteWithLiteralSeparatomatchefaultsAndRightValue()
         {
             RunTest(
                 "{controller}/{language}-{locale}",
@@ -865,7 +870,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void GetRouteDataMatchesRouteWithLiteralSeparatomatchefaultsAndValue()
+        public void TryMatch_MatchesRouteWithLiteralSeparatomatchefaultsAndValue()
         {
             RunTest(
                 "{controller}/{language}-{locale}",
@@ -875,7 +880,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void MatchSetsOptionalParameter()
+        public void TryMatch_SetsOptionalParameter()
         {
             // Arrange
             var route = CreateMatcher("{controller}/{action?}");
@@ -894,7 +899,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void MatchDoesNotSetOptionalParameter()
+        public void TryMatch_DoesNotSetOptionalParameter()
         {
             // Arrange
             var route = CreateMatcher("{controller}/{action?}");
@@ -913,7 +918,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void MatchDoesNotSetOptionalParameter_EmptyString()
+        public void TryMatch_DoesNotSetOptionalParameter_EmptyString()
         {
             // Arrange
             var route = CreateMatcher("{controller?}");
@@ -931,7 +936,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void Match_EmptyRouteWith_EmptyString()
+        public void TryMatch__EmptyRouteWith_EmptyString()
         {
             // Arrange
             var route = CreateMatcher("");
@@ -948,7 +953,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Fact]
-        public void MatchMultipleOptionalParameters()
+        public void TryMatch_MultipleOptionalParameters()
         {
             // Arrange
             var route = CreateMatcher("{controller}/{action?}/{id?}");

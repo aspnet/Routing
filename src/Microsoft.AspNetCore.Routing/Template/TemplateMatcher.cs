@@ -65,6 +65,11 @@ namespace Microsoft.AspNetCore.Routing.Template
 
         public bool TryMatch(PathString path, RouteValueDictionary values)
         {
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
+            }
+
             var i = 0;
             var pathTokenizer = new PathTokenizer(path);
 
