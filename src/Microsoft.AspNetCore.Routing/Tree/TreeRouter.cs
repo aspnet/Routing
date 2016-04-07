@@ -316,54 +316,6 @@ namespace Microsoft.AspNetCore.Routing.Tree
             }
         }
 
-        private struct TemplateMatch : IEquatable<TemplateMatch>
-        {
-            public TemplateMatch(TreeRouteMatchingEntry entry, RouteValueDictionary values)
-            {
-                Entry = entry;
-                Values = values;
-            }
-
-            public TreeRouteMatchingEntry Entry { get; }
-
-            public RouteValueDictionary Values { get; }
-
-            public override bool Equals(object obj)
-            {
-                if (obj is TemplateMatch)
-                {
-                    return Equals((TemplateMatch)obj);
-                }
-
-                return false;
-            }
-
-            public bool Equals(TemplateMatch other)
-            {
-                return
-                    object.ReferenceEquals(Entry, other.Entry) &&
-                    object.ReferenceEquals(Values, other.Values);
-            }
-
-            public override int GetHashCode()
-            {
-                var hash = new HashCodeCombiner();
-                hash.Add(Entry);
-                hash.Add(Values);
-                return hash.CombinedHash;
-            }
-
-            public static bool operator ==(TemplateMatch left, TemplateMatch right)
-            {
-                return left.Equals(right);
-            }
-
-            public static bool operator !=(TemplateMatch left, TemplateMatch right)
-            {
-                return !left.Equals(right);
-            }
-        }
-
         private VirtualPathData GetVirtualPathForNamedRoute(VirtualPathContext context)
         {
             TreeRouteLinkGenerationEntry entry;
