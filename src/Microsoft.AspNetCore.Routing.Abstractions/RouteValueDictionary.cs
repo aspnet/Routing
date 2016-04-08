@@ -13,11 +13,14 @@ namespace Microsoft.AspNetCore.Routing
     /// </summary>
     public class RouteValueDictionary : IDictionary<string, object>, IReadOnlyDictionary<string, object>
     {
+        private Storage _storage;
+
         /// <summary>
         /// Creates an empty <see cref="RouteValueDictionary"/>.
         /// </summary>
         public RouteValueDictionary()
         {
+            _storage = EmptyStorage.Instance;
         }
 
         /// <summary>
@@ -35,61 +38,50 @@ namespace Microsoft.AspNetCore.Routing
         /// </remarks>
         public RouteValueDictionary(object values)
         {
-            var otherDictionary = values as RouteValueDictionary;
-            if (otherDictionary != null)
+            RouteValueDictionary dictionary;
+            IEnumerable<KeyValuePair<string, object>> keyValueEnumerable;
+            if ((dictionary = values as RouteValueDictionary) != null)
             {
-                if (otherDictionary.InnerDictionary != null)
+                ListStorage listStorage;
+                if ((listStorage = dictionary._storage as ListStorage) != null)
                 {
-                    InnerDictionary = new Dictionary<string, object>(
-                        otherDictionary.InnerDictionary.Count,
-                        StringComparer.OrdinalIgnoreCase);
+                    _storage = new ListStorage(listStorage);
+                    return;
+                }
 
-                    foreach (var kvp in otherDictionary.InnerDictionary)
-                    {
-                        InnerDictionary[kvp.Key] = kvp.Value;
-                    }
+                PropertyStorage propertyStorage;
+                if ((propertyStorage = dictionary._storage as PropertyStorage) != null)
+                {
+                    _storage = new PropertyStorage(propertyStorage);
+                    return;
+                }
 
-                    return;
-                }
-                else if (otherDictionary.Properties != null)
-                {
-                    Properties = otherDictionary.Properties;
-                    Value = otherDictionary.Value;
-                    return;
-                }
-                else
-                {
-                    return;
-                }
+                // If we get here, it's an EmptyStorage
+                _storage = EmptyStorage.Instance;
+                return;
             }
-
-            var keyValuePairCollection = values as IEnumerable<KeyValuePair<string, object>>;
-            if (keyValuePairCollection != null)
+            else if ((keyValueEnumerable = values as IEnumerable<KeyValuePair<string, object>>) != null)
             {
-                InnerDictionary = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-
-                foreach (var kvp in keyValuePairCollection)
+                _storage = new ListStorage();
+                foreach (var kvp in keyValueEnumerable)
                 {
-                    InnerDictionary[kvp.Key] = kvp.Value;
+                    // TrySetValue always succeeds for ListStorage
+                    _storage.TrySetValue(kvp.Key, kvp.Value);
                 }
 
                 return;
             }
-
-            if (values != null)
+            else if (values != null)
             {
-                Properties = PropertyHelper.GetVisibleProperties(values);
-                Value = values;
-
+                _storage = new PropertyStorage(values, PropertyHelper.GetVisibleProperties(values));
+                return;
+            }
+            else
+            {
+                _storage = EmptyStorage.Instance;
                 return;
             }
         }
-
-        private Dictionary<string, object> InnerDictionary { get; set; }
-
-        private PropertyHelper[] Properties { get; }
-
-        private object Value { get; }
 
         /// <inheritdoc />
         public object this[string key]
@@ -113,8 +105,11 @@ namespace Microsoft.AspNetCore.Routing
                     throw new ArgumentNullException(nameof(key));
                 }
 
-                EnsureWritable();
-                InnerDictionary[key] = value;
+                if (!_storage.TrySetValue(key, value))
+                {
+                    Upgrade();
+                    _storage.TrySetValue(key, value);
+                }
             }
         }
 
@@ -127,7 +122,7 @@ namespace Microsoft.AspNetCore.Routing
         public IEqualityComparer<string> Comparer => StringComparer.OrdinalIgnoreCase;
 
         /// <inheritdoc />
-        public int Count => InnerDictionary?.Count ?? Properties?.Length ?? 0;
+        public int Count => _storage.Count;
 
         /// <inheritdoc />
         bool ICollection<KeyValuePair<string, object>>.IsReadOnly => false;
@@ -137,8 +132,16 @@ namespace Microsoft.AspNetCore.Routing
         {
             get
             {
-                EnsureWritable();
-                return InnerDictionary.Keys;
+                Upgrade();
+
+                var list = ((ListStorage)_storage);
+                var keys = new string[_storage.Count];
+                for (var i = 0; i < keys.Length; i++)
+                {
+                    keys[i] = list[i].Key;
+                }
+
+                return keys;
             }
         }
 
@@ -146,8 +149,16 @@ namespace Microsoft.AspNetCore.Routing
         {
             get
             {
-                EnsureWritable();
-                return InnerDictionary.Keys;
+                Upgrade();
+
+                var list = ((ListStorage)_storage);
+                var keys = new string[_storage.Count];
+                for (var i = 0; i < keys.Length; i++)
+                {
+                    keys[i] = list[i].Key;
+                }
+
+                return keys;
             }
         }
 
@@ -156,8 +167,16 @@ namespace Microsoft.AspNetCore.Routing
         {
             get
             {
-                EnsureWritable();
-                return InnerDictionary.Values;
+                Upgrade();
+
+                var list = ((ListStorage)_storage);
+                var values = new object[_storage.Count];
+                for (var i = 0; i < values.Length; i++)
+                {
+                    values[i] = list[i].Value;
+                }
+
+                return values;
             }
         }
 
@@ -165,16 +184,26 @@ namespace Microsoft.AspNetCore.Routing
         {
             get
             {
-                EnsureWritable();
-                return InnerDictionary.Values;
+                Upgrade();
+
+                var list = ((ListStorage)_storage);
+                var values = new object[_storage.Count];
+                for (var i = 0; i < values.Length; i++)
+                {
+                    values[i] = list[i].Value;
+                }
+
+                return values;
             }
         }
 
         /// <inheritdoc />
         void ICollection<KeyValuePair<string, object>>.Add(KeyValuePair<string, object> item)
         {
-            EnsureWritable();
-            ((ICollection<KeyValuePair<string, object>>)InnerDictionary).Add(item);
+            Upgrade();
+
+            var list = ((ListStorage)_storage);
+            list.Inner.Add(item);
         }
 
         /// <inheritdoc />
@@ -185,22 +214,36 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(key));
             }
 
-            EnsureWritable();
-            InnerDictionary.Add(key, value);
+            Upgrade();
+
+            var list = ((ListStorage)_storage);
+            list.Inner.Add(new KeyValuePair<string, object>(key, value));
         }
 
         /// <inheritdoc />
         public void Clear()
         {
-            EnsureWritable();
-            InnerDictionary.Clear();
+            Upgrade();
+
+            var list = ((ListStorage)_storage);
+            list.Inner.Clear();
         }
 
         /// <inheritdoc />
         bool ICollection<KeyValuePair<string, object>>.Contains(KeyValuePair<string, object> item)
         {
-            EnsureWritable();
-            return ((ICollection<KeyValuePair<string, object>>)InnerDictionary).Contains(item);
+            Upgrade();
+
+            var list = ((ListStorage)_storage);
+            for (var i = 0; i < list.Inner.Count; i++)
+            {
+                if (string.Equals(list[i].Key, item.Key, StringComparison.OrdinalIgnoreCase))
+                {
+                    return EqualityComparer<object>.Default.Equals(list[i].Value, item.Value);
+                }
+            }
+
+            return false;
         }
 
         /// <inheritdoc />
@@ -211,27 +254,7 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (InnerDictionary != null)
-            {
-                return InnerDictionary.ContainsKey(key);
-            }
-            else if (Properties != null)
-            {
-                for (var i = 0; i < Properties.Length; i++)
-                {
-                    var property = Properties[i];
-                    if (Comparer.Equals(property.Name, key))
-                    {
-                        return true;
-                    }
-                }
-
-                return false;
-            }
-            else
-            {
-                return false;
-            }
+            return _storage.ContainsKey(key);
         }
 
         /// <inheritdoc />
@@ -244,8 +267,13 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(array));
             }
 
-            EnsureWritable();
-            ((ICollection<KeyValuePair<string, object>>)InnerDictionary).CopyTo(array, arrayIndex);
+            Upgrade();
+
+            var list = ((ListStorage)_storage);
+            for (var i = 0; i < list.Inner.Count; i++)
+            {
+                array[i + arrayIndex] = list.Inner[i];
+            }
         }
 
         /// <inheritdoc />
@@ -269,8 +297,20 @@ namespace Microsoft.AspNetCore.Routing
         /// <inheritdoc />
         bool ICollection<KeyValuePair<string, object>>.Remove(KeyValuePair<string, object> item)
         {
-            EnsureWritable();
-            return ((ICollection<KeyValuePair<string, object>>)InnerDictionary).Remove(item);
+            Upgrade();
+
+            var list = ((ListStorage)_storage);
+            for (var i = 0; i < list.Inner.Count; i++)
+            {
+                if (string.Equals(list[i].Key, item.Key, StringComparison.OrdinalIgnoreCase) &&
+                    EqualityComparer<object>.Default.Equals(list[i].Value, item.Value))
+                {
+                    list.Inner.RemoveAt(i);
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <inheritdoc />
@@ -281,8 +321,19 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(key));
             }
 
-            EnsureWritable();
-            return InnerDictionary.Remove(key);
+            Upgrade();
+
+            var list = ((ListStorage)_storage);
+            for (var i = 0; i < list.Inner.Count; i++)
+            {
+                if (string.Equals(list[i].Key, key, StringComparison.OrdinalIgnoreCase))
+                {
+                    list.Inner.RemoveAt(i);
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         /// <inheritdoc />
@@ -293,56 +344,18 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(key));
             }
 
-            if (InnerDictionary != null)
-            {
-                return InnerDictionary.TryGetValue(key, out value);
-            }
-            else if (Properties != null)
-            {
-                for (var i = 0; i < Properties.Length; i++)
-                {
-                    var property = Properties[i];
-                    if (Comparer.Equals(property.Name, key))
-                    {
-                        value = property.ValueGetter(Value);
-                        return true;
-                    }
-                }
-
-                value = null;
-                return false;
-            }
-            else
-            {
-                value = null;
-                return false;
-            }
+            return _storage.TryGetValue(key, out value);
         }
 
-        private void EnsureWritable()
+        private void Upgrade()
         {
-            if (InnerDictionary == null && Properties == null)
-            {
-                InnerDictionary = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-            }
-            else if (InnerDictionary == null)
-            {
-                InnerDictionary = new Dictionary<string, object>(Properties.Length, StringComparer.OrdinalIgnoreCase);
-
-                for (var i = 0; i < Properties.Length; i++)
-                {
-                    var property = Properties[i];
-                    InnerDictionary.Add(property.Property.Name, property.ValueGetter(Value));
-                }
-            }
+            _storage.Upgrade(ref _storage);
         }
 
         public struct Enumerator : IEnumerator<KeyValuePair<string, object>>
         {
-            private readonly RouteValueDictionary _dictionary;
-
+            private readonly Storage _storage;
             private int _index;
-            private Dictionary<string, object>.Enumerator _enumerator;
 
             public Enumerator(RouteValueDictionary dictionary)
             {
@@ -351,13 +364,10 @@ namespace Microsoft.AspNetCore.Routing
                     throw new ArgumentNullException();
                 }
 
-                _dictionary = dictionary;
+                _storage = dictionary._storage;
 
                 Current = default(KeyValuePair<string, object>);
                 _index = -1;
-                _enumerator = _dictionary.InnerDictionary == null ?
-                    default(Dictionary<string, object>.Enumerator) :
-                    _dictionary.InnerDictionary.GetEnumerator();
             }
 
             public KeyValuePair<string, object> Current { get; private set; }
@@ -370,24 +380,10 @@ namespace Microsoft.AspNetCore.Routing
 
             public bool MoveNext()
             {
-                if (_dictionary?.InnerDictionary != null)
+                if (++_index < _storage.Count)
                 {
-                    if (_enumerator.MoveNext())
-                    {
-                        Current = _enumerator.Current;
-                        return true;
-                    }
-                }
-                else if (_dictionary?.Properties != null)
-                {
-                    _index++;
-                    if (_index < _dictionary.Properties.Length)
-                    {
-                        var property = _dictionary.Properties[_index];
-                        var value = property.ValueGetter(_dictionary.Value);
-                        Current = new KeyValuePair<string, object>(property.Name, value);
-                        return true;
-                    }
+                    Current = _storage[_index];
+                    return true;
                 }
 
                 Current = default(KeyValuePair<string, object>);
@@ -398,9 +394,219 @@ namespace Microsoft.AspNetCore.Routing
             {
                 Current = default(KeyValuePair<string, object>);
                 _index = -1;
-                _enumerator = _dictionary?.InnerDictionary == null ?
-                    default(Dictionary<string, object>.Enumerator) :
-                    _dictionary.InnerDictionary.GetEnumerator();
+            }
+        }
+
+        private abstract class Storage
+        {
+            public abstract int Count { get; }
+
+            public abstract KeyValuePair<string, object> this[int index] { get; }
+
+            public abstract void Upgrade(ref Storage storage);
+
+            public abstract bool TryGetValue(string key, out object value);
+
+            public abstract bool ContainsKey(string key);
+
+            public abstract bool TrySetValue(string key, object value);
+        }
+
+        private class ListStorage : Storage
+        {
+            private readonly List<KeyValuePair<string, object>> _inner;
+
+            public ListStorage()
+            {
+                _inner = new List<KeyValuePair<string, object>>();
+            }
+
+            public ListStorage(int capacity)
+            {
+                _inner = new List<KeyValuePair<string, object>>(capacity);
+            }
+
+            public ListStorage(ListStorage other)
+            {
+                // Perf: Don't call the copy constructor, that would box the enumerator.
+                _inner = new List<KeyValuePair<string, object>>(other._inner.Capacity);
+                for (var i = 0; i < other._inner.Count; i++)
+                {
+                    _inner.Add(other._inner[i]);
+                }
+            }
+
+            public override int Count => _inner.Count;
+
+            public List<KeyValuePair<string, object>> Inner => _inner;
+
+            public override KeyValuePair<string, object> this[int index] => _inner[index];
+
+            public void Clear()
+            {
+                _inner.Clear();
+            }
+
+            public override bool ContainsKey(string key)
+            {
+                for (var i = 0; i < _inner.Count; i++)
+                {
+                    var kvp = _inner[i];
+                    if (string.Equals(key, kvp.Key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            public override bool TrySetValue(string key, object value)
+            {
+                for (var i = 0; i < _inner.Count; i++)
+                {
+                    var kvp = _inner[i];
+                    if (string.Equals(key, kvp.Key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        _inner[i] = new KeyValuePair<string, object>(kvp.Key, value);
+                        return true;
+                    }
+                }
+
+                _inner.Add(new KeyValuePair<string, object>(key, value));
+                return true;
+            }
+
+            public override bool TryGetValue(string key, out object value)
+            {
+                for (var i = 0; i < _inner.Count; i++)
+                {
+                    var kvp = _inner[i];
+                    if (string.Equals(key, kvp.Key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        value = kvp.Value;
+                        return true;
+                    }
+                }
+
+                value = null;
+                return false;
+            }
+
+            public override void Upgrade(ref Storage storage)
+            {
+                // Do nothing.
+            }
+        }
+
+        private class PropertyStorage : Storage
+        {
+            private readonly object _value;
+            private readonly PropertyHelper[] _properties;
+
+            public PropertyStorage(object value, PropertyHelper[] properties)
+            {
+                _value = value;
+                _properties = properties;
+            }
+
+            public PropertyStorage(PropertyStorage propertyStorage)
+            {
+                _value = propertyStorage._value;
+                _properties = propertyStorage._properties;
+            }
+
+            public override int Count => _properties.Length;
+
+            public override KeyValuePair<string, object> this[int index]
+            {
+                get
+                {
+                    var property = _properties[index];
+                    return new KeyValuePair<string, object>(property.Name, property.GetValue(_value));
+                }
+            }
+
+            public override bool TryGetValue(string key, out object value)
+            {
+                for (var i = 0; i < _properties.Length; i++)
+                {
+                    var property = _properties[i];
+                    if (string.Equals(key, property.Name, StringComparison.OrdinalIgnoreCase))
+                    {
+                        value = property.GetValue(_value);
+                        return true; 
+                    }
+                }
+
+                value = null;
+                return false;
+            }
+
+            public override bool ContainsKey(string key)
+            {
+                for (var i = 0; i < _properties.Length; i++)
+                {
+                    var property = _properties[i];
+                    if (string.Equals(key, property.Name, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+
+                return false;
+            }
+
+            public override bool TrySetValue(string key, object value)
+            {
+                // PropertyStorage never sets a value.
+                return false;
+            }
+
+            public override void Upgrade(ref Storage storage)
+            {
+                storage = new ListStorage(Count);
+                for (var i = 0; i < _properties.Length; i++)
+                {
+                    var property = _properties[i];
+                    storage.TrySetValue(property.Name, property.GetValue(_value));
+                }
+            }
+        }
+
+        private class EmptyStorage : Storage
+        {
+            public static readonly EmptyStorage Instance = new EmptyStorage();
+
+            public override int Count => 0;
+
+            public override KeyValuePair<string, object> this[int index]
+            {
+                get
+                {
+                    throw new NotImplementedException();
+                }
+            }
+
+            public override bool ContainsKey(string key)
+            {
+                return false;
+            }
+
+            public override bool TryGetValue(string key, out object value)
+            {
+                value = null;
+                return false;
+            }
+
+            public override bool TrySetValue(string key, object value)
+            {
+                return false;
+            }
+
+            public override void Upgrade(ref Storage storage)
+            {
+                storage = new ListStorage();
             }
         }
     }

@@ -156,21 +156,6 @@ namespace Microsoft.AspNetCore.Routing.Tests
             Assert.Equal(0, dict.Count);
         }
 
-        [Fact]
-        public void CreateFromObject_MixedCaseThrows()
-        {
-            // Arrange
-            var obj = new { controller = "Home", Controller = "Home" };
-
-            // Act & Assert
-            ExceptionAssert.Throws<ArgumentException>(
-            () =>
-            {
-                var dictionary = new RouteValueDictionary(obj);
-                dictionary.Add("Hi", "There");
-            });
-        }
-
         public static IEnumerable<object[]> IEnumerableKeyValuePairData
         {
             get
