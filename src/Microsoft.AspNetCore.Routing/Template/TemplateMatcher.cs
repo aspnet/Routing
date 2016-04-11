@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                     var defaultValue = _defaultValues[i];
                     if (defaultValue != null || !values.ContainsKey(part.Name))
                     {
-                        values[part.Name] = _defaultValues[i];
+                        values[part.Name] = defaultValue;
                     }
                 }
             }
