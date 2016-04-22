@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using System.Collections.Generic;
-using Xunit;
+using System.Linq;
 using Microsoft.AspNetCore.Testing;
+using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Tests
 {
@@ -380,10 +380,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void IndexGet_ListStorage_NoMatch_ReturnsNull()
         {
             // Arrange
-            var dict = new RouteValueDictionary(new List<KeyValuePair<string, object>>()
+            var dict = new RouteValueDictionary()
             {
-                new KeyValuePair<string, object>("age", 30),
-            });
+                { "age", 30 },
+            };
 
             // Act
             var value = dict["key"];
@@ -397,10 +397,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void IndexGet_ListStorage_Match_ReturnsValue()
         {
             // Arrange
-            var dict = new RouteValueDictionary(new List<KeyValuePair<string, object>>()
+            var dict = new RouteValueDictionary()
             {
-                new KeyValuePair<string, object>("key", "value"),
-            });
+                { "key", "value" },
+            };
 
             // Act
             var value = dict["key"];
@@ -414,10 +414,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void IndexGet_ListStorage_MatchIgnoreCase_ReturnsValue()
         {
             // Arrange
-            var dict = new RouteValueDictionary(new List<KeyValuePair<string, object>>()
+            var dict = new RouteValueDictionary()
             {
-                new KeyValuePair<string, object>("key", "value"),
-            });
+                { "key", "value" },
+            };
 
             // Act
             var value = dict["kEy"];
@@ -490,10 +490,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void IndexSet_ListStorage_NoMatch_AddsValue()
         {
             // Arrange
-            var dict = new RouteValueDictionary(new List<KeyValuePair<string, object>>()
+            var dict = new RouteValueDictionary()
             {
-                new KeyValuePair<string, object>("age", 30),
-            });
+                { "age", 30 },
+            };
 
             // Act
             dict["key"] = "value";
@@ -510,10 +510,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void IndexSet_ListStorage_Match_SetsValue()
         {
             // Arrange
-            var dict = new RouteValueDictionary(new List<KeyValuePair<string, object>>()
+            var dict = new RouteValueDictionary()
             {
-                new KeyValuePair<string, object>("key", "value"),
-            });
+                { "key", "value" },
+            };
 
             // Act
             dict["key"] = "value";
@@ -527,10 +527,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void IndexSet_ListStorage_MatchIgnoreCase_SetsValue()
         {
             // Arrange
-            var dict = new RouteValueDictionary(new List<KeyValuePair<string, object>>()
+            var dict = new RouteValueDictionary()
             {
-                new KeyValuePair<string, object>("key", "value"),
-            });
+                { "key", "value" },
+            };
 
             // Act
             dict["key"] = "value";
@@ -572,10 +572,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void Count_ListStorage()
         {
             // Arrange
-            var dict = new RouteValueDictionary(new List<KeyValuePair<string, object>>()
+            var dict = new RouteValueDictionary()
             {
-                new KeyValuePair<string, object>("key", "value"),
-            });
+                { "key", "value" },
+            };
 
             // Act
             var count = dict.Count;
@@ -617,10 +617,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void Keys_ListStorage()
         {
             // Arrange
-            var dict = new RouteValueDictionary(new List<KeyValuePair<string, object>>()
+            var dict = new RouteValueDictionary()
             {
-                new KeyValuePair<string, object>("key", "value"),
-            });
+                { "key", "value" },
+            };
 
             // Act
             var keys = dict.Keys;
@@ -662,10 +662,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void Values_ListStorage()
         {
             // Arrange
-            var dict = new RouteValueDictionary(new List<KeyValuePair<string, object>>()
+            var dict = new RouteValueDictionary()
             {
-                new KeyValuePair<string, object>("key", "value"),
-            });
+                { "key", "value" },
+            };
 
             // Act
             var values = dict.Values;
@@ -710,10 +710,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void Add_ListStorage()
         {
             // Arrange
-            var dict = new RouteValueDictionary(new List<KeyValuePair<string, object>>()
+            var dict = new RouteValueDictionary()
             {
-                new KeyValuePair<string, object>("age", 30),
-            });
+                { "age", 30 },
+            };
 
             // Act
             dict.Add("key", "value");
@@ -730,10 +730,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void Add_DuplicateKey()
         {
             // Arrange
-            var dict = new RouteValueDictionary(new List<KeyValuePair<string, object>>()
+            var dict = new RouteValueDictionary()
             {
-                new KeyValuePair<string, object>("key", "value"),
-            });
+                { "key", "value" },
+            };
 
             var message = $"An element with the key 'key' already exists in the {nameof(RouteValueDictionary)}";
 
@@ -751,10 +751,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void Add_DuplicateKey_CaseInsensitive()
         {
             // Arrange
-            var dict = new RouteValueDictionary(new List<KeyValuePair<string, object>>()
+            var dict = new RouteValueDictionary()
             {
-                new KeyValuePair<string, object>("key", "value"),
-            });
+                { "key", "value" },
+            };
 
             var message = $"An element with the key 'kEy' already exists in the {nameof(RouteValueDictionary)}";
 
@@ -772,10 +772,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void Add_KeyValuePair()
         {
             // Arrange
-            var dict = new RouteValueDictionary(new List<KeyValuePair<string, object>>()
+            var dict = new RouteValueDictionary()
             {
-                new KeyValuePair<string, object>("age", 30),
-            });
+                { "age", 30 },
+            };
 
             // Act
             ((ICollection<KeyValuePair<string, object>>)dict).Add(new KeyValuePair<string, object>("key", "value"));
@@ -834,10 +834,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void Clear_ListStorage()
         {
             // Arrange
-            var dict = new RouteValueDictionary(new List<KeyValuePair<string, object>>()
+            var dict = new RouteValueDictionary()
             {
-                new KeyValuePair<string, object>("key", "value"),
-            });
+                { "key", "value" },
+            };
 
             // Act
             dict.Clear();
@@ -851,10 +851,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void Contains_KeyValuePair_True()
         {
             // Arrange
-            var dict = new RouteValueDictionary(new List<KeyValuePair<string, object>>()
+            var dict = new RouteValueDictionary()
             {
-                new KeyValuePair<string, object>("key", "value"),
-            });
+                { "key", "value" },
+            };
 
             var input = new KeyValuePair<string, object>("key", "value");
 
@@ -870,10 +870,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void Contains_KeyValuePair_True_CaseInsensitive()
         {
             // Arrange
-            var dict = new RouteValueDictionary(new List<KeyValuePair<string, object>>()
+            var dict = new RouteValueDictionary()
             {
-                new KeyValuePair<string, object>("key", "value"),
-            });
+                { "key", "value" },
+            };
 
             var input = new KeyValuePair<string, object>("KEY", "value");
 
@@ -889,10 +889,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void Contains_KeyValuePair_False()
         {
             // Arrange
-            var dict = new RouteValueDictionary(new List<KeyValuePair<string, object>>()
+            var dict = new RouteValueDictionary()
             {
-                new KeyValuePair<string, object>("key", "value"),
-            });
+                { "key", "value" },
+            };
 
             var input = new KeyValuePair<string, object>("other", "value");
 
@@ -909,10 +909,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void Contains_KeyValuePair_False_ValueComparisonIsDefault()
         {
             // Arrange
-            var dict = new RouteValueDictionary(new List<KeyValuePair<string, object>>()
+            var dict = new RouteValueDictionary()
             {
-                new KeyValuePair<string, object>("key", "value"),
-            });
+                { "key", "value" },
+            };
 
             var input = new KeyValuePair<string, object>("key", "valUE");
 
@@ -984,10 +984,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void ContainsKey_ListStorage_False()
         {
             // Arrange
-            var dict = new RouteValueDictionary(new List<KeyValuePair<string, object>>()
+            var dict = new RouteValueDictionary()
             {
-                new KeyValuePair<string, object>("key", "value"),
-            });
+                { "key", "value" },
+            };
 
             // Act
             var result = dict.ContainsKey("other");
@@ -1001,10 +1001,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void ContainsKey_ListStorage_True()
         {
             // Arrange
-            var dict = new RouteValueDictionary(new List<KeyValuePair<string, object>>()
+            var dict = new RouteValueDictionary()
             {
-                new KeyValuePair<string, object>("key", "value"),
-            });
+                { "key", "value" },
+            };
 
             // Act
             var result = dict.ContainsKey("key");
@@ -1018,10 +1018,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void ContainsKey_ListStorage_True_CaseInsensitive()
         {
             // Arrange
-            var dict = new RouteValueDictionary(new List<KeyValuePair<string, object>>()
+            var dict = new RouteValueDictionary()
             {
-                new KeyValuePair<string, object>("key", "value"),
-            });
+                { "key", "value" },
+            };
 
             // Act
             var result = dict.ContainsKey("kEy");
@@ -1035,10 +1035,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void CopyTo()
         {
             // Arrange
-            var dict = new RouteValueDictionary(new List<KeyValuePair<string, object>>()
+            var dict = new RouteValueDictionary()
             {
-                new KeyValuePair<string, object>("key", "value"),
-            });
+                { "key", "value" },
+            };
 
             var array = new KeyValuePair<string, object>[2];
 
@@ -1060,10 +1060,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void Remove_KeyValuePair_True()
         {
             // Arrange
-            var dict = new RouteValueDictionary(new List<KeyValuePair<string, object>>()
+            var dict = new RouteValueDictionary()
             {
-                new KeyValuePair<string, object>("key", "value"),
-            });
+                { "key", "value" },
+            };
 
             var input = new KeyValuePair<string, object>("key", "value");
 
@@ -1080,10 +1080,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void Remove_KeyValuePair_True_CaseInsensitive()
         {
             // Arrange
-            var dict = new RouteValueDictionary(new List<KeyValuePair<string, object>>()
+            var dict = new RouteValueDictionary()
             {
-                new KeyValuePair<string, object>("key", "value"),
-            });
+                { "key", "value" },
+            };
 
             var input = new KeyValuePair<string, object>("KEY", "value");
 
@@ -1100,10 +1100,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void Remove_KeyValuePair_False()
         {
             // Arrange
-            var dict = new RouteValueDictionary(new List<KeyValuePair<string, object>>()
+            var dict = new RouteValueDictionary()
             {
-                new KeyValuePair<string, object>("key", "value"),
-            });
+                { "key", "value" },
+            };
 
             var input = new KeyValuePair<string, object>("other", "value");
 
@@ -1121,10 +1121,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void Remove_KeyValuePair_False_ValueComparisonIsDefault()
         {
             // Arrange
-            var dict = new RouteValueDictionary(new List<KeyValuePair<string, object>>()
+            var dict = new RouteValueDictionary()
             {
-                new KeyValuePair<string, object>("key", "value"),
-            });
+                { "key", "value" },
+            };
 
             var input = new KeyValuePair<string, object>("key", "valUE");
 
@@ -1215,10 +1215,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void Remove_ListStorage_False()
         {
             // Arrange
-            var dict = new RouteValueDictionary(new List<KeyValuePair<string, object>>()
+            var dict = new RouteValueDictionary()
             {
-                new KeyValuePair<string, object>("key", "value"),
-            });
+                { "key", "value" },
+            };
 
             // Act
             var result = dict.Remove("other");
@@ -1233,10 +1233,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void Remove_ListStorage_True()
         {
             // Arrange
-            var dict = new RouteValueDictionary(new List<KeyValuePair<string, object>>()
+            var dict = new RouteValueDictionary()
             {
-                new KeyValuePair<string, object>("key", "value"),
-            });
+                { "key", "value" },
+            };
 
             // Act
             var result = dict.Remove("key");
@@ -1251,10 +1251,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void Remove_ListStorage_True_CaseInsensitive()
         {
             // Arrange
-            var dict = new RouteValueDictionary(new List<KeyValuePair<string, object>>()
+            var dict = new RouteValueDictionary()
             {
-                new KeyValuePair<string, object>("key", "value"),
-            });
+                { "key", "value" },
+            };
 
             // Act
             var result = dict.Remove("kEy");
@@ -1333,10 +1333,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void TryGetValue_ListStorage_False()
         {
             // Arrange
-            var dict = new RouteValueDictionary(new List<KeyValuePair<string, object>>()
+            var dict = new RouteValueDictionary()
             {
-                new KeyValuePair<string, object>("key", "value"),
-            });
+                { "key", "value" },
+            };
 
             // Act
             object value;
@@ -1352,10 +1352,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void TryGetValue_ListStorage_True()
         {
             // Arrange
-            var dict = new RouteValueDictionary(new List<KeyValuePair<string, object>>()
+            var dict = new RouteValueDictionary()
             {
-                new KeyValuePair<string, object>("key", "value"),
-            });
+                { "key", "value" },
+            };
 
             // Act
             object value;
@@ -1371,10 +1371,10 @@ namespace Microsoft.AspNetCore.Routing.Tests
         public void TryGetValue_ListStorage_True_CaseInsensitive()
         {
             // Arrange
-            var dict = new RouteValueDictionary(new List<KeyValuePair<string, object>>()
+            var dict = new RouteValueDictionary()
             {
-                new KeyValuePair<string, object>("key", "value"),
-            });
+                { "key", "value" },
+            };
 
             // Act
             object value;

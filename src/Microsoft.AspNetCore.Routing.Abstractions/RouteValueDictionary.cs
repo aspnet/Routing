@@ -191,10 +191,7 @@ namespace Microsoft.AspNetCore.Routing
         /// <inheritdoc />
         void ICollection<KeyValuePair<string, object>>.Add(KeyValuePair<string, object> item)
         {
-            Upgrade();
-
-            var list = ((ListStorage)_storage)._inner;
-            list.Add(item);
+            Add(item.Key, item.Value);
         }
 
         /// <inheritdoc />
@@ -314,11 +311,6 @@ namespace Microsoft.AspNetCore.Routing
         /// <inheritdoc />
         bool ICollection<KeyValuePair<string, object>>.Remove(KeyValuePair<string, object> item)
         {
-            if (_storage.Count == 0)
-            {
-                return false;
-            }
-
             if (_storage.Count == 0)
             {
                 return false;
@@ -641,6 +633,10 @@ namespace Microsoft.AspNetCore.Routing
         internal class EmptyStorage : Storage
         {
             public static readonly EmptyStorage Instance = new EmptyStorage();
+
+            private EmptyStorage()
+            {
+            }
 
             public override int Count => 0;
 
