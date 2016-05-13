@@ -58,7 +58,33 @@ namespace Microsoft.AspNetCore.Routing.Template
         // Step 1: Get the list of values we're going to try to use to match and generate this URI
         public TemplateValuesResult GetValues(RouteValueDictionary ambientValues, RouteValueDictionary values)
         {
-            var context = new TemplateBindingContext(_defaults);
+
+            // Any default values that don't appear as parameters are treated like filters. Any new values
+            // provided must match these defaults.
+            foreach (var filter in _filters)
+            {
+                var parameter = GetParameter(filter.Key);
+                if (parameter != null)
+                {
+                    continue;
+                }
+
+                object value;
+                if (values.TryGetValue(filter.Key, out value))
+                {
+                    if (!RoutePartsEqual(value, filter.Value))
+                    {
+                        // If there is a non-parameterized value in the route and there is a
+                        // new value for it and it doesn't match, this route won't match.
+                        return null;
+                    }
+                }
+            }
+
+            // Perf: Initialize the AcceptedValues of the context with the new values that are provided.
+            // We will in place add/remove the accepted values based on the template parameters.
+            // This eliminates the need for separate copy of RouteValueDictionary used for AcceptedValues.
+            var context = new TemplateBindingContext(_defaults, values);
 
             // Find out which entries in the URI are valid for the URI we want to generate.
             // If the URI had ordered parameters a="1", b="2", c="3" and the new values
@@ -72,7 +98,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                 var parameterName = parameter.Name;
 
                 object newParameterValue;
-                var hasNewParameterValue = values.TryGetValue(parameterName, out newParameterValue);
+                var hasNewParameterValue = context.AcceptedValues.TryGetValue(parameterName, out newParameterValue);
 
                 object currentParameterValue = null;
                 var hasCurrentParameterValue = ambientValues != null &&
@@ -87,12 +113,12 @@ namespace Microsoft.AspNetCore.Routing.Template
                     }
                 }
 
-                // If the parameter is a match, add it to the list of values we will use for URI generation
+                // If the parameter is a match, but the value is empty remove it from Accepted values.
                 if (hasNewParameterValue)
                 {
-                    if (IsRoutePartNonEmpty(newParameterValue))
+                    if (!IsRoutePartNonEmpty(newParameterValue))
                     {
-                        context.Accept(parameterName, newParameterValue);
+                        context.Remove(parameterName);
                     }
                 }
                 else
@@ -104,12 +130,12 @@ namespace Microsoft.AspNetCore.Routing.Template
                 }
             }
 
-            // Add all remaining new values to the list of values we will use for URI generation
-            foreach (var kvp in values)
+            // Check the remaining values for Empty because we will use them for URI generation
+            foreach (var kvp in context.AcceptedValues)
             {
-                if (IsRoutePartNonEmpty(kvp.Value))
+                if (!IsRoutePartNonEmpty(kvp.Value))
                 {
-                    context.Accept(kvp.Key, kvp.Value);
+                    context.Remove(kvp.Key);
                 }
             }
 
@@ -144,28 +170,6 @@ namespace Microsoft.AspNetCore.Routing.Template
                 {
                     // We don't have a value for this parameter, so we can't generate a url.
                     return null;
-                }
-            }
-
-            // Any default values that don't appear as parameters are treated like filters. Any new values
-            // provided must match these defaults.
-            foreach (var filter in _filters)
-            {
-                var parameter = GetParameter(filter.Key);
-                if (parameter != null)
-                {
-                    continue;
-                }
-
-                object value;
-                if (values.TryGetValue(filter.Key, out value))
-                {
-                    if (!RoutePartsEqual(value, filter.Value))
-                    {
-                        // If there is a non-parameterized value in the route and there is a
-                        // new value for it and it doesn't match, this route won't match.
-                        return null;
-                    }
                 }
             }
 
@@ -390,11 +394,10 @@ namespace Microsoft.AspNetCore.Routing.Template
             private readonly RouteValueDictionary _defaults;
             private readonly RouteValueDictionary _acceptedValues;
 
-            public TemplateBindingContext(RouteValueDictionary defaults)
+            public TemplateBindingContext(RouteValueDictionary defaults, RouteValueDictionary values)
             {
                 _defaults = defaults;
-
-                _acceptedValues = new RouteValueDictionary();
+                _acceptedValues = values;
             }
 
             public RouteValueDictionary AcceptedValues
@@ -407,6 +410,23 @@ namespace Microsoft.AspNetCore.Routing.Template
                 if (!_acceptedValues.ContainsKey(key))
                 {
                     _acceptedValues.Add(key, value);
+                }
+                else
+                {
+                    var existingValue = _acceptedValues[key];
+                    if (!ReferenceEquals(existingValue, value))
+                    {
+                        _acceptedValues.Remove(key);
+                        _acceptedValues.Add(key, value);
+                    }
+                }
+            }
+
+            public void Remove(string key)
+            {
+                if (_acceptedValues.ContainsKey(key))
+                {
+                    _acceptedValues.Remove(key);
                 }
             }
 
