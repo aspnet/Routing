@@ -58,7 +58,6 @@ namespace Microsoft.AspNetCore.Routing.Template
         // Step 1: Get the list of values we're going to try to use to match and generate this URI
         public TemplateValuesResult GetValues(RouteValueDictionary ambientValues, RouteValueDictionary values)
         {
-
             // Any default values that don't appear as parameters are treated like filters. Any new values
             // provided must match these defaults.
             foreach (var filter in _filters)
@@ -82,6 +81,7 @@ namespace Microsoft.AspNetCore.Routing.Template
             }
 
             // Validate that all required parameters have a value.
+            // Perf: Fail fast if the required parameter doesn't have a value.
             for (var i = 0; i < _template.Parameters.Count; i++)
             {
                 var parameter = _template.Parameters[i];
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                 }
             }
 
-            // Perf: Initialize the AcceptedValues of the context with the new values that are provided.
+            
             var context = new TemplateBindingContext(_defaults, values);
 
             // Find out which entries in the URI are valid for the URI we want to generate.
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                 var parameterName = parameter.Name;
 
                 object newParameterValue;
-                var hasNewParameterValue = context.AcceptedValues.TryGetValue(parameterName, out newParameterValue);
+                var hasNewParameterValue = values.TryGetValue(parameterName, out newParameterValue);
 
                 object currentParameterValue = null;
                 var hasCurrentParameterValue = ambientValues != null &&
@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.Routing.Template
             }
 
             // Check the remaining values for Empty because we will use them for URI generation
-            foreach (var kvp in context.AcceptedValues)
+            foreach (var kvp in values)
             {
                 if (!IsRoutePartNonEmpty(kvp.Value))
                 {
@@ -417,21 +417,32 @@ namespace Microsoft.AspNetCore.Routing.Template
         private struct TemplateBindingContext
         {
             private readonly RouteValueDictionary _defaults;
-            private readonly RouteValueDictionary _acceptedValues;
+            private RouteValueDictionary _acceptedValues;
+            private readonly RouteValueDictionary _values;
 
             public TemplateBindingContext(RouteValueDictionary defaults, RouteValueDictionary values)
             {
                 _defaults = defaults;
-                _acceptedValues = new RouteValueDictionary(values);
+
+                // Perf: Lazily Initialize the AcceptedValues of the context with the new values 
+                // AcceptedValues will be initialized when any of the values has to be updated.
+                // For most of the common cases, AcceptedValues is same as the values.
+                // In such cases, this optimization saves one RouteValueDictionary allocation per GetValues call.
+                _acceptedValues = null;
+                _values = values;
             }
 
             public RouteValueDictionary AcceptedValues
             {
-                get { return _acceptedValues; }
+                get
+                {
+                    return _acceptedValues ?? _values;
+                }
             }
 
             public void Accept(string key, object value)
             {
+                EnsureAccceptedValues();
                 if (!_acceptedValues.ContainsKey(key))
                 {
                     _acceptedValues.Add(key, value);
@@ -449,26 +460,36 @@ namespace Microsoft.AspNetCore.Routing.Template
 
             public void Remove(string key)
             {
+                EnsureAccceptedValues();
                 if (_acceptedValues.ContainsKey(key))
                 {
                     _acceptedValues.Remove(key);
                 }
             }
 
+            private void EnsureAccceptedValues()
+            {
+                if (_acceptedValues == null)
+                {
+                    _acceptedValues = new RouteValueDictionary(_values);
+                }
+            }
+
             public void AcceptDefault(string key)
             {
-                Debug.Assert(!_acceptedValues.ContainsKey(key));
+                Debug.Assert(!AcceptedValues.ContainsKey(key));
 
                 object value;
                 if (_defaults != null && _defaults.TryGetValue(key, out value))
                 {
+                    EnsureAccceptedValues();
                     _acceptedValues.Add(key, value);
                 }
             }
 
             public bool NeedsValue(string key)
             {
-                return !_acceptedValues.ContainsKey(key);
+                return !AcceptedValues.ContainsKey(key);
             }
 
             private string DebuggerToString()
