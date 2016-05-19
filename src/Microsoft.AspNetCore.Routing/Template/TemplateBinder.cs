@@ -235,10 +235,6 @@ namespace Microsoft.AspNetCore.Routing.Template
                         // If it's a parameter, get its value
                         object value;
                         var hasValue = acceptedValues.TryGetValue(part.Name, out value);
-                        if (hasValue)
-                        {
-                            acceptedValues.Remove(part.Name);
-                        }
 
                         var isSameAsDefault = false;
                         object defaultValue;
@@ -292,6 +288,12 @@ namespace Microsoft.AspNetCore.Routing.Template
             var wroteFirst = false;
             foreach (var kvp in acceptedValues)
             {
+                if (_template.GetParameter(kvp.Key) != null)
+                {
+                    // We already added the template parameters.
+                    continue;
+                }
+
                 if (_defaults != null && _defaults.ContainsKey(kvp.Key))
                 {
                     // This value is a 'filter' we don't need to put it in the query string.
@@ -494,7 +496,7 @@ namespace Microsoft.AspNetCore.Routing.Template
 
             private string DebuggerToString()
             {
-                return string.Format("{{Accepted: '{0}'}}", string.Join(", ", _acceptedValues.Keys));
+                return string.Format("{{Accepted: '{0}'}}", string.Join(", ", AcceptedValues.Keys));
             }
         }
     }
