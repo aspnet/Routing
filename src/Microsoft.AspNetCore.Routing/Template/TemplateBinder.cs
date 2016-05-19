@@ -347,21 +347,21 @@ namespace Microsoft.AspNetCore.Routing.Template
             if (values != null)
             {
                 object value;
-                if (values.TryGetValue(name, out value))
+                if (values.TryGetValue(name, out value) && 
+                    IsRoutePartNonEmpty(value))
                 {
-                    if (IsRoutePartNonEmpty(value))
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
 
-            if (ambientValues != null && ambientValues.ContainsKey(name))
+            if (ambientValues != null 
+                && ambientValues.ContainsKey(name))
             {
                 return true;
             }
 
-            if (_defaults != null && _defaults.ContainsKey(name))
+            if (_defaults != null 
+                && _defaults.ContainsKey(name))
             {
                 return true;
             }
