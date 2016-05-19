@@ -81,9 +81,23 @@ namespace Microsoft.AspNetCore.Routing.Template
                 }
             }
 
+            // Validate that all required parameters have a value.
+            for (var i = 0; i < _template.Parameters.Count; i++)
+            {
+                var parameter = _template.Parameters[i];
+                if (parameter.IsOptional || parameter.IsCatchAll)
+                {
+                    continue;
+                }
+
+                if (!HasValue(parameter.Name, ambientValues, values))
+                {
+                    // We don't have a value for this parameter, so we can't generate a url.
+                    return null;
+                }
+            }
+
             // Perf: Initialize the AcceptedValues of the context with the new values that are provided.
-            // We will in place add/remove the accepted values based on the template parameters.
-            // This eliminates the need for separate copy of RouteValueDictionary used for AcceptedValues.
             var context = new TemplateBindingContext(_defaults, values);
 
             // Find out which entries in the URI are valid for the URI we want to generate.
@@ -154,22 +168,6 @@ namespace Microsoft.AspNetCore.Routing.Template
                     // only if it actually has a default value, which we determine based on whether
                     // the parameter value is required.
                     context.AcceptDefault(parameter.Name);
-                }
-            }
-
-            // Validate that all required parameters have a value.
-            for (var i = 0; i < _template.Parameters.Count; i++)
-            {
-                var parameter = _template.Parameters[i];
-                if (parameter.IsOptional || parameter.IsCatchAll)
-                {
-                    continue;
-                }
-
-                if (!context.AcceptedValues.ContainsKey(parameter.Name))
-                {
-                    // We don't have a value for this parameter, so we can't generate a url.
-                    return null;
                 }
             }
 
@@ -344,6 +342,33 @@ namespace Microsoft.AspNetCore.Routing.Template
             return null;
         }
 
+        private bool HasValue(string name, RouteValueDictionary ambientValues, RouteValueDictionary values)
+        {
+            if (values != null)
+            {
+                object value;
+                if (values.TryGetValue(name, out value))
+                {
+                    if (IsRoutePartNonEmpty(value))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            if (ambientValues != null && ambientValues.ContainsKey(name))
+            {
+                return true;
+            }
+
+            if (_defaults != null && _defaults.ContainsKey(name))
+            {
+                return true;
+            }
+
+            return false;
+        }
+
         /// <summary>
         /// Compares two objects for equality as parts of a case-insensitive path.
         /// </summary>
@@ -397,7 +422,7 @@ namespace Microsoft.AspNetCore.Routing.Template
             public TemplateBindingContext(RouteValueDictionary defaults, RouteValueDictionary values)
             {
                 _defaults = defaults;
-                _acceptedValues = values;
+                _acceptedValues = new RouteValueDictionary(values);
             }
 
             public RouteValueDictionary AcceptedValues
