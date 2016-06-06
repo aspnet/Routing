@@ -19,10 +19,6 @@ namespace Microsoft.AspNetCore.Routing.Tree
     /// </summary>
     public class TreeRouter : IRouter
     {
-        // Key used by routing and action selection to match an attribute route entry to a
-        // group of action descriptors.
-        public static readonly string RouteGroupKey = "!__route_group";
-
         private readonly LinkGenerationDecisionTree _linkGenerationTree;
         private readonly UrlMatchingTree[] _trees;
         private readonly IDictionary<string, OutboundMatch> _namedEntries;
