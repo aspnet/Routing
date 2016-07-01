@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(action));
             }
 
-            IRouteBuilder routeBuilder = new RouteBuilder(builder);
+            var routeBuilder = new RouteBuilder(builder);
             action(routeBuilder);
 
             return builder.UseRouter(routeBuilder.Build());
