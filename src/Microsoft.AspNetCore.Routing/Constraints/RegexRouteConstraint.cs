@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
                 throw new ArgumentNullException(nameof(regex));
             }
 
-            Constraint = regex;
+            Constraint = "^" + regex + "$";
         }
 
         public RegexRouteConstraint(string regexPattern)
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
             }
 
             Constraint = new Regex(
-                regexPattern,
+                "^" + regexPattern + "$",
                 RegexOptions.CultureInvariant | RegexOptions.IgnoreCase,
                 RegexMatchTimeout);
         }
