@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Routing.Constraints
         /// </summary>
         /// <param name="regexPattern">The regular expression pattern to match.</param>
         public RegexInlineRouteConstraint(string regexPattern)
-            : base(regexPattern)
+            : base("^" + regexPattern + "$")
         {
         }
     }

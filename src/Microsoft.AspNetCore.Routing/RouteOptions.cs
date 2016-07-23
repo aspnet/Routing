@@ -65,6 +65,7 @@ namespace Microsoft.AspNetCore.Routing
                 // Regex-based constraints
                 { "alpha", typeof(AlphaRouteConstraint) },
                 { "regex", typeof(RegexInlineRouteConstraint) },
+                { "partialregex", typeof(PartialRegexInlineRouteConstraint) },
 
                 {"required", typeof(RequiredRouteConstraint) },
             };
