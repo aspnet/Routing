@@ -162,16 +162,13 @@ namespace Microsoft.AspNetCore.Routing.Template
                 // If the parameter is a match, add it to the list of values we will use for URI generation
                 if (hasNewParameterValue)
                 {
-                    if (IsRoutePartNonEmpty(newParameterValue))
-                    {
-                        context.Accept(parameterName, newParameterValue);
-                    }
+                    context.AcceptIfNonEmpty(parameterName, newParameterValue);
                 }
                 else
                 {
                     if (hasCurrentParameterValue)
                     {
-                        context.Accept(parameterName, currentParameterValue);
+                        context.AcceptIfNonEmpty(parameterName, currentParameterValue);
                     }
                 }
             }
@@ -179,9 +176,9 @@ namespace Microsoft.AspNetCore.Routing.Template
             // Add all remaining new values to the list of values we will use for URI generation
             foreach (var kvp in values)
             {
-                if (IsRoutePartNonEmpty(kvp.Value))
+                if (context.NeedsValue(kvp.Key))
                 {
-                    context.Accept(kvp.Key, kvp.Value);
+                    context.AcceptIfNonEmpty(kvp.Key, kvp.Value);
                 }
             }
 
@@ -404,29 +401,10 @@ namespace Microsoft.AspNetCore.Routing.Template
             {
                 _defaults = defaults;
                 _values = values;
+
                 // Perf: In most of the common cases, AcceptedValues is same as the values.
-                // But when they are different, values is readonly and hence we need to create a new
-                // RouteValueDictionary for AcceptedValues.
-                // However to optimize the common cases, we initially start with null acceptedValues.
-                // We will initialize it only, when we find that values is different from acceptedValues.
-                // One case where we know that acceptedValues will be different from values is, when there is
-                // an empty value in values dictionary. If that is the case, we right away intialize the acceptedValues to 
-                // a new RouteValueDictionary. 
-                // This optimization saves one RouteValueDictionary allocation per GetValues call in common cases.
-                _acceptedValues = HasEmptyValue(values) ? new RouteValueDictionary() : null;
-            }
-
-            private static bool HasEmptyValue(RouteValueDictionary values)
-            {
-                foreach (var kvp in values)
-                {
-                    if (!IsRoutePartNonEmpty(kvp.Value))
-                    {
-                        return true;
-                    }
-                }
-
-                return false;
+                // So, we lazy initialize a new RouteValueDictionary only when they are different.
+                _acceptedValues = null;
             }
 
             public RouteValueDictionary AcceptedValues
@@ -434,15 +412,27 @@ namespace Microsoft.AspNetCore.Routing.Template
                 get { return _acceptedValues ?? _values; }
             }
 
-            public void Accept(string key, object value)
+            public void AcceptIfNonEmpty(string key, object value)
             {
-                if (!AcceptedValues.ContainsKey(key))
+                if (IsRoutePartNonEmpty(value))
                 {
-                    if (_acceptedValues == null)
+                    if (NeedsValue(key))
                     {
-                        _acceptedValues = new RouteValueDictionary();
+                        if (_acceptedValues == null)
+                        {
+                            // Perf: Lazy initialize acceptedValues only if a new value needs to be added.
+                            _acceptedValues = new RouteValueDictionary();
+                        }
+
+                        _acceptedValues.Add(key, value);
                     }
-                    _acceptedValues.Add(key, value);
+                }
+                else if (_acceptedValues == null)
+                {
+                    // 'values' dictionary contains an empty value which should not be accepted.
+                    // Eg: The template 'foo/{controller}' with 'values' { "controller", "" }
+                    // should generate 'null'.
+                    _acceptedValues = new RouteValueDictionary();
                 }
             }
 
