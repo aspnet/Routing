@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Routing.Constraints
 {
     /// <summary>
-    /// Constrains a route parameter to contain only a specifyed strign.
+    /// Constrains a route parameter to contain only a specified strign.
     /// </summary>
     public class StringRouteConstraint : IRouteConstraint
     {
