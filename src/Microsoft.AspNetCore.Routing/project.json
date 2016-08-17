@@ -1,6 +1,6 @@
 {
   "description": "ASP.NET Core middleware for routing requests to application logic and for generating links.\r\nCommonly used types:\r\n Microsoft.AspNetCore.Routing.Route\r\nMicrosoft.AspNetCore.Routing.RouteCollection",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "packOptions": {
     "repository": {
       "type": "git",
@@ -21,10 +21,10 @@
   },
   "dependencies": {
     "Microsoft.AspNetCore.Http.Extensions": "1.0.0",
-    "Microsoft.AspNetCore.Routing.Abstractions": "1.0.0",
+    "Microsoft.AspNetCore.Routing.Abstractions": "1.0.1",
     "Microsoft.AspNetCore.Routing.DecisionTree.Sources": {
       "type": "build",
-      "version": "1.0.0-rtm-21431"
+      "version": "1.0.1"
     },
     "Microsoft.Extensions.HashCodeCombiner.Sources": {
       "type": "build",

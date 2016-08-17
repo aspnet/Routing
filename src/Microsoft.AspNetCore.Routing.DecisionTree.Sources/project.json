@@ -1,6 +1,6 @@
 {
   "description": "Components for building a DecisionTree.",
-  "version": "1.0.0-rtm-21431",
+  "version": "1.0.1",
   "packOptions": {
     "repository": {
       "type": "git",

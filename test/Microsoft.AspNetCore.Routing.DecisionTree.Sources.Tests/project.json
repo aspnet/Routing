@@ -1,13 +1,14 @@
 {
+  "version": "1.0.1",
   "buildOptions": {
     "warningsAsErrors": true
   },
   "dependencies": {
     "dotnet-test-xunit": "1.0.0-rc3-000000-01",
-    "Microsoft.AspNetCore.Routing": "1.0.0",
+    "Microsoft.AspNetCore.Routing": "1.0.1",
     "Microsoft.AspNetCore.Routing.DecisionTree.Sources": {
       "type": "build",
-      "version": "1.0.0-rtm-21431"
+      "version": "1.0.1"
     },
     "Microsoft.AspNetCore.Testing": "1.0.0-rtm-21431",
     "xunit": "2.1.0"
