@@ -980,7 +980,9 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
 
-            Assert.Equal(expectedValues, constraint.Values);
+            Assert.Equal(
+                expectedValues.OrderBy(kvp => kvp.Key), 
+                constraint.Values.OrderBy(kvp => kvp.Key));
         }
 
         // Non-parameter default values from the routing generating a link are not in the 'values'
@@ -1011,7 +1013,9 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Same(route, pathData.Router);
             Assert.Empty(pathData.DataTokens);
 
-            Assert.Equal(expectedValues, constraint.Values);
+            Assert.Equal(
+                expectedValues.OrderBy(kvp => kvp.Key), 
+                constraint.Values.OrderBy(kvp => kvp.Key));
         }
 
         // Default values are visible to the constraint when they are used to fill a parameter.
