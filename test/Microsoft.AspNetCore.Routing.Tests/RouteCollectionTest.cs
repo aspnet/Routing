@@ -363,6 +363,74 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Empty(pathData.DataTokens);
         }
 
+        public static TheoryData<RestoreRouteDataVariation> RestoresRouteDataInformationForAllRoutersData
+        {
+            get
+            {
+                var data = new TheoryData<RestoreRouteDataVariation>();
+
+                var variation1 = new RestoreRouteDataVariation();
+                variation1.Routes.Add(new RouteInfo("1", "{area?}/{controller=Home}/{action=Index}/{id?}"));
+                variation1.Routes.Add(new RouteInfo("2", "{controller=Home}/{action=Index}/{id?}"));
+                variation1.Values = new RouteValueDictionary(new { controller = "Test", action = "Index" });
+                variation1.ExpectedUrl = "/Test";
+                variation1.ExpectedRouteToMatch = "2";
+                data.Add(variation1);
+
+                var variation2 = new RestoreRouteDataVariation();
+                variation2.Routes.Add(new RouteInfo("1", "{category:int}/{controller=Home}/{action=Index}/{id?}"));
+                variation2.Routes.Add(new RouteInfo("2", "{controller=Home}/{action=Index}/{id?}"));
+                variation2.Values = new RouteValueDictionary(new { category = "nan", controller = "Test", action = "Index" });
+                variation2.ExpectedUrl = "/Test?category=nan";
+                variation2.ExpectedRouteToMatch = "2";
+                data.Add(variation2);
+
+                var variation3 = new RestoreRouteDataVariation();
+                variation3.Routes.Add(new RouteInfo("1", "{category}/{controller=Home}/{action=Index}/{id?}"));
+                variation3.Routes.Add(new RouteInfo("2", "{controller=Home}/{action=Index}/{id?}"));
+                variation3.Values = new RouteValueDictionary(new { category = "", controller = "Test", action = "Index" });
+                variation3.ExpectedUrl = "/Test";
+                variation3.ExpectedRouteToMatch = "2";
+                data.Add(variation3);
+
+                var variation4 = new RestoreRouteDataVariation();
+                variation4.Routes.Add(new RouteInfo("1", "{a}/{b?}/{c}"));
+                variation4.Routes.Add(new RouteInfo("2", "{a=Home}/{b=Index}"));
+                variation4.Values = new RouteValueDictionary(new { a = "Test", c = "Foo" });
+                variation4.ExpectedUrl = "/Test?c=Foo";
+                variation4.ExpectedRouteToMatch = "2";
+                data.Add(variation4);
+
+                return data;
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(RestoresRouteDataInformationForAllRoutersData))]
+        public void GetVirtualPath_RestoresRouteDataInformation_GoingThroughAllRouters(RestoreRouteDataVariation variation)
+        {
+            // Arrange
+            var routeOptions = new Mock<IOptions<RouteOptions>>();
+            routeOptions.SetupGet(o => o.Value)
+                .Returns(new RouteOptions());
+            var constraintResolver = new DefaultInlineConstraintResolver(routeOptions.Object);
+            var routeCollection = new RouteCollection();
+            foreach (var routeInfo in variation.Routes)
+            {
+                var route = CreateTemplateRoute(routeInfo.Template, routeInfo.Name, constraintResolver: constraintResolver);
+                routeCollection.Add(route);
+            }
+            var context = CreateVirtualPathContext(variation.Values);
+
+            // Act
+            var pathData = routeCollection.GetVirtualPath(context);
+
+            // Assert
+            Assert.Equal(variation.ExpectedUrl, pathData.VirtualPath);
+            Assert.Same(variation.ExpectedRouteToMatch, ((INamedRouter)pathData.Router).Name);
+            Assert.Empty(pathData.DataTokens);
+        }
+
         [Fact]
         public void GetVirtualPath_NoBestEffort_NoMatch()
         {
@@ -496,14 +564,18 @@ namespace Microsoft.AspNetCore.Routing
         private static Route CreateTemplateRoute(
             string template,
             string routerName = null,
-            RouteValueDictionary dataTokens = null)
+            RouteValueDictionary dataTokens = null,
+            IInlineConstraintResolver constraintResolver = null)
         {
             var target = new Mock<IRouter>(MockBehavior.Strict);
             target
                 .Setup(e => e.GetVirtualPath(It.IsAny<VirtualPathContext>()))
                 .Returns<VirtualPathContext>(rc => null);
 
-            var resolverMock = new Mock<IInlineConstraintResolver>();
+            if (constraintResolver == null)
+            {
+                constraintResolver = new Mock<IInlineConstraintResolver>().Object;
+            }
 
             return new Route(
                 target.Object,
@@ -512,7 +584,7 @@ namespace Microsoft.AspNetCore.Routing
                 defaults: null,
                 constraints: null,
                 dataTokens: dataTokens,
-                inlineConstraintResolver: resolverMock.Object);
+                inlineConstraintResolver: constraintResolver);
         }
 
         private static VirtualPathContext CreateVirtualPathContext(
@@ -630,6 +702,25 @@ namespace Microsoft.AspNetCore.Routing
                 options.LowercaseUrls = lowerCaseUrls;
                 options.AppendTrailingSlash = appendTrailingSlash;
             };
+        }
+
+        public class RestoreRouteDataVariation
+        {
+            public List<RouteInfo> Routes { get; set; } = new List<RouteInfo>();
+            public RouteValueDictionary Values { get; set; }
+            public string ExpectedUrl { get; set; }
+            public string ExpectedRouteToMatch { get; set; }
+        }
+
+        public class RouteInfo
+        {
+            public RouteInfo(string name, string template)
+            {
+                Name = name;
+                Template = template;
+            }
+            public string Name { get; }
+            public string Template { get; }
         }
     }
 }
