@@ -363,51 +363,56 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Empty(pathData.DataTokens);
         }
 
-        public static TheoryData<RestoreRouteDataVariation> RestoresRouteDataInformationForAllRoutersData
+        public static TheoryData<RestoreRouteDataVariation> RestoresRouteDataForEachRouterData
         {
             get
             {
                 var data = new TheoryData<RestoreRouteDataVariation>();
 
-                var variation1 = new RestoreRouteDataVariation();
-                variation1.Routes.Add(new RouteInfo("1", "{area?}/{controller=Home}/{action=Index}/{id?}"));
-                variation1.Routes.Add(new RouteInfo("2", "{controller=Home}/{action=Index}/{id?}"));
-                variation1.Values = new RouteValueDictionary(new { controller = "Test", action = "Index" });
-                variation1.ExpectedUrl = "/Test";
-                variation1.ExpectedRouteToMatch = "2";
-                data.Add(variation1);
+                // Here 'area' segment doesn't have a value but the later segments have values. This is an invalid
+                // route match and the url generation should look into the next available route in the collection.
+                var variation = new RestoreRouteDataVariation();
+                variation.Routes.Add(new RouteInfo("1", "{area?}/{controller=Home}/{action=Index}/{id?}"));
+                variation.Routes.Add(new RouteInfo("2", "{controller=Home}/{action=Index}/{id?}"));
+                variation.Values = new RouteValueDictionary(new { controller = "Test", action = "Index" });
+                variation.ExpectedUrl = "/Test";
+                variation.ExpectedRouteToMatch = "2";
+                data.Add(variation);
 
-                var variation2 = new RestoreRouteDataVariation();
-                variation2.Routes.Add(new RouteInfo("1", "{category:int}/{controller=Home}/{action=Index}/{id?}"));
-                variation2.Routes.Add(new RouteInfo("2", "{controller=Home}/{action=Index}/{id?}"));
-                variation2.Values = new RouteValueDictionary(new { category = "nan", controller = "Test", action = "Index" });
-                variation2.ExpectedUrl = "/Test?category=nan";
-                variation2.ExpectedRouteToMatch = "2";
-                data.Add(variation2);
+                variation = new RestoreRouteDataVariation();
+                variation.Routes.Add(new RouteInfo("1", "{category:int}/{controller=Home}/{action=Index}/{id?}"));
+                variation.Routes.Add(new RouteInfo("2", "{controller=Home}/{action=Index}/{id?}"));
+                variation.Values = new RouteValueDictionary(new { category = "nan", controller = "Test", action = "Index" });
+                variation.ExpectedUrl = "/Test?category=nan";
+                variation.ExpectedRouteToMatch = "2";
+                data.Add(variation);
 
-                var variation3 = new RestoreRouteDataVariation();
-                variation3.Routes.Add(new RouteInfo("1", "{category}/{controller=Home}/{action=Index}/{id?}"));
-                variation3.Routes.Add(new RouteInfo("2", "{controller=Home}/{action=Index}/{id?}"));
-                variation3.Values = new RouteValueDictionary(new { category = "", controller = "Test", action = "Index" });
-                variation3.ExpectedUrl = "/Test";
-                variation3.ExpectedRouteToMatch = "2";
-                data.Add(variation3);
+                // Empty segment is an invalid segment and so route "1" cannot be used for generation
+                variation = new RestoreRouteDataVariation();
+                variation.Routes.Add(new RouteInfo("1", "{category}/{controller=Home}/{action=Index}/{id?}"));
+                variation.Routes.Add(new RouteInfo("2", "{controller=Home}/{action=Index}/{id?}"));
+                variation.Values = new RouteValueDictionary(new { category = "", controller = "Test", action = "Index" });
+                variation.ExpectedUrl = "/Test";
+                variation.ExpectedRouteToMatch = "2";
+                data.Add(variation);
 
-                var variation4 = new RestoreRouteDataVariation();
-                variation4.Routes.Add(new RouteInfo("1", "{a}/{b?}/{c}"));
-                variation4.Routes.Add(new RouteInfo("2", "{a=Home}/{b=Index}"));
-                variation4.Values = new RouteValueDictionary(new { a = "Test", c = "Foo" });
-                variation4.ExpectedUrl = "/Test?c=Foo";
-                variation4.ExpectedRouteToMatch = "2";
-                data.Add(variation4);
+                // Here the segment 'a' is valid but 'b' is not as it would be empty. This would be an invalid route match, but
+                // the route value of 'a' should still be present to be evaluated for the next available route.
+                variation = new RestoreRouteDataVariation();
+                variation.Routes.Add(new RouteInfo("1", "{a}/{b?}/{c}"));
+                variation.Routes.Add(new RouteInfo("2", "{a=Home}/{b=Index}"));
+                variation.Values = new RouteValueDictionary(new { a = "Test", c = "Foo" });
+                variation.ExpectedUrl = "/Test?c=Foo";
+                variation.ExpectedRouteToMatch = "2";
+                data.Add(variation);
 
                 return data;
             }
         }
 
         [Theory]
-        [MemberData(nameof(RestoresRouteDataInformationForAllRoutersData))]
-        public void GetVirtualPath_RestoresRouteDataInformation_GoingThroughAllRouters(RestoreRouteDataVariation variation)
+        [MemberData(nameof(RestoresRouteDataForEachRouterData))]
+        public void GetVirtualPath_RestoresRouteData_ForEachRouter(RestoreRouteDataVariation variation)
         {
             // Arrange
             var routeOptions = new Mock<IOptions<RouteOptions>>();
