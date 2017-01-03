@@ -363,76 +363,58 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Empty(pathData.DataTokens);
         }
 
-        public static TheoryData<RestoreRouteDataVariation> RestoresRouteDataForEachRouterData
+        public static IEnumerable<object[]> RestoresRouteDataForEachRouterData
         {
             get
             {
-                var data = new TheoryData<RestoreRouteDataVariation>();
-
                 // Here 'area' segment doesn't have a value but the later segments have values. This is an invalid
                 // route match and the url generation should look into the next available route in the collection.
-                var variation = new RestoreRouteDataVariation();
-                variation.Routes.Add(new RouteInfo("1", "{area?}/{controller=Home}/{action=Index}/{id?}"));
-                variation.Routes.Add(new RouteInfo("2", "{controller=Home}/{action=Index}/{id?}"));
-                variation.Values = new RouteValueDictionary(new { controller = "Test", action = "Index" });
-                variation.ExpectedUrl = "/Test";
-                variation.ExpectedRouteToMatch = "2";
-                data.Add(variation);
-
-                variation = new RestoreRouteDataVariation();
-                variation.Routes.Add(new RouteInfo("1", "{category:int}/{controller=Home}/{action=Index}/{id?}"));
-                variation.Routes.Add(new RouteInfo("2", "{controller=Home}/{action=Index}/{id?}"));
-                variation.Values = new RouteValueDictionary(new { category = "nan", controller = "Test", action = "Index" });
-                variation.ExpectedUrl = "/Test?category=nan";
-                variation.ExpectedRouteToMatch = "2";
-                data.Add(variation);
-
-                // Empty segment is an invalid segment and so route "1" cannot be used for generation
-                variation = new RestoreRouteDataVariation();
-                variation.Routes.Add(new RouteInfo("1", "{category}/{controller=Home}/{action=Index}/{id?}"));
-                variation.Routes.Add(new RouteInfo("2", "{controller=Home}/{action=Index}/{id?}"));
-                variation.Values = new RouteValueDictionary(new { category = "", controller = "Test", action = "Index" });
-                variation.ExpectedUrl = "/Test";
-                variation.ExpectedRouteToMatch = "2";
-                data.Add(variation);
+                yield return new object[] {
+                    new Route[]
+                    {
+                        CreateTemplateRoute("{area?}/{controller=Home}/{action=Index}/{id?}", "1"),
+                        CreateTemplateRoute("{controller=Home}/{action=Index}/{id?}", "2")
+                    },
+                    new RouteValueDictionary(new { controller = "Test", action = "Index" }),
+                    "/Test",
+                    "2" };
 
                 // Here the segment 'a' is valid but 'b' is not as it would be empty. This would be an invalid route match, but
                 // the route value of 'a' should still be present to be evaluated for the next available route.
-                variation = new RestoreRouteDataVariation();
-                variation.Routes.Add(new RouteInfo("1", "{a}/{b?}/{c}"));
-                variation.Routes.Add(new RouteInfo("2", "{a=Home}/{b=Index}"));
-                variation.Values = new RouteValueDictionary(new { a = "Test", c = "Foo" });
-                variation.ExpectedUrl = "/Test?c=Foo";
-                variation.ExpectedRouteToMatch = "2";
-                data.Add(variation);
-
-                return data;
+                yield return new object[] {
+                    new[]
+                    {
+                        CreateTemplateRoute("{a}/{b?}/{c}", "1"),
+                        CreateTemplateRoute("{a=Home}/{b=Index}", "2")
+                    },
+                    new RouteValueDictionary(new { a = "Test", c = "Foo" }),
+                    "/Test?c=Foo",
+                    "2" };
             }
         }
 
         [Theory]
         [MemberData(nameof(RestoresRouteDataForEachRouterData))]
-        public void GetVirtualPath_RestoresRouteData_ForEachRouter(RestoreRouteDataVariation variation)
+        public void GetVirtualPath_RestoresRouteData_ForEachRouter(
+            Route[] routes,
+            RouteValueDictionary routeValues,
+            string expectedUrl,
+            string expectedRouteToMatch)
         {
             // Arrange
-            var routeOptions = new Mock<IOptions<RouteOptions>>();
-            routeOptions.SetupGet(o => o.Value)
-                .Returns(new RouteOptions());
-            var constraintResolver = new DefaultInlineConstraintResolver(routeOptions.Object);
             var routeCollection = new RouteCollection();
-            foreach (var routeInfo in variation.Routes)
+            foreach (var route in routes)
             {
-                var route = CreateTemplateRoute(routeInfo.Template, routeInfo.Name, constraintResolver: constraintResolver);
                 routeCollection.Add(route);
             }
-            var context = CreateVirtualPathContext(variation.Values);
+            var context = CreateVirtualPathContext(routeValues);
 
             // Act
             var pathData = routeCollection.GetVirtualPath(context);
 
             // Assert
-            Assert.Equal(variation.ExpectedUrl, pathData.VirtualPath);
-            Assert.Same(variation.ExpectedRouteToMatch, ((INamedRouter)pathData.Router).Name);
+            Assert.Equal(expectedUrl, pathData.VirtualPath);
+            Assert.Same(expectedRouteToMatch, ((INamedRouter)pathData.Router).Name);
             Assert.Empty(pathData.DataTokens);
         }
 
@@ -707,25 +689,6 @@ namespace Microsoft.AspNetCore.Routing
                 options.LowercaseUrls = lowerCaseUrls;
                 options.AppendTrailingSlash = appendTrailingSlash;
             };
-        }
-
-        public class RestoreRouteDataVariation
-        {
-            public List<RouteInfo> Routes { get; set; } = new List<RouteInfo>();
-            public RouteValueDictionary Values { get; set; }
-            public string ExpectedUrl { get; set; }
-            public string ExpectedRouteToMatch { get; set; }
-        }
-
-        public class RouteInfo
-        {
-            public RouteInfo(string name, string template)
-            {
-                Name = name;
-                Template = template;
-            }
-            public string Name { get; }
-            public string Template { get; }
         }
     }
 }
