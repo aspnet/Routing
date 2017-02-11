@@ -4,10 +4,10 @@
   },
   "dependencies": {
     "dotnet-test-xunit": "1.0.0-*",
-    "Microsoft.AspNetCore.Routing": "1.0.2",
+    "Microsoft.AspNetCore.Routing": "1.0.3",
     "Microsoft.AspNetCore.Routing.DecisionTree.Sources": {
       "type": "build",
-      "version": "1.0.2"
+      "version": "1.0.3"
     },
     "Microsoft.AspNetCore.Testing": "1.0.1",
     "xunit": "2.1.0"

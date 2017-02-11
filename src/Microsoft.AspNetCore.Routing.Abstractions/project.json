@@ -1,6 +1,6 @@
 {
   "description": "ASP.NET Core abstractions for routing requests to application logic and for generating links.\r\nCommonly used types:\r\nMicrosoft.AspNetCore.Routing.IRouteHandler\r\nMicrosoft.AspNetCore.Routing.RouteData.",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "packOptions": {
     "repository": {
       "type": "git",
@@ -20,7 +20,7 @@
     "xmlDoc": true
   },
   "dependencies": {
-    "Microsoft.AspNetCore.Http.Abstractions": "1.0.1",
+    "Microsoft.AspNetCore.Http.Abstractions": "1.0.2",
     "Microsoft.Extensions.PropertyHelper.Sources": {
       "type": "build",
       "version": "1.0.1"
