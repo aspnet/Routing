@@ -5,7 +5,7 @@
   },
   "dependencies": {
     "dotnet-test-xunit": "1.0.0-*",
-    "Microsoft.AspNetCore.Routing.Abstractions": "1.0.2",
+    "Microsoft.AspNetCore.Routing.Abstractions": "1.0.3",
     "Microsoft.AspNetCore.Testing": "1.0.1",
     "xunit": "2.1.0"
   },
@@ -13,7 +13,7 @@
     "netcoreapp1.0": {
       "dependencies": {
         "Microsoft.NETCore.App": {
-          "version": "1.0.3",
+          "version": "1.0.4",
           "type": "platform"
         },
         "moq.netcore": "4.4.0-beta8",
