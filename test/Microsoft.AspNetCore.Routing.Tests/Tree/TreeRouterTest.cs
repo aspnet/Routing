@@ -1863,7 +1863,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
                     nestedValues = new RouteValueDictionary(c.RouteData.Values);
                     c.Handler = NullHandler;
                 })
-                .Returns(Task.FromResult(0));
+                .Returns(Task.CompletedTask);
 
             var builder = CreateBuilder();
             MapInboundEntry(builder, "cat_{category1}/prod1_{product}"); // Matches on first segment but not on second
@@ -1876,6 +1876,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
             await route.RouteAsync(context);
 
             // Assert
+            Assert.NotNull(nestedValues);
             Assert.Equal("examplecategory", nestedValues["category2"]);
             Assert.Equal("exampleproduct", nestedValues["product"]);
             Assert.DoesNotContain(nestedValues, kvp => kvp.Key == "category1");
