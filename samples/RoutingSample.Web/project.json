@@ -1,8 +1,8 @@
 {
   "dependencies": {
-    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.2",
+    "Microsoft.AspNetCore.Server.IISIntegration": "1.0.3",
     "Microsoft.AspNetCore.Server.Kestrel": "1.0.4",
-    "Microsoft.AspNetCore.Routing": "1.0.3"
+    "Microsoft.AspNetCore.Routing": "1.0.4"
   },
   "buildOptions": {
     "emitEntryPoint": true
@@ -12,7 +12,7 @@
     "netcoreapp1.0": {
       "dependencies": {
         "Microsoft.NETCore.App": {
-          "version": "1.0.4",
+          "version": "1.0.5",
           "type": "platform"
         }
       }
