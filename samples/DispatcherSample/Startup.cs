@@ -39,13 +39,13 @@ namespace DispatcherSample
                         }
                 },
                 {
-                    "/taytay",
+                    "/example2",
                     new DispatcherFeature
                         {
-                            Endpoint = new DispatcherEndpoint("taylor"),
+                            Endpoint = new DispatcherEndpoint("example2"),
                             RequestDelegate = async (context) =>
                             {
-                                await context.Response.WriteAsync("WOOOOOW");
+                                await context.Response.WriteAsync("Hello from the second example!");
                             }
                         }
                 },
