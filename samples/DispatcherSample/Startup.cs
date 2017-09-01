@@ -1,12 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Dispatcher;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace DispatcherSample
@@ -55,9 +55,12 @@ namespace DispatcherSample
             {
                 if (dictionary.TryGetValue(context.Request.Path, out var value))
                 {
-                    var dispatcherFeature = new DispatcherFeature();
-                    dispatcherFeature.Endpoint = value.Endpoint;
-                    dispatcherFeature.RequestDelegate = value.RequestDelegate;
+                    var dispatcherFeature = new DispatcherFeature
+                    {
+                        Endpoint = value.Endpoint,
+                        RequestDelegate = value.RequestDelegate
+                    };
+
                     context.Features.Set<IDispatcherFeature>(dispatcherFeature);
                     await context.Response.WriteAsync("<p>Dispatch</p>");
                     await next.Invoke();
@@ -70,10 +73,17 @@ namespace DispatcherSample
                 await next.Invoke();
             });
 
-            app.Run(async (context) =>
+            app.Use(async (context, next) =>
             {
                 var feature = context.Features.Get<IDispatcherFeature>();
                 await feature.RequestDelegate(context);
+                await next.Invoke();
+            });
+
+            app.Run(async (context) =>
+            {
+                var url = UrlGenerator.GenerateURL(new RouteValueDictionary(new { Movie = "The Lion King", Character = "Mufasa" }), context);
+                await context.Response.WriteAsync($"<p>Generated url: {url}</p>");
             });
         }
     }
