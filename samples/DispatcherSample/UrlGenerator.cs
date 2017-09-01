@@ -1,25 +1,23 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Dispatcher;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
 namespace DispatcherSample
 {
-    public static class UrlGenerator
+    public class UrlGenerator
     {
         //Find match from values to a template
-        public static string GenerateURL(RouteValueDictionary routeValues, HttpContext context)
+        public string GenerateURL(RouteValueAddressTable addressTable, RouteValueDictionary routeValues, HttpContext context)
         {
-            var address = FindAddress(routeValues);
+            var address = FindAddress(addressTable, routeValues);
             return $"RouteName: {address.DisplayName} URL: /{address.RouteValueDictionary["Character"]}/{address.RouteValueDictionary["Movie"]}";
         }
 
         //Look up the Addresses table
-        private static RouteValueAddress FindAddress(RouteValueDictionary routeValues)
+        private RouteValueAddress FindAddress(RouteValueAddressTable addressTable, RouteValueDictionary routeValues)
         {
-            var addressTable = new RouteValueAddressTable();
             var addressMatch = new RouteValueAddress(null, new RouteValueDictionary());
             foreach (var address in addressTable.Addresses)
             {

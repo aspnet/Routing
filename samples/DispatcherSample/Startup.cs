@@ -15,6 +15,8 @@ namespace DispatcherSample
     {
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddSingleton<UrlGenerator>();
+            services.AddSingleton<RouteValueAddressTable>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -82,7 +84,9 @@ namespace DispatcherSample
 
             app.Run(async (context) =>
             {
-                var url = UrlGenerator.GenerateURL(new RouteValueDictionary(new { Movie = "The Lion King", Character = "Mufasa" }), context);
+                var urlGenerator = app.ApplicationServices.GetService<UrlGenerator>();
+                var addressTable = app.ApplicationServices.GetService<RouteValueAddressTable>();
+                var url = urlGenerator.GenerateURL(addressTable, new RouteValueDictionary(new { Movie = "The Lion King", Character = "Mufasa" }), context);
                 await context.Response.WriteAsync($"<p>Generated url: {url}</p>");
             });
         }
