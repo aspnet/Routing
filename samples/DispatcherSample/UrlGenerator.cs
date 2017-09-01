@@ -8,10 +8,17 @@ namespace DispatcherSample
 {
     public class UrlGenerator
     {
-        //Find match from values to a template
-        public string GenerateURL(RouteValueAddressTable addressTable, RouteValueDictionary routeValues, HttpContext context)
+        private readonly RouteValueAddressTable _addressTable;
+
+        public UrlGenerator(RouteValueAddressTable addressTable)
         {
-            var address = FindAddress(addressTable, routeValues);
+            _addressTable = addressTable;
+        }
+
+        //Find match from values to a template
+        public string GenerateURL(RouteValueDictionary routeValues, HttpContext context)
+        {
+            var address = FindAddress(_addressTable, routeValues);
             return $"RouteName: {address.DisplayName} URL: /{address.RouteValueDictionary["Character"]}/{address.RouteValueDictionary["Movie"]}";
         }
 
