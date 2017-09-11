@@ -18,8 +18,12 @@ namespace Microsoft.AspNetCore.Dispatcher
         public async Task Invoke(HttpContext context)
         {
             var feature = context.Features.Get<IDispatcherFeature>();
-            await feature.RequestDelegate(context);
-            await _next(context);
+            var requestDelegate = feature.RequestDelegate(context);
+            await requestDelegate;
+            if (requestDelegate == null)
+            {
+                await _next(context);
+            }
         }
     }
 }

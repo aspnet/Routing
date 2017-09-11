@@ -53,7 +53,6 @@ namespace Microsoft.AspNetCore.Dispatcher
                 };
 
                 httpContext.Features.Set<IDispatcherFeature>(dispatcherFeature);
-                await httpContext.Response.WriteAsync("<p>Dispatch</p>");
                 await _next(httpContext);
             }
         }

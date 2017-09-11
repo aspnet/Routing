@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Dispatcher;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -16,7 +15,7 @@ namespace DispatcherSample
         {
             services.AddSingleton<UrlGenerator>();
             services.AddSingleton<RouteValueAddressTable>();
-            services.AddSingleton<IStartupFilter, DispatcherEndpointStartupFilter>();
+            services.AddDispatcher();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
