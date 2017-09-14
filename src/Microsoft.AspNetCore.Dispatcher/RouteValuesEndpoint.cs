@@ -17,6 +17,6 @@ namespace Microsoft.AspNetCore.Dispatcher
 
         public RequestDelegate RequestDelegate { get; set; }
 
-        public RouteValueDictionary RouteValueDictionary { get; set; }
+        public RouteValueDictionary RequiredValues { get; set; }
     }
 }

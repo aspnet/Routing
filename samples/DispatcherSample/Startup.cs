@@ -27,7 +27,7 @@ namespace DispatcherSample
                         {
                             new RouteValuesEndpoint("example")
                             {
-                                RouteValueDictionary = new RouteValueDictionary(new { Endpoint = "First" }),
+                                RequiredValues = new RouteValueDictionary(new { Endpoint = "First" }),
                                 RequestDelegate = async (context) =>
                                 {
                                     await context.Response.WriteAsync("Hello from the example!");
@@ -35,7 +35,7 @@ namespace DispatcherSample
                             },
                             new RouteValuesEndpoint("example2")
                             {
-                                RouteValueDictionary = new RouteValueDictionary(new { Endpoint = "Second" }),
+                                RequiredValues = new RouteValueDictionary(new { Endpoint = "Second" }),
                                 RequestDelegate = async (context) =>
                                 {
                                     await context.Response.WriteAsync("Hello from the second example!");
@@ -51,7 +51,7 @@ namespace DispatcherSample
                         {
                             new RouteValuesEndpoint("example")
                             {
-                                RouteValueDictionary = new RouteValueDictionary(new { Endpoint = "First", Parameter = "param1"}),
+                                RequiredValues = new RouteValueDictionary(new { Endpoint = "First", Parameter = "param1"}),
                                 RequestDelegate = async (context) =>
                                 {
                                     await context.Response.WriteAsync("Hello from the example for foo!");
@@ -59,7 +59,7 @@ namespace DispatcherSample
                             },
                             new RouteValuesEndpoint("example2")
                             {
-                                RouteValueDictionary = new RouteValueDictionary(new { Endpoint = "Second", Parameter = "param2"}),
+                                RequiredValues = new RouteValueDictionary(new { Endpoint = "Second", Parameter = "param2"}),
                                 RequestDelegate = async (context) =>
                                 {
                                     await context.Response.WriteAsync("Hello from the second example for foo!");

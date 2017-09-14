@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -33,7 +34,12 @@ namespace Microsoft.AspNetCore.Dispatcher
                 {
                     if (templateMatcher.TryMatch(httpContext.Request.Path, values))
                     {
-                        if (MatchURLToEndpoint(values, endpoint.RouteValueDictionary))
+                        if (!CompareRouteValues(values, endpoint.RequiredValues))
+                        {
+                            values.Clear();
+                        }
+
+                        else
                         {
                             var dispatcherFeature = new DispatcherFeature
                             {
@@ -65,29 +71,27 @@ namespace Microsoft.AspNetCore.Dispatcher
             return result;
         }
 
-        private bool MatchURLToEndpoint(RouteValueDictionary currentURLRouteValueDictionary, RouteValueDictionary endpointRouteValueDictionary)
+        private bool CompareRouteValues(RouteValueDictionary values, RouteValueDictionary requiredValues)
         {
-            var endpointMatch = new RouteValueDictionary();
-
-            foreach (var key in currentURLRouteValueDictionary.Keys)
+            foreach (var kvp in requiredValues)
             {
-                if (!endpointRouteValueDictionary.Keys.Contains(key))
+                if (string.IsNullOrEmpty(kvp.Value.ToString()))
                 {
-                    break;
+                    if (values.TryGetValue(kvp.Key, out var routeValue) && !string.IsNullOrEmpty(routeValue.ToString()))
+                    {
+                        return false;
+                    }
                 }
-
-                if (endpointRouteValueDictionary[key].Equals(currentURLRouteValueDictionary[key]))
+                else
                 {
-                    endpointMatch[key] = endpointRouteValueDictionary[key];
+                    if (!values.TryGetValue(kvp.Key, out var routeValue) || !string.Equals(kvp.Value.ToString(), routeValue.ToString(), StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
                 }
             }
 
-            if (endpointMatch.Count == currentURLRouteValueDictionary.Count)
-            {
-                return true;
-            }
-
-            return false;
+            return true;
         }
     }
 }
