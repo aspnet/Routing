@@ -48,6 +48,7 @@ namespace Microsoft.AspNetCore.Dispatcher
                             };
 
                             httpContext.Features.Set<IDispatcherFeature>(dispatcherFeature);
+                            break;
                         }
                     }
                 }
