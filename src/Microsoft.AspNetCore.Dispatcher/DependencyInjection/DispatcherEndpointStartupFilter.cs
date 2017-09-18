@@ -3,11 +3,12 @@
 
 using System;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Dispatcher;
 using Microsoft.AspNetCore.Hosting;
 
-namespace Microsoft.AspNetCore.Dispatcher
+namespace Microsoft.Extensions.DependencyInjection
 {
-    public class DispatcherEndpointStartupFilter : IStartupFilter
+    internal class DispatcherEndpointStartupFilter : IStartupFilter
     {
         public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
         {

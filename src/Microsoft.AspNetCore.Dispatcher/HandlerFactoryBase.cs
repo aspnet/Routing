@@ -3,20 +3,19 @@
 
 using System;
 using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Dispatcher
 {
-    public abstract class DispatcherBase : IDispatcherOptionsValueProvider
+    public abstract class HandlerFactoryBase : IHandlerFactoryOptionsValueProvider
     {
-        private readonly DispatcherBaseServices _services;
+        private readonly HandlerFactoryBaseServices _services;
 
         private ILogger _logger;
 
-        public DispatcherBase(DispatcherBaseServices services)
+        public HandlerFactoryBase(HandlerFactoryBaseServices services)
         {
             if (services == null)
             {
@@ -34,9 +33,9 @@ namespace Microsoft.AspNetCore.Dispatcher
                 return _logger;
             }
         }
+        
+        public abstract Func<RequestDelegate, RequestDelegate> CreateHandler(Endpoint endpoint);
 
-        public abstract Task InvokeAsync(HttpContext httpContext);
-
-        RequestDelegate IDispatcherOptionsValueProvider.Dispatcher => InvokeAsync;
+        EndpointHandlerFactory IHandlerFactoryOptionsValueProvider.HandlerFactory => CreateHandler;
     }
 }
