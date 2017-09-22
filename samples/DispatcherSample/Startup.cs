@@ -99,7 +99,7 @@ namespace DispatcherSample
 
         private static RequestDelegate CreateDispatcher(string routeTemplate, RouteValuesEndpoint endpoint, params RouteValuesEndpoint[] endpoints)
         {
-            var dispatcher = new RouterDispatcher(new Route(new RouterEndpointSelector(new[] { endpoint }.Concat(endpoints)), routeTemplate, ConstraintResolver));
+            var dispatcher = new RouterDispatcher(null, new Route(new RouterEndpointSelector(new[] { endpoint }.Concat(endpoints)), routeTemplate, ConstraintResolver));
             return dispatcher.InvokeAsync;
         }
     }

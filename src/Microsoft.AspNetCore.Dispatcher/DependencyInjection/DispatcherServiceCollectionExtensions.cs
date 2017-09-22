@@ -17,6 +17,14 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             services.AddSingleton<IStartupFilter, DispatcherEndpointStartupFilter>();
+
+            services.AddSingleton<DispatcherBaseServices, DefaultDispatcherBaseServices>();
+            services.AddSingleton<HandlerFactoryBaseServices, DefaultHandlerFactoryBaseServices>();
+
+            services.ConfigureOptions<DefaultDispatcherConfigureOptions>();
+
+            services.AddTransient<IHandlerFactoryOptionsValueProvider, SimpleEndpointHandlerFactory>();
+
             return services;
         }
     }

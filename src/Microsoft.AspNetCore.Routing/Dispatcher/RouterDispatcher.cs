@@ -15,7 +15,8 @@ namespace Microsoft.AspNetCore.Routing.Dispatcher
     {
         private readonly IRouter _router;
 
-        public RouterDispatcher(IRouter router)
+        public RouterDispatcher(DispatcherBaseServices services, IRouter router)
+            : base(services)
         {
             if (router == null)
             {
