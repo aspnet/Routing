@@ -20,9 +20,9 @@ namespace Microsoft.AspNetCore.Dispatcher
         private List<Endpoint> _endpoints;
         private List<EndpointSelector> _endpointSelectors;
 
-        private Task _initialize;
+        private object _initialize;
         private bool _selectorsInitialized;
-        private readonly Func<Task> _initializer;
+        private readonly Func<object> _initializer;
         private object _lock;
 
         private bool _servicesInitialized;
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Dispatcher
         public DispatcherBase()
         {
             _lock = new object();
-            _initializer = InitializeServices;
+            _initializer = InitializeSelectors;
         }
 
         protected ILogger Logger { get; private set; }
@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Dispatcher
                 throw new ArgumentNullException(nameof(selectors));
             }
 
-            await LazyInitializer.EnsureInitialized(ref _initialize, ref _selectorsInitialized, ref _lock, _initializer);
+            LazyInitializer.EnsureInitialized(ref _initialize, ref _selectorsInitialized, ref _lock, _initializer);
 
             var selectorContext = new EndpointSelectorContext(httpContext, endpoints.ToList(), selectors.ToList());
             await selectorContext.InvokeNextAsync();
@@ -167,12 +167,14 @@ namespace Microsoft.AspNetCore.Dispatcher
             }
         }
 
-        private async Task InitializeServices()
+        private object InitializeSelectors()
         {
             foreach (var selector in Selectors)
             {
-                await selector.Initialize(this);
+                selector.Initialize(this);
             }
+
+            return null;
         }
 
         protected void EnsureServicesInitialized(HttpContext httpContext)
