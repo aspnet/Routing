@@ -6,7 +6,7 @@ using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Dispatcher
 {
-    [DebuggerDisplay("{DisplayName,nq}")]
+    [DebuggerDisplay("{GetType()}{DisplayName,nq}")]
     public abstract class Endpoint
     {
         public abstract string DisplayName { get; }
