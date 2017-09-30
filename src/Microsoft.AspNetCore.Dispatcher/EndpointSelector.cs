@@ -9,9 +9,8 @@ namespace Microsoft.AspNetCore.Dispatcher
     {
         public abstract Task SelectAsync(EndpointSelectorContext context);
 
-        public virtual object Initialize(IEndpointCollectionProvider endpointProvider)
+        public virtual void Initialize(IEndpointCollectionProvider endpointProvider)
         {
-            return null;
         }
     }
 }
