@@ -30,5 +30,45 @@ namespace Microsoft.AspNetCore.Dispatcher.FunctionalTest
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("Hello, Products_Get", await response.Content.ReadAsStringAsync());
         }
+
+        [Fact]
+        public async Task ApiApp_RoutesTo_EndpointWithMatchingHttpMethod()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Post, "/api/products");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("Hello, Products_Post", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task ApiApp_RoutesTo_EndpointWithMatchingHttpMethod_DoesNotMatchExpectedRoute()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Put, "/api/services");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task ApiApp_NoEndpointWithMatchingHttpMethod()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Delete, "/api/products");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
     }
 }
