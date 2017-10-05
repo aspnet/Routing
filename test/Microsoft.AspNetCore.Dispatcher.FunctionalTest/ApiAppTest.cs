@@ -46,10 +46,24 @@ namespace Microsoft.AspNetCore.Dispatcher.FunctionalTest
         }
 
         [Fact]
+        public async Task ApiApp_RoutesTo_EndpointWithMatchingHttpMethod_AndMatchingRoute()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Get, "/api/products/3");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("Hello, Products_GetWithId", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
         public async Task ApiApp_RoutesTo_EndpointWithMatchingHttpMethod_DoesNotMatchExpectedRoute()
         {
             // Arrange
-            var request = new HttpRequestMessage(HttpMethod.Put, "/api/services");
+            var request = new HttpRequestMessage(HttpMethod.Put, "/api/services/2");
 
             // Act
             var response = await Client.SendAsync(request);
@@ -59,7 +73,7 @@ namespace Microsoft.AspNetCore.Dispatcher.FunctionalTest
         }
 
         [Fact]
-        public async Task ApiApp_NoEndpointWithMatchingHttpMethod()
+        public async Task ApiApp_NoEndpointWithMatchingHttpMethod_FallbackEndpointSelected()
         {
             // Arrange
             var request = new HttpRequestMessage(HttpMethod.Delete, "/api/products");
@@ -68,7 +82,8 @@ namespace Microsoft.AspNetCore.Dispatcher.FunctionalTest
             var response = await Client.SendAsync(request);
 
             // Assert
-            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("Hello, Products_Fallback", await response.Content.ReadAsStringAsync());
         }
     }
 }

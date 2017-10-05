@@ -24,14 +24,15 @@ namespace Microsoft.AspNetCore.Dispatcher
                 new TemplateEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Products", action = "Create", }, "POST", Products_Post, "Products:Post()"),
             };
 
-            var context = GetEndpointSelectorContext(httpMethod, endpoints, out var selector);
+            var (context, selector) = CreateContextAndSelector(httpMethod, endpoints);
 
             // Act
             await selector.SelectAsync(context);
-            var templateEndpoints = context.Endpoints.Select(e => e as TemplateEndpoint);
+            var templateEndpoints = context.Endpoints.Cast<TemplateEndpoint>();
 
             // Assert
-            Assert.Collection(templateEndpoints,
+            Assert.Collection(
+                templateEndpoints,
                 endpoint => Assert.Equal(httpMethod.ToUpperInvariant(), endpoint.HttpMethod));
         }
 
@@ -45,7 +46,7 @@ namespace Microsoft.AspNetCore.Dispatcher
                 new TemplateEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Products", action = "Create", }, "POST", Products_Post, "Products:Post()"),
             };
 
-            var context = GetEndpointSelectorContext("PUT", endpoints, out var selector);
+            var (context, selector) = CreateContextAndSelector("PUT", endpoints);
 
             // Act
             await selector.SelectAsync(context);
@@ -67,29 +68,30 @@ namespace Microsoft.AspNetCore.Dispatcher
                 new TemplateEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Products", action = "Get", }, Products_Get),
             };
 
-            var context = GetEndpointSelectorContext(httpMethod, endpoints, out var selector);
+            var (context, selector) = CreateContextAndSelector(httpMethod, endpoints);
 
             // Act
             await selector.SelectAsync(context);
-            var templateEndpoints = context.Endpoints.Select(e => e as TemplateEndpoint);
+            var templateEndpoints = context.Endpoints.Cast<TemplateEndpoint>();
 
             // Assert
-            Assert.Collection(templateEndpoints,
+            Assert.Collection(
+                templateEndpoints,
                 endpoint => Assert.Null(endpoint.HttpMethod));
         }
 
-        private EndpointSelectorContext GetEndpointSelectorContext(string httpMethod, List<Endpoint> endpoints, out HttpMethodEndpointSelector selector)
+        private (EndpointSelectorContext, EndpointSelector) CreateContextAndSelector(string httpMethod, List<Endpoint> endpoints)
         {
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Method = httpMethod;
-            selector = new HttpMethodEndpointSelector();
+            var selector = new HttpMethodEndpointSelector();
             var selectors = new List<EndpointSelector>()
             {
                 selector
             };
 
             var selectorContext = new EndpointSelectorContext(httpContext, endpoints, selectors);
-            return selectorContext;
+            return (selectorContext, selector);
         }
 
         private Task Products_Get(HttpContext httpContext) => httpContext.Response.WriteAsync("Hello, Products_Get");
