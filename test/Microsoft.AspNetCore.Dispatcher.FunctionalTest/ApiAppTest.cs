@@ -85,5 +85,18 @@ namespace Microsoft.AspNetCore.Dispatcher.FunctionalTest
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("Hello, Products_Fallback", await response.Content.ReadAsStringAsync());
         }
+        
+        [Fact]
+        public async Task ApiApp_NoEndpointWithMatchingHttpMethod_NoFallbackEndpointMatched()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Delete, "/api/products/4");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
     }
 }
