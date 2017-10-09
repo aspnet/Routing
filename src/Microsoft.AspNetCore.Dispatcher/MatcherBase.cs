@@ -25,7 +25,6 @@ namespace Microsoft.AspNetCore.Dispatcher
         private bool _selectorsInitialized;
         private readonly Func<object> _selectorInitializer;
 
-
         public MatcherBase()
         {
             _lock = new object();
@@ -99,7 +98,7 @@ namespace Microsoft.AspNetCore.Dispatcher
             }
 
             EnsureServicesInitialized(context);
-
+            Logger.ServicesInitialized(GetType());
             context.Values = await MatchRequestAsync(context.HttpContext);
             if (context.Values != null)
             {
@@ -130,6 +129,7 @@ namespace Microsoft.AspNetCore.Dispatcher
             }
 
             EnsureSelectorsInitialized();
+            Logger.EndpointSelectorsInitialized();
 
             var selectorContext = new EndpointSelectorContext(context.HttpContext, context.Values, endpoints.ToList(), Selectors.ToList());
             await selectorContext.InvokeNextAsync();
@@ -137,6 +137,7 @@ namespace Microsoft.AspNetCore.Dispatcher
             if (selectorContext.ShortCircuit != null)
             {
                 context.ShortCircuit = selectorContext.ShortCircuit;
+                Logger.RequestShortCircuited(context);
                 return;
             }
 

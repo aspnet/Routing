@@ -39,8 +39,10 @@ namespace Microsoft.AspNetCore.Routing.Dispatcher
             }
 
             EnsureServicesInitialized(context);
+            Logger.ServicesInitialized(GetType());
 
             var cache = LazyInitializer.EnsureInitialized(ref _cache, ref _dataInitialized, ref _lock, _initializer);
+            Logger.CacheCreated(this);
 
             var values = new RouteValueDictionary();
             context.Values = values;
@@ -76,6 +78,7 @@ namespace Microsoft.AspNetCore.Routing.Dispatcher
                         await SelectEndpointAsync(context, (Endpoint[])entry.Tag);
                         if (context.ShortCircuit != null)
                         {
+                            Logger.RequestShortCircuited(context);
                             return;
                         }
 

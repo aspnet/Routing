@@ -53,19 +53,21 @@ namespace Microsoft.AspNetCore.Dispatcher
                     feature.Values = context.Values;
 
                     await context.ShortCircuit(httpContext);
+
+                    _logger.RequestShortCircuited(context);
                     return;
                 }
 
                 if (context.Endpoint != null)
                 {
-                    _logger.LogInformation("Matched endpoint {Endpoint}", context.Endpoint.DisplayName);
-
+                    _logger.EndpointMatched(context.Endpoint);
                     feature.Endpoint = context.Endpoint;
                     feature.Values = context.Values;
 
                     feature.Handler = entry.HandlerFactory.CreateHandler(feature.Endpoint);
                     if (feature.Handler == null)
                     {
+                        _logger.HandlerNotCreated(entry);
                         throw new InvalidOperationException("Couldn't create a handler, that's bad.");
                     }
 
