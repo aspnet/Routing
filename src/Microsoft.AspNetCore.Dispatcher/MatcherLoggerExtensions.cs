@@ -10,10 +10,10 @@ namespace Microsoft.AspNetCore.Dispatcher
     internal static class MatcherLoggerExtensions
     {
         // MatcherBase and HttpMethodEndpointSelector
-        private static readonly Action<ILogger, Type, Exception> _servicesInitialized = LoggerMessage.Define<Type>(
+        private static readonly Action<ILogger, Exception> _servicesInitialized = LoggerMessage.Define(
             LogLevel.Information,
             new EventId(0, "ServicesInitialized"),
-            "Services initialized for '{Type}'.");
+            "Services initialized.");
 
         // MatcherBase
         private static readonly Action<ILogger, Exception> _endpointSelectorsInitialized = LoggerMessage.Define(
@@ -60,10 +60,10 @@ namespace Microsoft.AspNetCore.Dispatcher
             "Executed endpoint '{EndpointName}'.");
 
         // HttpMethodEndpointSelector
-        private static readonly Action<ILogger, Type, Exception> _snapshotCreated = LoggerMessage.Define<Type>(
+        private static readonly Action<ILogger, Exception> _snapshotCreated = LoggerMessage.Define(
             LogLevel.Information,
             new EventId(1, "SnapshotCreated"),
-            "Snapshot of current endpoints created for selector '{SelectorType}'.");
+            "Snapshot of current endpoints created.");
 
         private static readonly Action<ILogger, string, Exception> _noHttpMethodFound = LoggerMessage.Define<string>(
             LogLevel.Information,
@@ -90,10 +90,10 @@ namespace Microsoft.AspNetCore.Dispatcher
             new EventId(6, "NoEndpointMatchedRequestMethod"),
             "No endpoint matched request method '{Method}'.");
 
-        private static readonly Action<ILogger, Type, Exception> _snapshotRestored = LoggerMessage.Define<Type>(
+        private static readonly Action<ILogger, Exception> _snapshotRestored = LoggerMessage.Define(
             LogLevel.Information,
             new EventId(7, "SnapshotRestored"),
-            "Snapshot of current endpoints restored for selector '{SelectorType}'.");
+            "Snapshot of current endpoints restored.");
 
         private static readonly Action<ILogger, string, Exception> _fallbackAddedAsEndpoint = LoggerMessage.Define<string>(
             LogLevel.Information,
@@ -120,9 +120,9 @@ namespace Microsoft.AspNetCore.Dispatcher
             _endpointSelectorsInitialized(logger, null);
         }
 
-        public static void ServicesInitialized(this ILogger logger, Type type)
+        public static void ServicesInitialized(this ILogger logger)
         {
-            _servicesInitialized(logger, type, null);
+            _servicesInitialized(logger, null);
         }
 
         public static void RequestShortCircuited(this ILogger logger, MatcherContext matcherContext)
@@ -147,9 +147,9 @@ namespace Microsoft.AspNetCore.Dispatcher
             _executedEndpoint(logger, endpoint.DisplayName ?? "Unnamed endpoint", null);
         }
 
-        public static void SnapshotCreated(this ILogger logger, Type type)
+        public static void SnapshotCreated(this ILogger logger)
         {
-            _snapshotCreated(logger, type, null);
+            _snapshotCreated(logger, null);
         }
 
         public static void NoHttpMethodFound(this ILogger logger, Endpoint endpoint)
@@ -177,9 +177,9 @@ namespace Microsoft.AspNetCore.Dispatcher
             _noEndpointMatchedRequestMethod(logger, requestMethod, null);
         }
 
-        public static void SnapshotRestored(this ILogger logger, Type type)
+        public static void SnapshotRestored(this ILogger logger)
         {
-            _snapshotRestored(logger, type, null);
+            _snapshotRestored(logger, null);
         }
 
         public static void FallbackAddedAsEndpoint(this ILogger logger, Endpoint endpoint)

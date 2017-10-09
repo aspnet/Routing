@@ -39,10 +39,10 @@ namespace Microsoft.AspNetCore.Routing.Dispatcher
             }
 
             EnsureServicesInitialized(context);
-            Logger.ServicesInitialized(GetType());
+            Logger.ServicesInitialized();
 
             var cache = LazyInitializer.EnsureInitialized(ref _cache, ref _dataInitialized, ref _lock, _initializer);
-            Logger.CacheCreated(this);
+            Logger.CacheCreated();
 
             var values = new RouteValueDictionary();
             context.Values = values;

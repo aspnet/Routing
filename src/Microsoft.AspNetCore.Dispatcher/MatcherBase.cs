@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Dispatcher
             }
 
             EnsureServicesInitialized(context);
-            Logger.ServicesInitialized(GetType());
+            Logger.ServicesInitialized();
             context.Values = await MatchRequestAsync(context.HttpContext);
             if (context.Values != null)
             {

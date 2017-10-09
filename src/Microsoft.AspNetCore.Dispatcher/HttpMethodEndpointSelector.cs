@@ -30,10 +30,10 @@ namespace Microsoft.AspNetCore.Dispatcher
             }
 
             EnsureServicesInitialized(context);
-            Logger.ServicesInitialized(GetType());
+            Logger.ServicesInitialized();
 
             var snapshot = context.CreateSnapshot();
-            Logger.SnapshotCreated(GetType());
+            Logger.SnapshotCreated();
 
             var fallbackEndpoints = new List<Endpoint>();
             for (var i = context.Endpoints.Count - 1; i >= 0; i--)
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Dispatcher
 
                 // Nothing matched, do the fallback.
                 context.RestoreSnapshot(snapshot);
-                Logger.SnapshotRestored(GetType());
+                Logger.SnapshotRestored();
 
                 context.Endpoints.Clear();
 
