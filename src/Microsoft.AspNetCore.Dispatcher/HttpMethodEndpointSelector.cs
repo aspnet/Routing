@@ -15,12 +15,12 @@ namespace Microsoft.AspNetCore.Dispatcher
         private object _lock;
         private bool _servicesInitialized;
 
-        protected ILogger Logger { get; private set; }
-
         public HttpMethodEndpointSelector()
         {
             _lock = new object();
         }
+
+        protected ILogger Logger { get; private set; }
 
         public override async Task SelectAsync(EndpointSelectorContext context)
         {
@@ -30,10 +30,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             }
 
             EnsureServicesInitialized(context);
-            Logger.ServicesInitialized();
 
             var snapshot = context.CreateSnapshot();
-            Logger.SnapshotCreated();
 
             var fallbackEndpoints = new List<Endpoint>();
             for (var i = context.Endpoints.Count - 1; i >= 0; i--)
@@ -43,8 +41,8 @@ namespace Microsoft.AspNetCore.Dispatcher
                 {
                     // No metadata.
                     Logger.NoHttpMethodFound(context.Endpoints[i]);
+
                     fallbackEndpoints.Add(context.Endpoints[i]);
-                    Logger.EndpointAddedAsFallback(context.Endpoints[i]);
                     context.Endpoints.RemoveAt(i);
                 }
                 else if (string.Equals(endpoint.HttpMethod, context.HttpContext.Request.Method, StringComparison.OrdinalIgnoreCase))
@@ -70,14 +68,12 @@ namespace Microsoft.AspNetCore.Dispatcher
 
                 // Nothing matched, do the fallback.
                 context.RestoreSnapshot(snapshot);
-                Logger.SnapshotRestored();
 
                 context.Endpoints.Clear();
 
                 for (var i = 0; i < fallbackEndpoints.Count; i++)
                 {
                     context.Endpoints.Add(fallbackEndpoints[i]);
-                    Logger.FallbackAddedAsEndpoint(fallbackEndpoints[i]);
                 }
 
                 await context.InvokeNextAsync();

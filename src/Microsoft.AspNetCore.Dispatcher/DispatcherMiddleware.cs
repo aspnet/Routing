@@ -54,13 +54,13 @@ namespace Microsoft.AspNetCore.Dispatcher
 
                     await context.ShortCircuit(httpContext);
 
-                    _logger.RequestShortCircuited(context);
+                    _logger.RequestShortCircuitedDispatcherMiddleware(context);
                     return;
                 }
 
                 if (context.Endpoint != null)
                 {
-                    _logger.EndpointMatched(context.Endpoint);
+                    _logger.EndpointMatchedDispatcherMiddleware(context.Endpoint);
                     feature.Endpoint = context.Endpoint;
                     feature.Values = context.Values;
 
@@ -73,6 +73,8 @@ namespace Microsoft.AspNetCore.Dispatcher
 
                     break;
                 }
+
+                _logger.NoEndpointsMatchedMatcher(entry.Matcher);
             }
 
             await _next(httpContext);
