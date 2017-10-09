@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Dispatcher
                 for (var i = 0; i < fallbackEndpoints.Count; i++)
                 {
                     context.Endpoints.Add(fallbackEndpoints[i]);
-                    Logger.FallbackAddedAsEndpoint(fallbackEndpoints[i]); //Info
+                    Logger.FallbackAddedAsEndpoint(fallbackEndpoints[i]);
                 }
 
                 await context.InvokeNextAsync();
