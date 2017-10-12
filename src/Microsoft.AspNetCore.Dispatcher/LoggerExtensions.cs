@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Dispatcher
 {
-    internal static class MatcherLoggerExtensions
+    internal static class LoggerExtensions
     {
         // MatcherBase
         private static readonly Action<ILogger, string, Exception> _ambiguousEndpoints = LoggerMessage.Define<string>(
