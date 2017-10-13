@@ -39,6 +39,5 @@ node_modules
 *launchSettings.json
 global.json
 BenchmarkDotNet.Artifacts/
-korebuild-lock.txt
 *.g.targets
 
