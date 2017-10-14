@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 
-namespace Microsoft.AspNetCore.Routing.Template
+namespace Microsoft.AspNetCore.Dispatcher
 {
     public static class TemplateParser
     {

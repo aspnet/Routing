@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Routing.Template
+namespace Microsoft.AspNetCore.Dispatcher
 {
     [DebuggerDisplay("{DebuggerToString()}")]
     public class TemplatePart

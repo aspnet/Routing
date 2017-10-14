@@ -1,0 +1,101 @@
+[
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Routing.Template.InlineConstraint",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Routing.Template.RouteTemplate",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Routing.Template.TemplatePart",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Routing.Template.TemplateSegment",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public static class Microsoft.AspNetCore.Routing.InlineRouteParameterParser",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public static class Microsoft.AspNetCore.Routing.Template.TemplateParser",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public abstract class Microsoft.AspNetCore.Routing.RouteBase : Microsoft.AspNetCore.Routing.INamedRouter",
+      "MemberId": "protected static Microsoft.AspNetCore.Routing.RouteValueDictionary GetDefaults(Microsoft.AspNetCore.Routing.Template.RouteTemplate parsedTemplate, Microsoft.AspNetCore.Routing.RouteValueDictionary defaults)",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public abstract class Microsoft.AspNetCore.Routing.RouteBase : Microsoft.AspNetCore.Routing.INamedRouter",
+      "MemberId": "protected static System.Collections.Generic.IDictionary<System.String, Microsoft.AspNetCore.Routing.IRouteConstraint> GetConstraints(Microsoft.AspNetCore.Routing.IInlineConstraintResolver inlineConstraintResolver, Microsoft.AspNetCore.Routing.Template.RouteTemplate parsedTemplate, System.Collections.Generic.IDictionary<System.String, System.Object> constraints)",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public abstract class Microsoft.AspNetCore.Routing.RouteBase : Microsoft.AspNetCore.Routing.INamedRouter",
+      "MemberId": "protected virtual System.Void set_ParsedTemplate(Microsoft.AspNetCore.Routing.Template.RouteTemplate value)",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public abstract class Microsoft.AspNetCore.Routing.RouteBase : Microsoft.AspNetCore.Routing.INamedRouter",
+      "MemberId": "public virtual Microsoft.AspNetCore.Routing.Template.RouteTemplate get_ParsedTemplate()",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Routing.Template.TemplateMatcher",
+      "MemberId": "public .ctor(Microsoft.AspNetCore.Routing.Template.RouteTemplate template, Microsoft.AspNetCore.Routing.RouteValueDictionary defaults)",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Routing.Template.TemplateMatcher",
+      "MemberId": "public Microsoft.AspNetCore.Routing.Template.RouteTemplate get_Template()",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Routing.Template.TemplateBinder",
+      "MemberId": "public .ctor(System.Text.Encodings.Web.UrlEncoder urlEncoder, Microsoft.Extensions.ObjectPool.ObjectPool<Microsoft.AspNetCore.Routing.Internal.UriBuildingContext> pool, Microsoft.AspNetCore.Routing.Template.RouteTemplate template, Microsoft.AspNetCore.Routing.RouteValueDictionary defaults)",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Routing.Tree.InboundRouteEntry",
+      "MemberId": "public Microsoft.AspNetCore.Routing.Template.RouteTemplate get_RouteTemplate()",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Routing.Tree.InboundRouteEntry",
+      "MemberId": "public System.Void set_RouteTemplate(Microsoft.AspNetCore.Routing.Template.RouteTemplate value)",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Routing.Tree.OutboundRouteEntry",
+      "MemberId": "public Microsoft.AspNetCore.Routing.Template.RouteTemplate get_RouteTemplate()",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Routing.Tree.OutboundRouteEntry",
+      "MemberId": "public System.Void set_RouteTemplate(Microsoft.AspNetCore.Routing.Template.RouteTemplate value)",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Routing.Tree.TreeRouteBuilder",
+      "MemberId": "public Microsoft.AspNetCore.Routing.Tree.InboundRouteEntry MapInbound(Microsoft.AspNetCore.Routing.IRouter handler, Microsoft.AspNetCore.Routing.Template.RouteTemplate routeTemplate, System.String routeName, System.Int32 order)",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Routing.Tree.TreeRouteBuilder",
+      "MemberId": "public Microsoft.AspNetCore.Routing.Tree.OutboundRouteEntry MapOutbound(Microsoft.AspNetCore.Routing.IRouter handler, Microsoft.AspNetCore.Routing.Template.RouteTemplate routeTemplate, Microsoft.AspNetCore.Routing.RouteValueDictionary requiredLinkValues, System.String routeName, System.Int32 order)",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public static class Microsoft.AspNetCore.Routing.Template.RoutePrecedence",
+      "MemberId": "public static System.Decimal ComputeInbound(Microsoft.AspNetCore.Routing.Template.RouteTemplate template)",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public static class Microsoft.AspNetCore.Routing.Template.RoutePrecedence",
+      "MemberId": "public static System.Decimal ComputeOutbound(Microsoft.AspNetCore.Routing.Template.RouteTemplate template)",
+      "Kind": "Removal"
+    }
+  ]
