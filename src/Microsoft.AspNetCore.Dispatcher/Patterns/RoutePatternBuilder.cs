@@ -18,22 +18,12 @@ namespace Microsoft.AspNetCore.Dispatcher.Patterns
 
         public string Text { get; set; }
 
-        public RoutePatternBuilder AddPathSegment(RoutePatternPart part)
+        public RoutePatternBuilder AddPathSegment(params RoutePatternPart[] parts)
         {
-            return AddPathSegment(null, part, Array.Empty<RoutePatternPart>());
+            return AddPathSegment(null, parts);
         }
 
-        public RoutePatternBuilder AddPathSegment(RoutePatternPart part, params RoutePatternPart[] parts)
-        {
-            return AddPathSegment(null, part, Array.Empty<RoutePatternPart>());
-        }
-
-        public RoutePatternBuilder AddPathSegment(string text, RoutePatternPart part)
-        {
-            return AddPathSegment(text, part, Array.Empty<RoutePatternPart>());
-        }
-
-        public RoutePatternBuilder AddPathSegment(string text, RoutePatternPart part, params RoutePatternPart[] parts)
+        public RoutePatternBuilder AddPathSegment(string text, params RoutePatternPart[] parts)
         {
             var allParts = new RoutePatternPart[1 + parts.Length];
             allParts[0] = part;
@@ -44,6 +34,8 @@ namespace Microsoft.AspNetCore.Dispatcher.Patterns
 
             return this;
         }
+
+        public RoutePatternBuilder()
 
         public RoutePattern Build()
         {
