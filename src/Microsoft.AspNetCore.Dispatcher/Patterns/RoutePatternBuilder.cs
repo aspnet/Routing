@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 
 namespace Microsoft.AspNetCore.Dispatcher.Patterns
 {
@@ -16,26 +15,40 @@ namespace Microsoft.AspNetCore.Dispatcher.Patterns
 
         public IList<RoutePatternPathSegment> PathSegments { get; } = new List<RoutePatternPathSegment>();
 
-        public string Text { get; set; }
+        public string RawText { get; set; }
 
         public RoutePatternBuilder AddPathSegment(params RoutePatternPart[] parts)
         {
+            if (parts == null)
+            {
+                throw new ArgumentNullException(nameof(parts));
+            }
+
+            if (parts.Length == 0)
+            {
+                throw new ArgumentException(Resources.RoutePatternBuilder_CollectionCannotBeEmpty, nameof(parts));
+            }
+
             return AddPathSegment(null, parts);
         }
 
         public RoutePatternBuilder AddPathSegment(string text, params RoutePatternPart[] parts)
         {
-            var allParts = new RoutePatternPart[1 + parts.Length];
-            allParts[0] = part;
-            parts.CopyTo(allParts, 1);
-            
-            var segment = new RoutePatternPathSegment(text, allParts);
+            if (parts == null)
+            {
+                throw new ArgumentNullException(nameof(parts));
+            }
+
+            if (parts.Length == 0)
+            {
+                throw new ArgumentException(Resources.RoutePatternBuilder_CollectionCannotBeEmpty, nameof(parts));
+            }
+
+            var segment = new RoutePatternPathSegment(text, parts.ToArray());
             PathSegments.Add(segment);
 
             return this;
         }
-
-        public RoutePatternBuilder()
 
         public RoutePattern Build()
         {
@@ -53,12 +66,12 @@ namespace Microsoft.AspNetCore.Dispatcher.Patterns
                 }
             }
 
-            return new RoutePattern(Text, parameters.ToArray(), PathSegments.ToArray());
+            return new RoutePattern(RawText, parameters.ToArray(), PathSegments.ToArray());
         }
 
         public static RoutePatternBuilder Create(string text)
         {
-            return new RoutePatternBuilder() { Text = text, };
+            return new RoutePatternBuilder() { RawText = text, };
         }
     }
 }

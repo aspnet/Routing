@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                 var segment = Segments[i];
 
                 var parts = new List<RoutePatternPart>();
-                for (var  j = 0; j < segment.Parts.Count; j++)
+                for (var j = 0; j < segment.Parts.Count; j++)
                 {
                     var part = segment.Parts[j];
                     if (part.IsLiteral && part.IsOptionalSeperator)
@@ -127,8 +127,15 @@ namespace Microsoft.AspNetCore.Routing.Template
                     }
                     else
                     {
-                        var kind = part.IsCatchAll ? RoutePatternParameterKind.CatchAll : part.IsOptional ? RoutePatternParameterKind.Optional : RoutePatternParameterKind.Standard;
-                        parts.Add(RoutePatternPart.CreateParameter(part.Name, part.DefaultValue, kind));
+                        var kind = part.IsCatchAll ?
+                            RoutePatternParameterKind.CatchAll :
+                            part.IsOptional ?
+                                RoutePatternParameterKind.Optional :
+                                RoutePatternParameterKind.Standard;
+
+                        var constraints = part.InlineConstraints.Select(c => ConstraintReference.Create(c.Constraint)).ToArray();
+
+                        parts.Add(RoutePatternPart.CreateParameter(part.Name, part.DefaultValue, kind, constraints));
                     }
                 }
 
