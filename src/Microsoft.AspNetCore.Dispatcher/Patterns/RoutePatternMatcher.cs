@@ -87,7 +87,26 @@ namespace Microsoft.AspNetCore.Dispatcher
             // and start capturing strings. 
             foreach (var stringSegment in pathTokenizer)
             {
-                if (!TryMatchLiterals(i++, stringSegment))
+                if (stringSegment.Length == 0)
+                {
+                    return false;
+                }
+
+                var pathSegment = i >= RoutePattern.PathSegments.Count ? null : RoutePattern.PathSegments[i];
+                if (pathSegment == null && stringSegment.Length > 0)
+                {
+                    // If pathSegment is null, then we're out of route segments. All we can match is the empty
+                    // string.
+                    return false;
+                }
+                else if (pathSegment.IsSimple && pathSegment.Parts[0] is RoutePatternParameter parameter && parameter.IsCatchAll)
+                {
+                    // Nothing to validate for a catch-all - it can match any string, including the empty string.
+                    //
+                    // Also, a catch-all has to be the last part, so we're done.
+                    break;
+                }
+                if (!TryMatchLiterals(i++, stringSegment, pathSegment))
                 {
                     return false;
                 }
@@ -185,21 +204,9 @@ namespace Microsoft.AspNetCore.Dispatcher
             return true;
         }
 
-        private bool TryMatchLiterals(int index, StringSegment stringSegment)
+        private bool TryMatchLiterals(int index, StringSegment stringSegment, RoutePatternPathSegment pathSegment)
         {
-            if (stringSegment.Length == 0)
-            {
-                return false;
-            }
-
-            var pathSegment = RoutePattern.PathSegments[index];
-            if (pathSegment == null && stringSegment.Length > 0)
-            {
-                // If pathSegment is null, then we're out of route segments. All we can match is the empty
-                // string.
-                return false;
-            }
-            else if (pathSegment.IsSimple && pathSegment.Parts[0].IsLiteral)
+            if (pathSegment.IsSimple && !pathSegment.Parts[0].IsParameter)
             {
                 // This is a literal segment, so we need to match the text, or the route isn't a match.
                 var part = pathSegment.Parts[0];
@@ -207,12 +214,6 @@ namespace Microsoft.AspNetCore.Dispatcher
                 {
                     return false;
                 }
-            }
-            else if (pathSegment.IsSimple && pathSegment.Parts[0] is RoutePatternParameter parameter && parameter.IsCatchAll)
-            {
-                // Nothing to validate for a catch-all - it can match any string, including the empty string.
-                //
-                // Also, a catch-all has to be the last part, so we're done.
             }
             else if (pathSegment.IsSimple && pathSegment.Parts[0].IsParameter)
             {
@@ -391,7 +392,7 @@ namespace Microsoft.AspNetCore.Dispatcher
                 }
 
                 if ((parameterNeedsValue != null) &&
-                    (((lastLiteral != null) && (part.IsLiteral)) || (indexOfLastSegmentUsed == 0)))
+                    (((lastLiteral != null) && !part.IsParameter) || (indexOfLastSegmentUsed == 0)))
                 {
                     // If we have a pending parameter that needs a value, grab that value
 
