@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Routing.Template
         private readonly object[] _defaultValues;
 
         private static readonly char[] Delimiters = new char[] { SeparatorChar };
+        private RoutePatternMatcher _routePatternMatcher;
 
         public TemplateMatcher(
             RouteTemplate template,
@@ -55,6 +56,9 @@ namespace Microsoft.AspNetCore.Routing.Template
                     _defaultValues[i] = value;
                 }
             }
+
+            var routePattern = Template.ToRoutePattern();
+            _routePatternMatcher = new RoutePatternMatcher(routePattern, Defaults);
         }
 
         public RouteValueDictionary Defaults { get; }
@@ -68,9 +72,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                 throw new ArgumentNullException(nameof(values));
             }
 
-            var routePattern = Template.ToRoutePattern();
-            var routePatternMatcher = new RoutePatternMatcher(routePattern, Defaults);
-            return routePatternMatcher.TryMatch(path, values);
+            return _routePatternMatcher.TryMatch(path, values);
         }
     }
 }

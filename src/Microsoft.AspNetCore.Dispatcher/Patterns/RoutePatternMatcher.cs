@@ -384,7 +384,7 @@ namespace Microsoft.AspNetCore.Dispatcher
                     {
                         var literal = (RoutePatternLiteral)part;
                         indexOfLiteral = requestSegment.LastIndexOf(
-                        literal.Content ?? part.RawText,
+                        literal.Content,
                         startIndex,
                         StringComparison.OrdinalIgnoreCase);
                     }
@@ -392,7 +392,7 @@ namespace Microsoft.AspNetCore.Dispatcher
                     {
                         var literal = (RoutePatternSeparator)part;
                         indexOfLiteral = requestSegment.LastIndexOf(
-                        literal.Content ?? part.RawText,
+                        literal.Content,
                         startIndex,
                         StringComparison.OrdinalIgnoreCase);
                     }
@@ -412,8 +412,7 @@ namespace Microsoft.AspNetCore.Dispatcher
                         {
                             return false;
                         }
-
-                        if (part is RoutePatternSeparator separator && ((indexOfLiteral + separator.Content.Length) != requestSegment.Length))
+                        else if (part is RoutePatternSeparator separator && ((indexOfLiteral + separator.Content.Length) != requestSegment.Length))
                         {
                             return false;
                         }
@@ -458,14 +457,10 @@ namespace Microsoft.AspNetCore.Dispatcher
                                 var literal = (RoutePatternLiteral)lastLiteral;
                                 parameterStartIndex = newLastIndex + literal.Content.Length;
                             }
-                            else if (lastLiteral.IsSeparator)
+                            else
                             {
                                 var separator = (RoutePatternSeparator)lastLiteral;
                                 parameterStartIndex = newLastIndex + separator.Content.Length;
-                            }
-                            else
-                            {
-                                parameterStartIndex = newLastIndex + lastLiteral.RawText.Length;
                             }
                             parameterTextLength = lastIndex - parameterStartIndex;
                         }
