@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Dispatcher
 {
-    public class CompositeRouteConstraintTests
+    public class CompositeDispatcherValueConstraintTest
     {
         [Theory]
         [InlineData(true, true, true)]

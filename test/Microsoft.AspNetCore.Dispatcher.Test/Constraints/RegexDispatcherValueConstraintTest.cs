@@ -4,12 +4,11 @@
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Testing;
-using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Dispatcher
 {
-    public class RegexRouteConstraintTests
+    public class RegexDispatcherValueConstraintTest
     {
         [Theory]
         [InlineData("abc", "abc", true)]    // simple match
@@ -110,8 +109,11 @@ namespace Microsoft.AspNetCore.Dispatcher
             var httpContext = new DefaultHttpContext();
             var constraintPurpose = ConstraintPurpose.IncomingRequest;
 
-            var dispatcherValueConstraintContext = new DispatcherValueConstraintContext(httpContext, values, constraintPurpose);
-            dispatcherValueConstraintContext.Key = routeKey;
+            var dispatcherValueConstraintContext = new DispatcherValueConstraintContext(httpContext, values, constraintPurpose)
+            {
+                Key = routeKey
+            };
+
             return constraint.Match(dispatcherValueConstraintContext);
         }
     }
