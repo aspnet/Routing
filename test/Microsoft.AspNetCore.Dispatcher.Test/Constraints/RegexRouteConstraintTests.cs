@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Dispatcher
             bool shouldMatch)
         {
             // Arrange
-            var constraint = new RegexRouteConstraint(constraintValue);
+            var constraint = new RegexDispatcherValueConstraint(constraintValue);
             var values = new DispatcherValueCollection(new { controller = routeValue });
 
             // Act
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Dispatcher
         public void RegexConstraint_TakesRegexAsInput_SimpleMatch()
         {
             // Arrange
-            var constraint = new RegexRouteConstraint(new Regex("^abc$"));
+            var constraint = new RegexDispatcherValueConstraint(new Regex("^abc$"));
             var values = new DispatcherValueCollection(new { controller = "abc" });
 
             // Act
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Dispatcher
         public void RegexConstraintConstructedWithRegex_SimpleFailedMatch()
         {
             // Arrange
-            var constraint = new RegexRouteConstraint(new Regex("^abc$"));
+            var constraint = new RegexDispatcherValueConstraint(new Regex("^abc$"));
             var values = new DispatcherValueCollection(new { controller = "Abc" });
 
             // Act
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Dispatcher
         public void RegexConstraintFailsIfKeyIsNotFoundInRouteValues()
         {
             // Arrange
-            var constraint = new RegexRouteConstraint(new Regex("^abc$"));
+            var constraint = new RegexDispatcherValueConstraint(new Regex("^abc$"));
             var values = new DispatcherValueCollection(new { action = "abc" });
 
             // Act
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Dispatcher
             }
 
             // Arrange
-            var constraint = new RegexRouteConstraint("^([a-z]+)$");
+            var constraint = new RegexDispatcherValueConstraint("^([a-z]+)$");
             var values = new DispatcherValueCollection(new { controller = "\u0130" }); // Turkish upper-case dotted I
 
             using (new CultureReplacer(culture))
