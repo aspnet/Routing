@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Dispatcher
     /// </remarks>
     public class DispatcherValueConstraintBuilder
     {
-        private readonly IConstraintFactory _constraintResolver;
+        private readonly IConstraintFactory _constraintFactory;
         private readonly string _rawText;
         private readonly Dictionary<string, List<IDispatcherValueConstraint>> _constraints;
         private readonly HashSet<string> _optionalParameters;
@@ -23,15 +23,15 @@ namespace Microsoft.AspNetCore.Dispatcher
         /// <summary>
         /// Creates a new <see cref="DispatcherValueConstraintBuilder"/> instance.
         /// </summary>
-        /// <param name="constraintResolver">The <see cref="IConstraintFactory"/>.</param>
+        /// <param name="constraintFactory">The <see cref="IConstraintFactory"/>.</param>
         /// <param name="rawText">The display name (for use in error messages).</param>
         public DispatcherValueConstraintBuilder(
-            IConstraintFactory constraintResolver,
+            IConstraintFactory constraintFactory,
             string rawText)
         {
-            if (constraintResolver == null)
+            if (constraintFactory == null)
             {
-                throw new ArgumentNullException(nameof(constraintResolver));
+                throw new ArgumentNullException(nameof(constraintFactory));
             }
 
             if (rawText == null)
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Dispatcher
                 throw new ArgumentNullException(nameof(rawText));
             }
 
-            _constraintResolver = constraintResolver;
+            _constraintFactory = constraintFactory;
             _rawText = rawText;
 
             _constraints = new Dictionary<string, List<IDispatcherValueConstraint>>(StringComparer.OrdinalIgnoreCase);
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Dispatcher
         /// <summary>
         /// Builds a mapping of constraints.
         /// </summary>
-        /// <returns>An <see cref="IDictionary{String, IRouteConstraint}"/> of the constraints.</returns>
+        /// <returns>An <see cref="IDictionary{String, IDispatcherValueConstraint}"/> of the constraints.</returns>
         public IDictionary<string, IDispatcherValueConstraint> Build()
         {
             var constraints = new Dictionary<string, IDispatcherValueConstraint>(StringComparer.OrdinalIgnoreCase);
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Dispatcher
                 throw new ArgumentNullException(nameof(constraintText));
             }
 
-            var constraint = _constraintResolver.ResolveConstraint(constraintText);
+            var constraint = _constraintFactory.ResolveConstraint(constraintText);
             if (constraint == null)
             {
                 throw new InvalidOperationException(
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Dispatcher
                         key,
                         constraintText,
                         _rawText,
-                        _constraintResolver.GetType().Name));
+                        _constraintFactory.GetType().Name));
             }
 
             Add(key, constraint);
