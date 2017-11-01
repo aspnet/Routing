@@ -7,11 +7,11 @@ using System.Text.RegularExpressions;
 
 namespace Microsoft.AspNetCore.Dispatcher
 {
-    public class RegexRouteConstraint : IDispatcherValueConstraint
+    public class RegexDispatcherValueConstraint : IDispatcherValueConstraint
     {
         private static readonly TimeSpan RegexMatchTimeout = TimeSpan.FromSeconds(10);
 
-        public RegexRouteConstraint(Regex regex)
+        public RegexDispatcherValueConstraint(Regex regex)
         {
             if (regex == null)
             {
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Dispatcher
             Constraint = regex;
         }
 
-        public RegexRouteConstraint(string regexPattern)
+        public RegexDispatcherValueConstraint(string regexPattern)
         {
             if (regexPattern == null)
             {
@@ -36,6 +36,7 @@ namespace Microsoft.AspNetCore.Dispatcher
 
         public Regex Constraint { get; private set; }
 
+        /// <inheritdoc />
         public bool Match(DispatcherValueConstraintContext constraintContext)
         {
             if (constraintContext == null)

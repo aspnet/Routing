@@ -7,15 +7,15 @@ using System.Collections.Generic;
 namespace Microsoft.AspNetCore.Dispatcher
 {
     /// <summary>
-    /// Constrains a route by several child constraints.
+    /// Constrains a dispatcher value by several child constraints.
     /// </summary>
-    public class CompositeRouteConstraint : IDispatcherValueConstraint
+    public class CompositeDispatcherValueConstraint : IDispatcherValueConstraint
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="CompositeRouteConstraint" /> class.
+        /// Initializes a new instance of the <see cref="CompositeDispatcherValueConstraint" /> class.
         /// </summary>
         /// <param name="constraints">The child constraints that must match for this constraint to match.</param>
-        public CompositeRouteConstraint(IEnumerable<IDispatcherValueConstraint> constraints)
+        public CompositeDispatcherValueConstraint(IEnumerable<IDispatcherValueConstraint> constraints)
         {
             if (constraints == null)
             {

@@ -11,21 +11,21 @@ using Microsoft.Extensions.Options;
 namespace Microsoft.AspNetCore.Dispatcher
 {
     /// <summary>
-    /// The default implementation of <see cref="IConstraintResolver"/>. Resolves constraints by parsing
+    /// The default implementation of <see cref="IConstraintFactory"/>. Resolves constraints by parsing
     /// a constraint key and constraint arguments, using a map to resolve the constraint type, and calling an
     /// appropriate constructor for the constraint type.
     /// </summary>
-    public class DefaultConstraintResolver : IConstraintResolver
+    public class DefaultConstraintFactory : IConstraintFactory
     {
         private readonly IDictionary<string, Type> _constraintMap;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="DefaultConstraintResolver"/> class.
+        /// Initializes a new instance of the <see cref="DefaultConstraintFactory"/> class.
         /// </summary>
         /// <param name="dispatcherOptions">
         /// Accessor for <see cref="DispatcherOptions"/> containing the constraints of interest.
         /// </param>
-        public DefaultConstraintResolver(IOptions<DispatcherOptions> dispatcherOptions)
+        public DefaultConstraintFactory(IOptions<DispatcherOptions> dispatcherOptions)
         {
             _constraintMap = dispatcherOptions.Value.ConstraintMap;
         }
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Dispatcher
 
             if (!typeof(IDispatcherValueConstraint).GetTypeInfo().IsAssignableFrom(constraintType.GetTypeInfo()))
             {
-                throw new RouteCreationException(
+                throw new InvalidOperationException(
                             Resources.FormatDefaultConstraintResolver_TypeNotConstraint(
                                                         constraintType, constraintKey, typeof(IDispatcherValueConstraint).Name));
             }
@@ -77,13 +77,9 @@ namespace Microsoft.AspNetCore.Dispatcher
             {
                 return CreateConstraint(constraintType, argumentString);
             }
-            catch (RouteCreationException)
-            {
-                throw;
-            }
             catch (Exception exception)
             {
-                throw new RouteCreationException(
+                throw new InvalidOperationException(
                     $"An error occurred while trying to create an instance of route constraint '{constraintType.FullName}'.",
                     exception);
             }
@@ -103,7 +99,7 @@ namespace Microsoft.AspNetCore.Dispatcher
             var constructors = constraintTypeInfo.DeclaredConstructors.ToArray();
 
             // If there is only one constructor and it has a single parameter, pass the argument string directly
-            // This is necessary for the Regex RouteConstraint to ensure that patterns are not split on commas.
+            // This is necessary for the RegexDispatcherValueConstraint to ensure that patterns are not split on commas.
             if (constructors.Length == 1 && constructors[0].GetParameters().Length == 1)
             {
                 activationConstructor = constructors[0];
@@ -119,7 +115,7 @@ namespace Microsoft.AspNetCore.Dispatcher
 
                 if (constructorMatches == 0)
                 {
-                    throw new RouteCreationException(
+                    throw new InvalidOperationException(
                                 Resources.FormatDefaultConstraintResolver_CouldNotFindCtor(
                                                        constraintTypeInfo.Name, arguments.Length));
                 }
@@ -130,7 +126,7 @@ namespace Microsoft.AspNetCore.Dispatcher
                 }
                 else
                 {
-                    throw new RouteCreationException(
+                    throw new InvalidOperationException(
                                 Resources.FormatDefaultConstraintResolver_AmbiguousCtors(
                                                        constraintTypeInfo.Name, arguments.Length));
                 }

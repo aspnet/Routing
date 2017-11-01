@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Dispatcher
             var inner2 = MockConstraintWithResult(inner2Result);
 
             // Act
-            var constraint = new CompositeRouteConstraint(new[] { inner1.Object, inner2.Object });
+            var constraint = new CompositeDispatcherValueConstraint(new[] { inner1.Object, inner2.Object });
             var actual = TestConstraint(constraint, null);
 
             // Assert

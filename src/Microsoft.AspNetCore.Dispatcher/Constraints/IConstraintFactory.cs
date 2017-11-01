@@ -6,7 +6,7 @@ namespace Microsoft.AspNetCore.Dispatcher
     /// <summary>
     /// Defines an abstraction for resolving constraints as instances of <see cref="IDispatcherValueConstraint"/>.
     /// </summary>
-    public interface IConstraintResolver
+    public interface IConstraintFactory
     {
         /// <summary>
         /// Resolves the constraint.

@@ -2,16 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Dispatcher
 {
     /// <summary>
     /// Defines a constraint on an optional parameter. If the parameter is present, then it is constrained by InnerConstraint. 
     /// </summary>
-    public class OptionalRouteConstraint : IDispatcherValueConstraint
+    public class OptionalDispatcherValueConstraint : IDispatcherValueConstraint
     {
-        public OptionalRouteConstraint(IDispatcherValueConstraint innerConstraint)
+        public OptionalDispatcherValueConstraint(IDispatcherValueConstraint innerConstraint)
         {
             if (innerConstraint == null)
             {
@@ -23,6 +22,7 @@ namespace Microsoft.AspNetCore.Dispatcher
 
         public IDispatcherValueConstraint InnerConstraint { get; }
 
+        /// <inheritdoc />
         public bool Match(DispatcherValueConstraintContext constraintContext)
         {
             if (constraintContext == null)

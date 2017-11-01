@@ -15,32 +15,32 @@ namespace Microsoft.AspNetCore.Dispatcher
     /// </remarks>
     public class DispatcherValueConstraintBuilder
     {
-        private readonly IConstraintResolver _constraintResolver;
-        private readonly string _displayName;
+        private readonly IConstraintFactory _constraintResolver;
+        private readonly string _rawText;
         private readonly Dictionary<string, List<IDispatcherValueConstraint>> _constraints;
         private readonly HashSet<string> _optionalParameters;
 
         /// <summary>
         /// Creates a new <see cref="DispatcherValueConstraintBuilder"/> instance.
         /// </summary>
-        /// <param name="constraintResolver">The <see cref="IConstraintResolver"/>.</param>
-        /// <param name="displayName">The display name (for use in error messages).</param>
+        /// <param name="constraintResolver">The <see cref="IConstraintFactory"/>.</param>
+        /// <param name="rawText">The display name (for use in error messages).</param>
         public DispatcherValueConstraintBuilder(
-            IConstraintResolver constraintResolver,
-            string displayName)
+            IConstraintFactory constraintResolver,
+            string rawText)
         {
             if (constraintResolver == null)
             {
                 throw new ArgumentNullException(nameof(constraintResolver));
             }
 
-            if (displayName == null)
+            if (rawText == null)
             {
-                throw new ArgumentNullException(nameof(displayName));
+                throw new ArgumentNullException(nameof(rawText));
             }
 
             _constraintResolver = constraintResolver;
-            _displayName = displayName;
+            _rawText = rawText;
 
             _constraints = new Dictionary<string, List<IDispatcherValueConstraint>>(StringComparer.OrdinalIgnoreCase);
             _optionalParameters = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -62,12 +62,12 @@ namespace Microsoft.AspNetCore.Dispatcher
                 }
                 else
                 {
-                    constraint = new CompositeRouteConstraint(kvp.Value.ToArray());
+                    constraint = new CompositeDispatcherValueConstraint(kvp.Value.ToArray());
                 }
 
                 if (_optionalParameters.Contains(kvp.Key))
                 {
-                    var optionalConstraint = new OptionalRouteConstraint(constraint);
+                    var optionalConstraint = new OptionalDispatcherValueConstraint(constraint);
                     constraints.Add(kvp.Key, optionalConstraint);
                 }
                 else
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Dispatcher
         /// The constraint instance. Must either be a string or an instance of <see cref="IDispatcherValueConstraint"/>.
         /// </param>
         /// <remarks>
-        /// If the <paramref name="value"/> is a string, it will be converted to a <see cref="RegexRouteConstraint"/>.
+        /// If the <paramref name="value"/> is a string, it will be converted to a <see cref="RegexDispatcherValueConstraint"/>.
         ///
         /// For example, the string <code>Product[0-9]+</code> will be converted to the regular expression
         /// <code>^(Product[0-9]+)</code>. See <see cref="System.Text.RegularExpressions.Regex"/> for more details.
@@ -110,28 +110,28 @@ namespace Microsoft.AspNetCore.Dispatcher
                 var regexPattern = value as string;
                 if (regexPattern == null)
                 {
-                    throw new RouteCreationException(
+                    throw new InvalidOperationException(
                         Resources.FormatDispatcherValueConstraintBuilder_ValidationMustBeStringOrCustomConstraint(
                             key,
                             value,
-                            _displayName,
+                            _rawText,
                             typeof(IDispatcherValueConstraint)));
                 }
 
                 var constraintsRegEx = "^(" + regexPattern + ")$";
-                constraint = new RegexRouteConstraint(constraintsRegEx);
+                constraint = new RegexDispatcherValueConstraint(constraintsRegEx);
             }
 
             Add(key, constraint);
         }
 
         /// <summary>
-        /// Adds a constraint for the given key, resolved by the <see cref="IConstraintResolver"/>.
+        /// Adds a constraint for the given key, resolved by the <see cref="IConstraintFactory"/>.
         /// </summary>
         /// <param name="key">The key.</param>
-        /// <param name="constraintText">The text to be resolved by <see cref="IConstraintResolver"/>.</param>
+        /// <param name="constraintText">The text to be resolved by <see cref="IConstraintFactory"/>.</param>
         /// <remarks>
-        /// The <see cref="IConstraintResolver"/> can create <see cref="IDispatcherValueConstraint"/> instances
+        /// The <see cref="IConstraintFactory"/> can create <see cref="IDispatcherValueConstraint"/> instances
         /// based on <paramref name="constraintText"/>. See <see cref="DispatcherOptions.ConstraintMap"/> to register
         /// custom constraint types.
         /// </remarks>
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Dispatcher
                     Resources.FormatDispatcherValueConstraintBuilder_CouldNotResolveConstraint(
                         key,
                         constraintText,
-                        _displayName,
+                        _rawText,
                         _constraintResolver.GetType().Name));
             }
 
