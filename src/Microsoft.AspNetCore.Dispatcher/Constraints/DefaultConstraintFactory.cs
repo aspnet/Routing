@@ -108,7 +108,6 @@ namespace Microsoft.AspNetCore.Dispatcher
             else
             {
                 var arguments = argumentString.Split(',').Select(argument => argument.Trim()).ToArray();
-
                 var matchingConstructors = constructors.Where(ci => ci.GetParameters().Length == arguments.Length)
                                                        .ToArray();
                 var constructorMatches = matchingConstructors.Length;
@@ -119,16 +118,27 @@ namespace Microsoft.AspNetCore.Dispatcher
                                 Resources.FormatDefaultConstraintResolver_CouldNotFindCtor(
                                                        constraintTypeInfo.Name, arguments.Length));
                 }
-                else if (constructorMatches == 1)
-                {
-                    activationConstructor = matchingConstructors[0];
-                    parameters = ConvertArguments(activationConstructor.GetParameters(), arguments);
-                }
                 else
                 {
-                    throw new InvalidOperationException(
-                                Resources.FormatDefaultConstraintResolver_AmbiguousCtors(
-                                                       constraintTypeInfo.Name, arguments.Length));
+                    foreach (var constructor in matchingConstructors)
+                    {
+                        try
+                        {
+                            activationConstructor = constructor;
+                            parameters = ConvertArguments(activationConstructor.GetParameters(), arguments);
+                            return (IDispatcherValueConstraint)activationConstructor.Invoke(parameters);
+                        }
+                        catch
+                        {
+                            continue;
+                        }
+                    }
+
+                    if (matchingConstructors.Length > 1)
+                    {
+                        throw new InvalidOperationException(Resources.FormatDefaultConstraintResolver_AmbiguousCtors(
+                            constraintTypeInfo.Name, arguments.Length));
+                    }
                 }
             }
 
