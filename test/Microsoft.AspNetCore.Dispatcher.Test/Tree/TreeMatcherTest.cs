@@ -53,6 +53,71 @@ namespace Microsoft.AspNetCore.Dispatcher
         }
 
         [Theory]
+        [InlineData("template/5", "template/{parameter:int}")]
+        [InlineData("template/5", "template/{parameter}")]
+        [InlineData("template/5", "template/{*parameter:int}")]
+        [InlineData("template/5", "template/{*parameter}")]
+        [InlineData("template/{parameter:int}", "template/{parameter}")]
+        [InlineData("template/{parameter:int}", "template/{*parameter:int}")]
+        [InlineData("template/{parameter:int}", "template/{*parameter}")]
+        [InlineData("template/{parameter}", "template/{*parameter:int}")]
+        [InlineData("template/{parameter}", "template/{*parameter}")]
+        [InlineData("template/5", "template/5/{*parameter}")]
+        [InlineData("template/{*parameter:int}", "template/{*parameter}")]
+        public async Task MatchAsync_RespectsOrderOverPrecedence(
+            string firstTemplate,
+            string secondTemplate)
+        {
+            // Arrange
+            var dataSource = new DefaultDispatcherDataSource()
+            {
+                Endpoints =
+                {
+                    new RoutePatternEndpoint(firstTemplate, new { }, Test_Delegate, "Test1", new EndpointOrderMetadata(1)),
+                    new RoutePatternEndpoint(secondTemplate, new { }, Test_Delegate, "Test2", new EndpointOrderMetadata(0)),
+                },
+            };
+
+            var context = CreateMatcherContext("/template/5");
+            var factory = new TreeMatcherFactory();
+            var matcher = factory.CreateMatcher(dataSource, new List<EndpointSelector>());
+
+            // Act
+            await matcher.MatchAsync(context);
+
+            // Assert
+            Assert.Same(dataSource.Endpoints[1], context.Endpoint);
+        }
+
+        [Theory]
+        [InlineData("template/{first:int}", "template/{second:int}")]
+        [InlineData("template/{first}", "template/{second}")]
+        [InlineData("template/{*first:int}", "template/{*second:int}")]
+        [InlineData("template/{*first}", "template/{*second}")]
+        public async Task MatchAsync_EnsuresStableOrdering(string firstTemplate, string secondTemplate)
+        {
+            // Arrange
+            var dataSource = new DefaultDispatcherDataSource()
+            {
+                Endpoints =
+                {
+                    new RoutePatternEndpoint(firstTemplate, new { }, Test_Delegate, "Test1"),
+                    new RoutePatternEndpoint(secondTemplate, new { }, Test_Delegate, "Test2"),
+                },
+            };
+
+            var context = CreateMatcherContext("/template/5");
+            var factory = new TreeMatcherFactory();
+            var matcher = factory.CreateMatcher(dataSource, new List<EndpointSelector>());
+
+            // Act
+            await matcher.MatchAsync(context);
+
+            // Assert
+            Assert.Same(dataSource.Endpoints[0], context.Endpoint);
+        }
+
+        [Theory]
         [InlineData("/", 0)]
         [InlineData("/Literal1", 1)]
         [InlineData("/Literal1/Literal2", 2)]

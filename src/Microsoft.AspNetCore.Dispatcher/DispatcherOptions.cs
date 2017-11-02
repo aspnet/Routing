@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Dispatcher
 
                 //// Regex-based constraints
                 { "alpha", typeof(AlphaDispatcherValueConstraint) },
-                { "regex", typeof(RegexDispatcherValueConstraint) },
+                { "regex", typeof(RegexStringDispatcherValueConstraint) },
             };
         }
     }

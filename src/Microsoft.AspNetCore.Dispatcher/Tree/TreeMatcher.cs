@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Dispatcher
         private bool _dataInitialized;
         private object _lock;
         private Cache _cache;
+        private IConstraintFactory _constraintFactory;
 
         private readonly Func<Cache> _initializer;
 
@@ -31,13 +32,6 @@ namespace Microsoft.AspNetCore.Dispatcher
         }
 
         public int Version { get; private set; }
-
-        public IConstraintFactory ConstraintFactory { get; set; }
-
-        /// <summary>
-        /// Gets the list of <see cref="InboundRouteEntry"/>.
-        /// </summary>
-        public IList<InboundRouteEntry> InboundEntries { get; } = new List<InboundRouteEntry>();
 
         public override async Task MatchAsync(MatcherContext context)
         {
@@ -149,29 +143,31 @@ namespace Microsoft.AspNetCore.Dispatcher
                     continue;
                 }
 
-                if (!groups.TryGetValue(new Key(0, templateEndpoint.Pattern), out var group))
+                var order = endpoint.Metadata?.GetMetadata<IEndpointOrderMetadata>()?.Order ?? 0;
+                if (!groups.TryGetValue(new Key(order, templateEndpoint.Pattern), out var group))
                 {
                     group = new List<Endpoint>();
-                    groups.Add(new Key(0, templateEndpoint.Pattern), group);
+                    groups.Add(new Key(order, templateEndpoint.Pattern), group);
                 }
 
                 group.Add(endpoint);
             }
 
+            var entries = new List<InboundRouteEntry>();
             foreach (var group in groups)
             {
                 var routePattern = RoutePattern.Parse(group.Key.RoutePattern);
-                var entryExists = InboundEntries.Any(item => item.RoutePattern.RawText == routePattern.RawText);
+                var entryExists = entries.Any(item => item.RoutePattern.RawText == routePattern.RawText);
                 if (!entryExists)
                 {
-                    InboundEntries.Add(MapInbound(routePattern, group.Value.ToArray(), group.Key.Order));
+                    entries.Add(MapInbound(routePattern, group.Value.ToArray(), group.Key.Order));
                 }
             }
 
             var trees = new List<UrlMatchingTree>();
-            for (var i = 0; i < InboundEntries.Count; i++)
+            for (var i = 0; i < entries.Count; i++)
             {
-                var entry = InboundEntries[i];
+                var entry = entries[i];
 
                 while (trees.Count <= entry.Order)
                 {
@@ -204,7 +200,7 @@ namespace Microsoft.AspNetCore.Dispatcher
                 Tag = tag
             };
 
-            var constraintBuilder = new DispatcherValueConstraintBuilder(ConstraintFactory, routePattern.RawText);
+            var constraintBuilder = new DispatcherValueConstraintBuilder(_constraintFactory, routePattern.RawText);
             foreach (var parameter in routePattern.Parameters)
             {
                 if (parameter.Constraints != null)
@@ -541,7 +537,7 @@ namespace Microsoft.AspNetCore.Dispatcher
 
         protected override void InitializeServices(IServiceProvider services)
         {
-            ConstraintFactory = services.GetRequiredService<IConstraintFactory>();
+            _constraintFactory = services.GetRequiredService<IConstraintFactory>();
         }
     }
 }
