@@ -7,14 +7,4 @@ namespace Microsoft.AspNetCore.Dispatcher
     {
         int Order { get; }
     }
-
-    public class EndpointOrderMetadata : IEndpointOrderMetadata
-    {
-        public EndpointOrderMetadata(int order)
-        {
-            Order = order;
-        }
-
-        public int Order { get; }
-    }
 }
