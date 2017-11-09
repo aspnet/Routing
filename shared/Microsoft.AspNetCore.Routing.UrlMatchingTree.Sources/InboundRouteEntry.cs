@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Dispatcher
 
 #elif DISPATCHER
         /// <summary>
-        /// Gets or sets an arbitrary value associated with the entry.
+        /// Gets or sets the array of endpoints associated with the entry.
         /// </summary>
         public Endpoint[] Endpoints { get; set; }
 
