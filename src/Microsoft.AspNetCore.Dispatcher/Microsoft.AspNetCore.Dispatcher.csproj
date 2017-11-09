@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Description>API for dispatching.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <DefineConstants>$(DefineConstants);UrlMatching_InDispatcher</DefineConstants>
+    <DefineConstants>$(DefineConstants);DISPATCHER</DefineConstants>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;routing</PackageTags>

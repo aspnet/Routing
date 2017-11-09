@@ -3,27 +3,29 @@
 
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Dispatcher.Patterns;
-#if UrlMatching_InRouting
+#if ROUTING
 using Microsoft.AspNetCore.Routing.Template;
-#else
+#elif DISPATCHER
 using Microsoft.AspNetCore.Dispatcher;
+#else
+#error
 #endif
 
-#if UrlMatching_InRouting
+#if ROUTING
 namespace Microsoft.AspNetCore.Routing.Tree
-#elif UrlMatching_InDispatcher
-namespace Microsoft.AspNetCore.Dispatcher.Internal
+#elif DISPATCHER
+namespace Microsoft.AspNetCore.Dispatcher
 #else
 #error
 #endif
 {
-#if UrlMatching_InRouting
+#if ROUTING
     /// <summary>
     /// Used to build a <see cref="TreeRouter"/>. Represents a route template that will be used to match incoming
     /// request URLs.
     /// </summary>
     public
-#elif UrlMatching_InDispatcher
+#elif DISPATCHER
     /// <summary>
     /// Used to build a <see cref="TreeMatcher"/>. Represents a route pattern that will be used to match incoming
     /// request URLs.
@@ -50,12 +52,7 @@ namespace Microsoft.AspNetCore.Dispatcher.Internal
         /// </remarks>
         public decimal Precedence { get; set; }
 
-        /// <summary>
-        /// Gets or sets an arbitrary value associated with the entry.
-        /// </summary>
-        public object Tag { get; set; }
-
-#if UrlMatching_InRouting
+#if ROUTING
         /// <summary>
         /// Gets or sets the name of the route.
         /// </summary>
@@ -81,7 +78,12 @@ namespace Microsoft.AspNetCore.Dispatcher.Internal
         /// </summary>
         public IRouter Handler { get; set; }
 
-#elif UrlMatching_InDispatcher
+#elif DISPATCHER
+        /// <summary>
+        /// Gets or sets an arbitrary value associated with the entry.
+        /// </summary>
+        public Endpoint[] Endpoints { get; set; }
+
         /// <summary>
         /// Gets or sets the dispatcher value constraints.
         /// </summary>

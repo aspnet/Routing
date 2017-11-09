@@ -2,28 +2,33 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics;
-#if UrlMatching_InRouting
+#if ROUTING
 using Microsoft.AspNetCore.Routing.Template;
-#else
+#elif DISPATCHER
 using Microsoft.AspNetCore.Dispatcher;
+#else
+#error
 #endif
 
-#if UrlMatching_InRouting
+#if ROUTING
 namespace Microsoft.AspNetCore.Routing.Tree
-#elif UrlMatching_InDispatcher
-namespace Microsoft.AspNetCore.Dispatcher.Internal
+#elif DISPATCHER
+namespace Microsoft.AspNetCore.Dispatcher
 #else
 #error
 #endif
 {
-#if UrlMatching_InRouting
+#if ROUTING
     /// <summary>
     /// A candidate route to match incoming URLs in a <see cref="TreeRouter"/>.
     /// </summary>
     [DebuggerDisplay("{DebuggerToString(),nq}")]
     public
-#else
+#elif DISPATCHER
+    [DebuggerDisplay("{DebuggerToString(),nq}")]
     internal
+#else
+#error
 #endif
     class InboundMatch
     {
@@ -32,7 +37,7 @@ namespace Microsoft.AspNetCore.Dispatcher.Internal
         /// </summary>
         public InboundRouteEntry Entry { get; set; }
 
-#if UrlMatching_InRouting
+#if ROUTING
         /// <summary>
         /// Gets or sets the <see cref="TemplateMatcher"/>.
         /// </summary>
@@ -42,8 +47,8 @@ namespace Microsoft.AspNetCore.Dispatcher.Internal
         {
             return TemplateMatcher?.Template?.TemplateText;
         }
-#elif UrlMatching_InDispatcher
 
+#elif DISPATCHER
         /// <summary>
         /// Gets or sets the <see cref="RoutePatternMatcher"/>.
         /// </summary>
@@ -56,5 +61,5 @@ namespace Microsoft.AspNetCore.Dispatcher.Internal
 #else
 #error
 #endif
-    }
+}
 }

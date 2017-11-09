@@ -6,16 +6,16 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-#if UrlMatching_InRouting
+#if ROUTING
 namespace Microsoft.AspNetCore.Routing.Tree
-#elif UrlMatching_InDispatcher
-namespace Microsoft.AspNetCore.Dispatcher.Internal
+#elif DISPATCHER
+namespace Microsoft.AspNetCore.Dispatcher
 #else
 #error
 #endif
 {
     [DebuggerDisplay("{DebuggerToString(),nq}")]
-#if UrlMatching_InRouting
+#if ROUTING
     public class UrlMatchingNode
     {
         /// <summary>
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Dispatcher.Internal
         {
             return $"Length: {Depth}, Matches: {string.Join(" | ", Matches?.Select(m => $"({m.TemplateMatcher.Template.TemplateText})"))}";
         }
-#elif UrlMatching_InDispatcher
+#elif DISPATCHER
     internal class UrlMatchingNode
     {
         /// <summary>
@@ -56,10 +56,10 @@ namespace Microsoft.AspNetCore.Dispatcher.Internal
 #else
 #error
 #endif
-        /// <summary>
-        /// Gets the length of the path to this node in the <see cref="UrlMatchingTree"/>.
-        /// </summary>
-        public int Depth { get; }
+    /// <summary>
+    /// Gets the length of the path to this node in the <see cref="UrlMatchingTree"/>.
+    /// </summary>
+    public int Depth { get; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this node represents a catch all segment.

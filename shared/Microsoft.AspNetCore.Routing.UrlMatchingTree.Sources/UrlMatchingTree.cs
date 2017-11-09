@@ -1,17 +1,17 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-#if UrlMatching_InRouting
+#if ROUTING
 namespace Microsoft.AspNetCore.Routing.Tree
-#elif UrlMatching_InDispatcher
-namespace Microsoft.AspNetCore.Dispatcher.Internal
+#elif DISPATCHER
+namespace Microsoft.AspNetCore.Dispatcher
 #else
 #error
 #endif
 {
-#if UrlMatching_InRouting
+#if ROUTING
     public
-#elif UrlMatching_InDispatcher
+#elif DISPATCHER
     internal
 #else
 #error
