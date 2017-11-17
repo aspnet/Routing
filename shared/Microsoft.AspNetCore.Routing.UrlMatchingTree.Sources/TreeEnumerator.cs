@@ -151,7 +151,6 @@ namespace Microsoft.AspNetCore.Dispatcher
             // candidates (which is in precence order) and tries to match the url against it.
 
             var current = tree.Root;
-
 #if ROUTING
             var routePattern = entry.RouteTemplate.ToRoutePattern();
             var matcher = new TemplateMatcher(entry.RouteTemplate, entry.Defaults);
