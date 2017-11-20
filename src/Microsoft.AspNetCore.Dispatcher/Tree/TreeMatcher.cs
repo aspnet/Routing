@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Dispatcher
 
                 var tree = trees[entry.Order];
 
-                TreeEnumerator.AddEntryToTree(tree, entry);
+                UrlMatchingTree.AddEntryToTree(tree, entry);
             }
 
             return new Cache(trees.ToArray());

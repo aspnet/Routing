@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
                     trees.Add(entry.Order, tree);
                 }
 
-                TreeEnumerator.AddEntryToTree(tree, entry);
+                UrlMatchingTree.AddEntryToTree(tree, entry);
             }
 
             return new TreeRouter(
