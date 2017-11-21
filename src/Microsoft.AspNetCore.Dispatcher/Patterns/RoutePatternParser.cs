@@ -26,16 +26,16 @@ namespace Microsoft.AspNetCore.Dispatcher.Patterns
             Asterisk
         };
 
-        public static RoutePattern Parse(string originalPattern)
+        public static RoutePattern Parse(string pattern)
         {
-            if (originalPattern == null)
+            if (pattern == null)
             {
-                throw new ArgumentNullException(nameof(originalPattern));
+                throw new ArgumentNullException(nameof(pattern));
             }
 
-            var pattern = PatternStartsWithSlashOrTildeSlash(originalPattern);
+            var trimmedPattern = TrimPrefix(pattern);
 
-            var context = new TemplateParserContext(pattern);
+            var context = new TemplateParserContext(trimmedPattern);
             var segments = new List<RoutePatternPathSegment>();
 
             while (context.MoveNext())
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Dispatcher.Patterns
 
             if (IsAllValid(context, segments))
             {
-                var builder = RoutePatternBuilder.Create(originalPattern);
+                var builder = RoutePatternBuilder.Create(pattern);
                 for (var i = 0; i < segments.Count; i++)
                 {
                     builder.PathSegments.Add(segments[i]);
@@ -466,7 +466,7 @@ namespace Microsoft.AspNetCore.Dispatcher.Patterns
             return true;
         }
 
-        private static string PatternStartsWithSlashOrTildeSlash(string routePattern)
+        private static string TrimPrefix(string routePattern)
         {
             if (routePattern.StartsWith("~/", StringComparison.Ordinal))
             {

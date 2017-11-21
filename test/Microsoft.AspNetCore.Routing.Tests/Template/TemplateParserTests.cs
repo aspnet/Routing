@@ -766,15 +766,15 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         }
 
         [Theory]
-        [InlineData("/foo", "/foo")]
-        [InlineData("~/foo", "/foo")]
-        public void ValidTemplate_CanStartWithSlashOrTildeSlash(string routeTemplate, string returnedPattern)
+        [InlineData("/foo")]
+        [InlineData("~/foo")]
+        public void ValidTemplate_CanStartWithSlashOrTildeSlash(string routeTemplate)
         {
             // Arrange & Act
             var pattern = TemplateParser.Parse(routeTemplate);
 
             // Assert
-            Assert.Equal(returnedPattern, pattern.TemplateText);
+            Assert.Equal(routeTemplate, pattern.TemplateText);
         }
 
         [Fact]
@@ -782,7 +782,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         {
             ExceptionAssert.Throws<ArgumentException>(
                 () => TemplateParser.Parse("~foo"),
-                "The route template cannot start with a '~' character." + Environment.NewLine +
+                "The route template cannot start with a '~' character unless followed by a '/'." + Environment.NewLine +
                 "Parameter name: routeTemplate");
         }
 
