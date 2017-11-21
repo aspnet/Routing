@@ -71,6 +71,11 @@ namespace Microsoft.AspNetCore.Dispatcher.Patterns
 
         public static RoutePatternBuilder Create(string text)
         {
+            if (text.StartsWith("~/"))
+            {
+                return new RoutePatternBuilder() { RawText = text.Substring(1), };
+            }
+
             return new RoutePatternBuilder() { RawText = text, };
         }
     }
