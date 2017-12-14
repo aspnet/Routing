@@ -870,6 +870,7 @@ namespace Microsoft.AspNetCore.Dispatcher
                     }
                 }
             }
+
             IReadOnlyList<Address> IAddressCollectionProvider.Addresses => GetAddresses();
 
             IReadOnlyList<Endpoint> IEndpointCollectionProvider.Endpoints => GetEndpoints();
@@ -883,6 +884,7 @@ namespace Microsoft.AspNetCore.Dispatcher
             private class TestChangeToken : IChangeToken
             {
                 private CancellationTokenSource _cts = new CancellationTokenSource();
+
                 public bool HasChanged => true;
 
                 public bool ActiveChangeCallbacks => true;
