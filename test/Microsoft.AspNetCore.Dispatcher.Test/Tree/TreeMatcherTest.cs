@@ -1,12 +1,16 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
 
@@ -776,6 +780,32 @@ namespace Microsoft.AspNetCore.Dispatcher
             Assert.Null(context.Endpoint);
         }
 
+        [Fact]
+        public async Task ChangeTokenTriggers_CreateCache()
+        {
+            // Arrange 1
+            var factory = new TreeMatcherFactory();
+            var dataSource = new TestDataSource(new List<Endpoint>() { new RoutePatternEndpoint("test/{p1}", new object(), Test_Delegate, "Test"), });
+            var matcher = factory.CreateMatcher(dataSource, new List<EndpointSelector>());
+            var context = CreateMatcherContext("/test/parameter1");
+
+            // Act 1
+            await matcher.MatchAsync(context);
+
+            // Assert 1
+            Assert.Equal("Test", context.Endpoint.DisplayName);
+
+            // Arrange 2
+            dataSource.UpdateEndpoints(new List<Endpoint>() { new RoutePatternEndpoint("test2/{p1}", new object(), Test_Delegate, "Test2"), });
+            context = CreateMatcherContext("/test2/parameter2");
+
+            // Act 2
+            await matcher.MatchAsync(context);
+
+            // Assert 2
+            Assert.Equal("Test2", context.Endpoint.DisplayName);
+        }
+
         private static MatcherContext CreateMatcherContext(string requestPath)
         {
             var request = new Mock<HttpRequest>(MockBehavior.Strict);
@@ -803,6 +833,64 @@ namespace Microsoft.AspNetCore.Dispatcher
         private static Task Test_Delegate(HttpContext httpContext)
         {
             return Task.CompletedTask;
+        }
+
+        public class TestDataSource : DispatcherDataSource, IAddressCollectionProvider, IEndpointCollectionProvider
+        {
+            private IList<Address> _addresses;
+            private IList<Endpoint> _endpoints;
+            private TestChangeToken _changeToken;
+            private readonly object _lock = new object();
+
+            public TestDataSource(IList<Endpoint> endpoints)
+            {
+                _addresses = new List<Address>();
+                _endpoints = endpoints;
+                _changeToken = new TestChangeToken();
+            }
+
+            public void UpdateEndpoints(IList<Endpoint> endpoints)
+            {
+                lock (_lock)
+                {
+                    _endpoints = endpoints;
+                    // Trigger change token here
+                    var previousToken = Interlocked.Exchange(ref _changeToken, new TestChangeToken());
+                    previousToken.OnChange();
+                }
+            }
+
+            public override IChangeToken ChangeToken
+            {
+                get
+                {
+                    lock (_lock)
+                    {
+                        return _changeToken;
+                    }
+                }
+            }
+            IReadOnlyList<Address> IAddressCollectionProvider.Addresses => GetAddresses();
+
+            IReadOnlyList<Endpoint> IEndpointCollectionProvider.Endpoints => GetEndpoints();
+
+            protected override IReadOnlyList<Address> GetAddresses() => _addresses.ToList();
+
+            protected override IReadOnlyList<Endpoint> GetEndpoints() => _endpoints.ToList();
+
+            public IList<Endpoint> Endpoints => _endpoints;
+
+            private class TestChangeToken : IChangeToken
+            {
+                private CancellationTokenSource _cts = new CancellationTokenSource();
+                public bool HasChanged => true;
+
+                public bool ActiveChangeCallbacks => true;
+
+                public IDisposable RegisterChangeCallback(Action<object> callback, object state) => _cts.Token.Register(callback, state);
+
+                public void OnChange() => _cts.Cancel();
+            }
         }
     }
 }

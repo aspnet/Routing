@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,8 +29,6 @@ namespace Microsoft.AspNetCore.Dispatcher
             _initializer = CreateCache;
         }
 
-        public int Version { get; private set; }
-
         public override async Task MatchAsync(MatcherContext context)
         {
             if (context == null)
@@ -40,6 +37,7 @@ namespace Microsoft.AspNetCore.Dispatcher
             }
 
             EnsureServicesInitialized(context);
+            Extensions.Primitives.ChangeToken.OnChange(() => ChangeToken, () => Volatile.Write(ref _dataInitialized, false));
 
             var cache = LazyInitializer.EnsureInitialized(ref _cache, ref _dataInitialized, ref _lock, _initializer);
 
@@ -136,8 +134,7 @@ namespace Microsoft.AspNetCore.Dispatcher
             {
                 var endpoint = endpoints[i];
 
-                var templateEndpoint = endpoint as IRoutePatternEndpoint;
-                if (templateEndpoint == null)
+                if (!(endpoint is IRoutePatternEndpoint templateEndpoint))
                 {
                     continue;
                 }
