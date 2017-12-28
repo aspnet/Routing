@@ -11,11 +11,13 @@ using Microsoft.AspNetCore.Dispatcher.Patterns;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
+using Primitives = Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Dispatcher
 {
     public class TreeMatcher : MatcherBase
     {
+        private bool _onChange;
         private bool _dataInitialized;
         private object _lock;
         private Cache _cache;
@@ -36,8 +38,7 @@ namespace Microsoft.AspNetCore.Dispatcher
                 throw new ArgumentNullException(nameof(context));
             }
 
-            EnsureServicesInitialized(context);
-            Extensions.Primitives.ChangeToken.OnChange(() => ChangeToken, () => Volatile.Write(ref _dataInitialized, false));
+            EnsureTreeMatcherServicesInitialized(context);
 
             var cache = LazyInitializer.EnsureInitialized(ref _cache, ref _dataInitialized, ref _lock, _initializer);
 
@@ -95,6 +96,24 @@ namespace Microsoft.AspNetCore.Dispatcher
                             return;
                         }
                     }
+                }
+            }
+        }
+
+        private void EnsureTreeMatcherServicesInitialized(MatcherContext context)
+        {
+            EnsureServicesInitialized(context);
+            if (Volatile.Read(ref _onChange))
+            {
+                return;
+            }
+
+            lock (_lock)
+            {
+                if (!Volatile.Read(ref _onChange))
+                {
+                    _onChange = true;
+                    Primitives.ChangeToken.OnChange(() => ChangeToken, () => Volatile.Write(ref _dataInitialized, false));
                 }
             }
         }

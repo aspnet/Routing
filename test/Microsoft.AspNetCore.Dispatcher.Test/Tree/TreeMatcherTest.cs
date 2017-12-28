@@ -794,9 +794,11 @@ namespace Microsoft.AspNetCore.Dispatcher
 
             // Assert 1
             Assert.Equal("Test", context.Endpoint.DisplayName);
+            context.Values.TryGetValue("p1", out var value);
+            Assert.Equal("parameter1", value);
 
             // Arrange 2
-            dataSource.UpdateEndpoints(new List<Endpoint>() { new RoutePatternEndpoint("test2/{p1}", new object(), Test_Delegate, "Test2"), });
+            dataSource.UpdateEndpoints(new List<Endpoint>() { new RoutePatternEndpoint("test2/{p2}", new object(), Test_Delegate, "Test2"), });
             context = CreateMatcherContext("/test2/parameter2");
 
             // Act 2
@@ -804,6 +806,9 @@ namespace Microsoft.AspNetCore.Dispatcher
 
             // Assert 2
             Assert.Equal("Test2", context.Endpoint.DisplayName);
+            Assert.False(context.Values.TryGetValue("p1", out value));
+            context.Values.TryGetValue("p2", out value);
+            Assert.Equal("parameter2", value);
         }
 
         private static MatcherContext CreateMatcherContext(string requestPath)
@@ -855,7 +860,8 @@ namespace Microsoft.AspNetCore.Dispatcher
                 {
                     _endpoints = endpoints;
                     // Trigger change token here
-                    var previousToken = Interlocked.Exchange(ref _changeToken, new TestChangeToken());
+                    var previousToken = _changeToken;
+                    _changeToken = new TestChangeToken();
                     previousToken.OnChange();
                 }
             }
