@@ -369,7 +369,8 @@ namespace Microsoft.AspNetCore.Dispatcher
                 "/UrlEncode[[language]]/UrlEncode[[a]]UrlEncode[[xx]]");
         }
 
-        [Fact]
+        [ConditionalFact]
+        [FrameworkSkipCondition(RuntimeFrameworks.CLR, SkipReason = "Fails due to dotnet/standard#567")]
         public void GetVirtualPathWithSimpleMultiSegmentParamsOnNeitherEndMatches()
         {
             RunTest(
