@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <Description>ASP.NET Core abstractions for dispatching requests to endpoints and use addresses to generate links.</Description>
+    <Description>ASP.NET Core abstractions for dispatching requests to endpoints and use addresses to generate URLs.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
