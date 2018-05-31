@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
@@ -84,6 +85,44 @@ namespace Microsoft.AspNetCore.Routing
 
             // Assert
             Assert.Equal(lowercaseUrl, pathData.VirtualPath);
+            Assert.Same(target.Object, pathData.Router);
+            Assert.Empty(pathData.DataTokens);
+        }
+
+        [Theory]
+        [InlineData(@"Home/Index/23?Param1=ABC&Param2=Xyz", "/Home/Index/23?Param1=ABC&Param2=Xyz", false, true, false)]
+        [InlineData(@"Home/Index/23?Param1=ABC&Param2=Xyz", "/Home/Index/23?Param1=ABC&Param2=Xyz", false, false, false)]
+        [InlineData(@"Home/Index/23?Param1=ABC&Param2=Xyz", "/home/index/23/?param1=abc&param2=xyz", true, true, true)]
+        [InlineData(@"Home/Index/23#Param1=ABC&Param2=Xyz", "/Home/Index/23/#Param1=ABC&Param2=Xyz", false, true, true)]
+        [InlineData(@"Home/Index/23#Param1=ABC&Param2=Xyz", "/home/index/23#Param1=ABC&Param2=Xyz", true, false, false)]
+        [InlineData(@"Home/Index/23/?Param1=ABC&Param2=Xyz", "/home/index/23/?param1=abc&param2=xyz", true, true, true)]
+        [InlineData(@"Home/Index/23/#Param1=ABC&Param2=Xyz", "/home/index/23/#Param1=ABC&Param2=Xyz", true, false, true)]
+        [InlineData(@"Home/Index/23/#Param1=ABC&Param2=Xyz", "/home/index/23/#param1=abc&param2=xyz", true, true, true)]
+        public void GetVirtualPath_CanLowerCaseUrls_QueryStrings_BasedOnOptions(
+            string returnUrl,
+            string expectedUrl,
+            bool lowercaseUrls,
+            bool lowercaseQueryStrings, bool appendTrailingSlash)
+        {
+            // Arrange 
+            var target = new Mock<IRouter>(MockBehavior.Strict);
+            target
+                .Setup(e => e.GetVirtualPath(It.IsAny<VirtualPathContext>()))
+                .Returns(new VirtualPathData(target.Object, returnUrl));
+
+            var routeCollection = new RouteCollection();
+            routeCollection.Add(target.Object);
+            var virtualPathContext = CreateVirtualPathContext(
+                options: GetRouteOptions(
+                    lowerCaseUrls: lowercaseUrls,
+                    lowercaseQueryStrings: lowercaseQueryStrings,
+                    appendTrailingSlash: appendTrailingSlash));
+
+            // Act
+            var pathData = routeCollection.GetVirtualPath(virtualPathContext);
+
+            // Assert
+            Assert.Equal(expectedUrl, pathData.VirtualPath);
             Assert.Same(target.Object, pathData.Router);
             Assert.Empty(pathData.DataTokens);
         }
@@ -459,26 +498,6 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
-        private static async Task<TestSink> SetUp(bool enabled, bool handled)
-        {
-            // Arrange
-            var sink = new TestSink(
-                TestSink.EnableWithTypeName<RouteCollection>,
-                TestSink.EnableWithTypeName<RouteCollection>);
-            var loggerFactory = new TestLoggerFactory(sink, enabled);
-
-            var routes = new RouteCollection();
-            var route = CreateRoute(accept: handled);
-            routes.Add(route.Object);
-
-            var context = CreateRouteContext("/Cool", loggerFactory);
-
-            // Act
-            await routes.RouteAsync(context);
-
-            return sink;
-        }
-
         private static RouteCollection GetRouteCollectionWithNamedRoutes(IEnumerable<string> routeNames)
         {
             var routes = new RouteCollection();
@@ -682,12 +701,13 @@ namespace Microsoft.AspNetCore.Routing
 
         private static Action<RouteOptions> GetRouteOptions(
             bool lowerCaseUrls = false,
-            bool appendTrailingSlash = false)
+            bool appendTrailingSlash = false, bool lowercaseQueryStrings = false)
         {
             return (options) =>
             {
                 options.LowercaseUrls = lowerCaseUrls;
                 options.AppendTrailingSlash = appendTrailingSlash;
+                options.LowercaseQueryStrings = lowercaseQueryStrings;
             };
         }
     }
