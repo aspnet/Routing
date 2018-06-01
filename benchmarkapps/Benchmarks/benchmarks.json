@@ -8,12 +8,15 @@
     },
     "Source": {
       "Repository": "https://github.com/aspnet/routing.git",
-      "BranchOrCommit": "dev",
+      "BranchOrCommit": "kichalla/added.benchmark.for.dispatcher",
       "Project": "benchmarkapps/Benchmarks/Benchmarks.csproj"
     },
     "Port": 8080
   },
   "PlaintextRouting": {
+    "Path": "/plaintext"
+  },
+  "PlaintextDispatcher": {
     "Path": "/plaintext"
   }
 }

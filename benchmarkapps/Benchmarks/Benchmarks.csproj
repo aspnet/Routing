@@ -5,15 +5,24 @@
     <TargetFramework Condition="'$(BenchmarksTargetFramework)' != ''">$(BenchmarksTargetFramework)</TargetFramework>
   </PropertyGroup>
 
-  <!-- These references are used when running locally -->
+  <!-- These references are used when running locally --><!--
   <ItemGroup Condition="'$(BenchmarksTargetFramework)' == ''">
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Routing\Microsoft.AspNetCore.Routing.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="$(MicrosoftAspNetCoreServerKestrelPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(MicrosoftExtensionsConfigurationCommandLinePackageVersion)" />
   </ItemGroup>
 
-  <!-- These references are used when running on the Benchmarks Server -->
+  --><!-- These references are used when running on the Benchmarks Server --><!--
   <ItemGroup Condition="'$(BenchmarksTargetFramework)' != ''">
     <PackageReference Include="Microsoft.AspNetCore.App" Version="$(MicrosoftAspNetCoreAppPackageVersion)" />
+  </ItemGroup>-->
+
+  <!-- These references are used when running locally -->
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Routing\Microsoft.AspNetCore.Routing.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="$(MicrosoftAspNetCoreServerKestrelPackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(MicrosoftExtensionsConfigurationCommandLinePackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="$(MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion)" />
   </ItemGroup>
 
 </Project>
