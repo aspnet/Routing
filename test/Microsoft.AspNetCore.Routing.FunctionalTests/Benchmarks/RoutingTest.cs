@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
 
             // Make sure we are using the right startup
             var startupName = webHostBuilder.GetSetting("Startup");
-            Assert.Equal(nameof(Benchmarks.Startup), startupName);
+            Assert.Equal(nameof(Benchmarks.StartupUsingRouting), startupName);
 
             _testServer = new TestServer(webHostBuilder);
             _client = _testServer.CreateClient();

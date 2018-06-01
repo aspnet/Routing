@@ -22,7 +22,7 @@ namespace Benchmarks
                 options.DataSources.Add(new DefaultEndpointDataSource(new[]
                 {
                     new MatcherEndpoint(
-                        invoker: (next) =>(httpContext) =>
+                        invoker: (next) => (httpContext) =>
                         {
                             var response = httpContext.Response;
                             var payloadLength = _helloWorldPayload.Length;

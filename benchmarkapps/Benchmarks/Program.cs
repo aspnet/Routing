@@ -35,9 +35,9 @@ namespace Benchmarks
             }
             else
             {
-                webHostBuilder.UseStartup<Startup>();
+                webHostBuilder.UseStartup<StartupUsingRouting>();
                 // for testing
-                webHostBuilder.UseSetting("Startup", nameof(Startup));
+                webHostBuilder.UseSetting("Startup", nameof(StartupUsingRouting));
             }
 
             return webHostBuilder;
