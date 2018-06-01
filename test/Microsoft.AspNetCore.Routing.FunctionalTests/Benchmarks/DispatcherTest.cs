@@ -11,21 +11,27 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.FunctionalTests
 {
-    public class BenchmarksTest : IDisposable
+    public class DispatcherTest : IDisposable
     {
         private readonly HttpClient _client;
         private readonly TestServer _testServer;
 
-        public BenchmarksTest()
+        public DispatcherTest()
         {
-            var webHostBuilder = Benchmarks.Program.GetWebHostBuilder(args: null);
+            var args = new[] { "--scenario", "PlaintextDispatcher" };
+            var webHostBuilder = Benchmarks.Program.GetWebHostBuilder(args);
+
+            // Make sure we are using the right startup
+            var startupName = webHostBuilder.GetSetting("Startup");
+            Assert.Equal(nameof(Benchmarks.StartupUsingDispatcher), startupName);
+
             _testServer = new TestServer(webHostBuilder);
             _client = _testServer.CreateClient();
             _client.BaseAddress = new Uri("http://localhost");
         }
 
         [Fact]
-        public async Task RouteHandlerWritesResponse()
+        public async Task RouteEndpoint_ReturnsPlaintextResponse()
         {
             // Arrange
             var expectedContentType = "text/plain";

@@ -16,15 +16,31 @@ namespace Benchmarks
         public static IWebHostBuilder GetWebHostBuilder(string[] args)
         {
             var config = new ConfigurationBuilder()
+                .AddCommandLine(args)
                 .Build();
 
             // Consoler logger has a major impact on perf results, so do not use
             // default builder.
 
-            return new WebHostBuilder()
-                .UseConfiguration(config)
-                .UseKestrel()
-                .UseStartup<Startup>();
+            var webHostBuilder = new WebHostBuilder()
+                    .UseConfiguration(config)
+                    .UseKestrel();
+
+            var scenario = config["scenario"]?.ToLower();
+            if (scenario == "plaintextdispatcher")
+            {
+                webHostBuilder.UseStartup<StartupUsingDispatcher>();
+                // for testing
+                webHostBuilder.UseSetting("Startup", nameof(StartupUsingDispatcher));
+            }
+            else
+            {
+                webHostBuilder.UseStartup<Startup>();
+                // for testing
+                webHostBuilder.UseSetting("Startup", nameof(Startup));
+            }
+
+            return webHostBuilder;
         }
     }
 }
