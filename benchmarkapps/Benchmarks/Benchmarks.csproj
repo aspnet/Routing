@@ -22,6 +22,7 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Routing\Microsoft.AspNetCore.Routing.csproj" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="$(MicrosoftAspNetCoreServerKestrelPackageVersion)" />
     <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(MicrosoftExtensionsConfigurationCommandLinePackageVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="$(MicrosoftExtensionsConfigurationEnvironmentVariablesPackageVersion)" />
   </ItemGroup>
 
 </Project>

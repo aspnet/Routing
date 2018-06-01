@@ -18,7 +18,8 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
 
         public DispatcherTest()
         {
-            var args = new[] { "--scenario", "PlaintextDispatcher" };
+            // This switch and value are set by benchmark server when running the app for profiling.
+            var args = new[] { "--scenarios", "PlaintextDispatcher" };
             var webHostBuilder = Benchmarks.Program.GetWebHostBuilder(args);
 
             // Make sure we are using the right startup
