@@ -5,7 +5,10 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Matchers;
+using Microsoft.AspNetCore.Routing.Tests.TestObjects;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -15,22 +18,15 @@ namespace Microsoft.AspNetCore.Routing
     public class DispatcherMiddlewareTest
     {
         [Fact]
-        public async void Invoke_LogsCorrectValues_WhenNotHandled()
+        public async Task Invoke_OnCall_SetsEndpointFeature()
         {
             // Arrange
-            var expectedMessage = "Request did not match any endpoints.";
-
-            var sink = new TestSink(
-                TestSink.EnableWithTypeName<DispatcherMiddleware>,
-                TestSink.EnableWithTypeName<DispatcherMiddleware>);
-            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
-
             var httpContext = new DefaultHttpContext();
-            httpContext.RequestServices = new ServiceProvider();
+            httpContext.RequestServices = new TestServiceProvider();
 
             RequestDelegate next = (c) => Task.FromResult<object>(null);
 
-            var logger = new Logger<DispatcherMiddleware>(loggerFactory);
+            var logger = new Logger<DispatcherMiddleware>(NullLoggerFactory.Instance);
             var options = Options.Create(new DispatcherOptions());
             var matcherFactory = new TestMatcherFactory(false);
             var middleware = new DispatcherMiddleware(matcherFactory, options, logger, next);
@@ -39,13 +35,12 @@ namespace Microsoft.AspNetCore.Routing
             await middleware.Invoke(httpContext);
 
             // Assert
-            Assert.Empty(sink.Scopes);
-            var write = Assert.Single(sink.Writes);
-            Assert.Equal(expectedMessage, write.State?.ToString());
+            var endpointFeature = httpContext.Features.Get<IEndpointFeature>();
+            Assert.NotNull(endpointFeature);
         }
 
         [Fact]
-        public async void Invoke_LogsCorrectValues_WhenHandled()
+        public async Task Invoke_OnCall_WritesToConfiguredLogger()
         {
             // Arrange
             var expectedMessage = "Request matched endpoint 'Test endpoint'.";
@@ -56,7 +51,7 @@ namespace Microsoft.AspNetCore.Routing
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
             var httpContext = new DefaultHttpContext();
-            httpContext.RequestServices = new ServiceProvider();
+            httpContext.RequestServices = new TestServiceProvider();
 
             RequestDelegate next = (c) => Task.FromResult<object>(null);
 
@@ -72,56 +67,6 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Empty(sink.Scopes);
             var write = Assert.Single(sink.Writes);
             Assert.Equal(expectedMessage, write.State?.ToString());
-        }
-
-        private class TestMatcherFactory : MatcherFactory
-        {
-            private readonly bool _isHandled;
-
-            public TestMatcherFactory(bool isHandled)
-            {
-                _isHandled = isHandled;
-            }
-
-            public override Matcher CreateMatcher(EndpointDataSource dataSource)
-            {
-                return new TestMaster(_isHandled);
-            }
-        }
-
-        private class TestMaster : Matcher
-        {
-            private readonly bool _isHandled;
-
-            public TestMaster(bool isHandled)
-            {
-                _isHandled = isHandled;
-            }
-
-            public override Task MatchAsync(HttpContext httpContext, IEndpointFeature feature)
-            {
-                if (_isHandled)
-                {
-                    feature.Endpoint = new TestEndpoint(EndpointMetadataCollection.Empty, "Test endpoint");
-                }
-
-                return Task.CompletedTask;
-            }
-        }
-
-        private class TestEndpoint : Endpoint
-        {
-            public TestEndpoint(EndpointMetadataCollection metadata, string displayName) : base(metadata, displayName)
-            {
-            }
-        }
-
-        private class ServiceProvider : IServiceProvider
-        {
-            public object GetService(Type serviceType)
-            {
-                throw new NotImplementedException();
-            }
         }
     }
 }
