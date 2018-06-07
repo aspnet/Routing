@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Matchers;
 
-namespace Microsoft.AspNetCore.Routing.Tests.TestObjects
+namespace Microsoft.AspNetCore.Routing.TestObjects
 {
     internal class TestMatcher : Matcher
     {

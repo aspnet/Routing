@@ -3,7 +3,7 @@
 
 using Microsoft.AspNetCore.Routing.Matchers;
 
-namespace Microsoft.AspNetCore.Routing.Tests.TestObjects
+namespace Microsoft.AspNetCore.Routing.TestObjects
 {
     internal class TestMatcherFactory : MatcherFactory
     {

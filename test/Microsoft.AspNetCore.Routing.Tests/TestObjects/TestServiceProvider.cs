@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Routing.Tests.TestObjects
+namespace Microsoft.AspNetCore.Routing.TestObjects
 {
     internal class TestServiceProvider : IServiceProvider
     {
