@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Routing
                 return template;
             }
 
-            var updatable = new StringBuilder(template);
+            var result = new StringBuilder(template);
 
             var segments = template.Split('/');
             foreach (var segment in segments)
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Routing
 
                     if (values.ContainsKey(trimmed))
                     {
-                        updatable.Replace(segment, values[trimmed].ToString());
+                        result.Replace(segment, values[trimmed].ToString());
                     }
                     else
                     {
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Routing
                 }
             }
 
-            return updatable.ToString();
+            return result.ToString();
         }
 
         private bool IsVariableSegment(string templateSegment)

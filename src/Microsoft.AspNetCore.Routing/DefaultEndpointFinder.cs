@@ -7,11 +7,11 @@ namespace Microsoft.AspNetCore.Routing
 {
     public class DefaultEndpointFinder : IEndpointFinder
     {
-        private readonly IEnumerable<EndpointDataSource> _endpointDatasources;
+        private readonly CompositeEndpointDataSource _endpointDatasource;
 
-        public DefaultEndpointFinder(IEnumerable<EndpointDataSource> endpointDataSources)
+        public DefaultEndpointFinder(CompositeEndpointDataSource endpointDataSource)
         {
-            _endpointDatasources = endpointDataSources;
+            _endpointDatasource = endpointDataSource;
         }
 
         public MatcherEndpoint FindEndpoint(Address address)
@@ -21,8 +21,7 @@ namespace Microsoft.AspNetCore.Routing
                 return null;
             }
 
-            var compositeEndpointDatasource = new CompositeEndpointDataSource(_endpointDatasources);
-            var matcherEndpoints = compositeEndpointDatasource.Endpoints
+            var matcherEndpoints = _endpointDatasource.Endpoints
                 .OfType<MatcherEndpoint>()
                 .Where(mep => mep.Address != null);
 
