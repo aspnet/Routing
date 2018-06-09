@@ -1,20 +1,26 @@
-﻿using Microsoft.Extensions.Logging;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Routing.Internal;
+using Microsoft.AspNetCore.Routing.Template;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.Routing
 {
     public class DefaultLinkGenerator : ILinkGenerator
     {
         private readonly IEndpointFinder _endpointFinder;
+        private readonly ObjectPool<UriBuildingContext> _uriBuildingContextPool;
         private readonly ILogger<DefaultLinkGenerator> _logger;
 
         public DefaultLinkGenerator(
             IEndpointFinder endpointFinder,
+            ObjectPool<UriBuildingContext> uriBuildingContextPool,
             ILogger<DefaultLinkGenerator> logger)
         {
             _endpointFinder = endpointFinder;
+            _uriBuildingContextPool = uriBuildingContextPool;
             _logger = logger;
         }
 
@@ -37,43 +43,16 @@ namespace Microsoft.AspNetCore.Routing
                     $"MethodInfo '{address.MethodInfo.DeclaringType.FullName}.{address.MethodInfo.Name}'.");
             }
 
-            link = GetLink(endpoint.Template, values);
+            link = GetLink(endpoint.Template, endpoint.Values, values);
             return link != null;
         }
 
-        private string GetLink(string template, IDictionary<string, object> values)
+        private string GetLink(string template, IReadOnlyDictionary<string, object> defaultValues, IDictionary<string, object> values)
         {
-            if (!template.Contains("{"))
-            {
-                return template;
-            }
-
-            var result = new StringBuilder(template);
-
-            var segments = template.Split('/');
-            foreach (var segment in segments)
-            {
-                if (IsVariableSegment(segment))
-                {
-                    var trimmed = segment.TrimStart('{').TrimEnd('}');
-
-                    if (values.ContainsKey(trimmed))
-                    {
-                        result.Replace(segment, values[trimmed].ToString());
-                    }
-                    else
-                    {
-                        throw new InvalidOperationException($"Supplied values do not match the given endpoint's template");
-                    }
-                }
-            }
-
-            return result.ToString();
-        }
-
-        private bool IsVariableSegment(string templateSegment)
-        {
-            return templateSegment.StartsWith("{") && templateSegment.EndsWith("}");
+            var routeTemplate = TemplateParser.Parse(template);
+            var defaults = new RouteValueDictionary(defaultValues);
+            var templateBinder = new TemplateBinder(UrlEncoder.Default, _uriBuildingContextPool, routeTemplate, defaults);
+            return templateBinder.BindValues(new RouteValueDictionary(values));
         }
     }
 }
