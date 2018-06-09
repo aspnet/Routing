@@ -1,12 +1,10 @@
-﻿using Microsoft.AspNetCore.Routing.Matchers;
-using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using System.Collections.Generic;
+using Microsoft.AspNetCore.Routing.Matchers;
 
 namespace Microsoft.AspNetCore.Routing
 {
     public interface IEndpointFinder
     {
-        MatcherEndpoint FindEndpoint(Address address);
+        IEnumerable<MatcherEndpoint> FindEndpoints(Address address);
     }
 }

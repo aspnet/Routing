@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Template;
@@ -37,15 +38,24 @@ namespace Microsoft.AspNetCore.Routing
         public bool TryGetLink(LinkGeneratorContext context, out string link)
         {
             var address = context.Address;
-            var endpoint = _endpointFinder.FindEndpoint(address);
-            if (endpoint == null)
+            var endpoints = _endpointFinder.FindEndpoints(address);
+            link = null;
+
+            if (endpoints == null)
             {
-                _logger.LogDebug($"Could not find an endpoint having an address with name '{address.Name}' and " +
-                    $"MethodInfo '{address.MethodInfo.DeclaringType.FullName}.{address.MethodInfo.Name}'.");
+                return false;
             }
 
-            link = GetLink(endpoint.RouteTemplate, endpoint.Values, context);
-            return link != null;
+            foreach (var endpoint in endpoints)
+            {
+                link = GetLink(endpoint.RouteTemplate, endpoint.Values, context);
+                if (link != null)
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
 
         private string GetLink(
@@ -55,9 +65,9 @@ namespace Microsoft.AspNetCore.Routing
         {
             var defaults = new RouteValueDictionary(defaultValues);
             var templateBinder = new TemplateBinder(
-                UrlEncoder.Default, 
-                _uriBuildingContextPool, 
-                template, 
+                UrlEncoder.Default,
+                _uriBuildingContextPool,
+                template,
                 defaults);
 
             var values = templateBinder.GetValues(

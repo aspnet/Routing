@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
 
         public DispatcherSampleLinkGeneratorTest()
         {
-            var webHostBuilder = DispatcherSample.Web.Program.GetWebHostBuilder();
+            var webHostBuilder = Program.GetWebHostBuilder();
             webHostBuilder.UseStartup<StartupUsingLinkGenerator>();
             _testServer = new TestServer(webHostBuilder);
             _client = _testServer.CreateClient();

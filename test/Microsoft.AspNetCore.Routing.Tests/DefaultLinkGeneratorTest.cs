@@ -60,6 +60,23 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Fact]
+        public void GetLink_MultipleEndpoints_Success()
+        {
+            // Arrange
+            var endpoint1 = CreateEndpoint("{controller}/{action}/{id?}");
+            var endpoint2 = CreateEndpoint("{controller}/{action}");
+            var endpoint3 = CreateEndpoint("{controller}");
+            var linkGenerator = CreateLinkGenerator(new TestEndpointFinder(endpoint1, endpoint2, endpoint3));
+            var context = CreateLinkGeneratorContext(new { controller = "Home", action = "Index", id = "10" });
+
+            // Act
+            var link = linkGenerator.GetLink(context);
+
+            // Assert
+            Assert.Equal("/Home/Index/10", link);
+        }
+
+        [Fact]
         public void GetLink_EncodesValues()
         {
             // Arrange
@@ -755,16 +772,16 @@ namespace Microsoft.AspNetCore.Routing
 
         private class TestEndpointFinder : IEndpointFinder
         {
-            private readonly MatcherEndpoint _endpoint;
+            private readonly MatcherEndpoint[] _endpoints;
 
-            public TestEndpointFinder(MatcherEndpoint endpoint)
+            public TestEndpointFinder(params MatcherEndpoint[] endpoints)
             {
-                _endpoint = endpoint;
+                _endpoints = endpoints;
             }
 
-            public MatcherEndpoint FindEndpoint(Address address)
+            public IEnumerable<MatcherEndpoint> FindEndpoints(Address address)
             {
-                return _endpoint;
+                return _endpoints;
             }
         }
     }

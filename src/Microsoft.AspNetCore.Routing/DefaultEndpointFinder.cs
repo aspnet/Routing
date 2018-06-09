@@ -1,47 +1,61 @@
-﻿using Microsoft.AspNetCore.Routing.Matchers;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Routing.Matchers;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Routing
 {
     public class DefaultEndpointFinder : IEndpointFinder
     {
         private readonly CompositeEndpointDataSource _endpointDatasource;
+        private readonly ILogger<DefaultEndpointFinder> _logger;
 
-        public DefaultEndpointFinder(CompositeEndpointDataSource endpointDataSource)
+        public DefaultEndpointFinder(
+            CompositeEndpointDataSource endpointDataSource,
+            ILogger<DefaultEndpointFinder> logger)
         {
             _endpointDatasource = endpointDataSource;
+            _logger = logger;
         }
 
-        public MatcherEndpoint FindEndpoint(Address address)
+        public IEnumerable<MatcherEndpoint> FindEndpoints(Address lookupAddress)
         {
-            if (string.IsNullOrEmpty(address.Name) && address.MethodInfo == null)
+            if (string.IsNullOrEmpty(lookupAddress.Name) && lookupAddress.MethodInfo == null)
             {
-                return null;
+                return Enumerable.Empty<MatcherEndpoint>();
             }
 
             var matcherEndpoints = _endpointDatasource.Endpoints
                 .OfType<MatcherEndpoint>()
                 .Where(mep => mep.Address != null);
 
+            var result = new List<MatcherEndpoint>();
             foreach (var endpoint in matcherEndpoints)
             {
-                if (!string.IsNullOrEmpty(address.Name) &&
+                if (!string.IsNullOrEmpty(lookupAddress.Name) &&
                     !string.IsNullOrEmpty(endpoint.Address.Name) &&
-                    string.Equals(address.Name, endpoint.Address.Name, StringComparison.OrdinalIgnoreCase))
+                    string.Equals(lookupAddress.Name, endpoint.Address.Name, StringComparison.OrdinalIgnoreCase))
                 {
-                    return endpoint;
+                    result.Add(endpoint);
                 }
 
-                if (address.MethodInfo != null &&
-                    address.MethodInfo.Equals(endpoint.Address.MethodInfo))
+                if (lookupAddress.MethodInfo != null &&
+                    lookupAddress.MethodInfo.Equals(endpoint.Address.MethodInfo))
                 {
-                    return endpoint;
+                    result.Add(endpoint);
+                    break;
                 }
             }
 
-            return null;
+            if (result.Count == 0)
+            {
+                _logger.LogDebug(
+                    $"Could not find endpoint(s) having an address with name '{lookupAddress.Name}' or " +
+                    $"MethodInfo '{lookupAddress.MethodInfo?.DeclaringType.FullName}.{lookupAddress.MethodInfo?.Name}'.");
+            }
+
+            return result;
         }
     }
 }
