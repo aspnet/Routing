@@ -146,7 +146,7 @@ namespace DispatcherSample.Web
             _logger.LogDebug("Inside MainHub.Index");
 
             var address = new Address(typeof(MainHub).GetMethod(nameof(MainHub.Contact)));
-            var link = LinkGenerator.GetLink(address, values: null);
+            var link = LinkGenerator.GetLink(new LinkGeneratorContext() { Address = address });
             HttpContext.Response.StatusCode = StatusCodes.Status200OK;
             HttpContext.Response.ContentType = "text/html";
             return HttpContext.Response.WriteAsync($"<html><body><a href=\"{link}\">Contact</a></body></html>");

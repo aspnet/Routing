@@ -24,9 +24,9 @@ namespace Microsoft.AspNetCore.Routing
             _logger = logger;
         }
 
-        public string GetLink(Address address, IDictionary<string, object> values)
+        public string GetLink(LinkGeneratorContext context)
         {
-            if (TryGetLink(address, values, out var link))
+            if (TryGetLink(context, out var link))
             {
                 return link;
             }
@@ -34,8 +34,9 @@ namespace Microsoft.AspNetCore.Routing
             throw new InvalidOperationException("Could not find a matching endpoint to generate a link");
         }
 
-        public bool TryGetLink(Address address, IDictionary<string, object> suppliedValues, out string link)
+        public bool TryGetLink(LinkGeneratorContext context, out string link)
         {
+            var address = context.Address;
             var endpoint = _endpointFinder.FindEndpoint(address);
             if (endpoint == null)
             {
@@ -43,18 +44,34 @@ namespace Microsoft.AspNetCore.Routing
                     $"MethodInfo '{address.MethodInfo.DeclaringType.FullName}.{address.MethodInfo.Name}'.");
             }
 
-            link = GetLink(endpoint.RouteTemplate, endpoint.Values, suppliedValues);
+            link = GetLink(endpoint.RouteTemplate, endpoint.Values, context);
             return link != null;
         }
 
         private string GetLink(
             RouteTemplate template,
             IReadOnlyDictionary<string, object> defaultValues,
-            IDictionary<string, object> suppliedValues)
+            LinkGeneratorContext context)
         {
             var defaults = new RouteValueDictionary(defaultValues);
-            var templateBinder = new TemplateBinder(UrlEncoder.Default, _uriBuildingContextPool, template, defaults);
-            return templateBinder.BindValues(new RouteValueDictionary(suppliedValues));
+            var templateBinder = new TemplateBinder(
+                UrlEncoder.Default, 
+                _uriBuildingContextPool, 
+                template, 
+                defaults);
+
+            var values = templateBinder.GetValues(
+                new RouteValueDictionary(context.AmbientValues),
+                new RouteValueDictionary(context.SuppliedValues));
+            if (values == null)
+            {
+                // We're missing one of the required values for this route.
+                return null;
+            }
+
+            //TODO: route constraint matching here
+
+            return templateBinder.BindValues(values.AcceptedValues);
         }
     }
 }
