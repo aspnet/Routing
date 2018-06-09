@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Routing.Internal;
+using Microsoft.AspNetCore.Routing.Matchers;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
@@ -46,7 +47,14 @@ namespace Microsoft.AspNetCore.Routing
                 return false;
             }
 
-            foreach (var endpoint in endpoints)
+            var matcherEndpoints = endpoints.OfType<MatcherEndpoint>();
+            if (!matcherEndpoints.Any())
+            {
+                //todo:log here
+                return false;
+            }
+
+            foreach (var endpoint in matcherEndpoints)
             {
                 link = GetLink(endpoint.RouteTemplate, endpoint.Values, context);
                 if (link != null)

@@ -1,13 +1,11 @@
-﻿using Microsoft.AspNetCore.Routing.Internal;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Matchers;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Routing
@@ -19,7 +17,7 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = CreateEndpoint("{controller}");
-            var linkGenerator = CreateLinkGenerator(new TestEndpointFinder(endpoint));
+            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
             var context = CreateLinkGeneratorContext(new { controller = "Home" });
 
             // Act
@@ -35,7 +33,7 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var expectedMessage = "Could not find a matching endpoint to generate a link.";
             var endpoint = CreateEndpoint("{controller}/{action}");
-            var linkGenerator = CreateLinkGenerator(new TestEndpointFinder(endpoint));
+            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
             var context = CreateLinkGeneratorContext(new { controller = "Home" });
 
             // Act & Assert
@@ -48,7 +46,7 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = CreateEndpoint("{controller}/{action}");
-            var linkGenerator = CreateLinkGenerator(new TestEndpointFinder(endpoint));
+            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
             var context = CreateLinkGeneratorContext(new { controller = "Home" });
 
             // Act
@@ -66,7 +64,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint1 = CreateEndpoint("{controller}/{action}/{id?}");
             var endpoint2 = CreateEndpoint("{controller}/{action}");
             var endpoint3 = CreateEndpoint("{controller}");
-            var linkGenerator = CreateLinkGenerator(new TestEndpointFinder(endpoint1, endpoint2, endpoint3));
+            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint1, endpoint2, endpoint3));
             var context = CreateLinkGeneratorContext(new { controller = "Home", action = "Index", id = "10" });
 
             // Act
@@ -77,11 +75,28 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Fact]
+        public void GetLink_MultipleEndpoints_Success2()
+        {
+            // Arrange
+            var endpoint1 = CreateEndpoint("{controller}/{action}/{id}");
+            var endpoint2 = CreateEndpoint("{controller}/{action}");
+            var endpoint3 = CreateEndpoint("{controller}");
+            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint1, endpoint2, endpoint3));
+            var context = CreateLinkGeneratorContext(new { controller = "Home", action = "Index" });
+
+            // Act
+            var link = linkGenerator.GetLink(context);
+
+            // Assert
+            Assert.Equal("/Home/Index", link);
+        }
+
+        [Fact]
         public void GetLink_EncodesValues()
         {
             // Arrange
             var endpoint = CreateEndpoint("{controller}/{action}");
-            var linkGenerator = CreateLinkGenerator(new TestEndpointFinder(endpoint));
+            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
             var context = CreateLinkGeneratorContext(
                 suppliedValues: new { name = "name with %special #characters" },
                 ambientValues: new { controller = "Home", action = "Index" });
@@ -98,7 +113,7 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = CreateEndpoint("{controller}/{action}");
-            var linkGenerator = CreateLinkGenerator(new TestEndpointFinder(endpoint));
+            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
             var context = CreateLinkGeneratorContext(
                 new { color = new List<string> { "red", "green", "blue" } },
                 new { controller = "Home", action = "Index" });
@@ -115,7 +130,7 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = CreateEndpoint("{controller}/{action}");
-            var linkGenerator = CreateLinkGenerator(new TestEndpointFinder(endpoint));
+            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
             var context = CreateLinkGeneratorContext(
                 new { items = new List<int> { 10, 20, 30 } },
                 new { controller = "Home", action = "Index" });
@@ -132,7 +147,7 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = CreateEndpoint("{controller}/{action}");
-            var linkGenerator = CreateLinkGenerator(new TestEndpointFinder(endpoint));
+            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
             var context = CreateLinkGeneratorContext(
                 new { color = new List<string> { } },
                 new { controller = "Home", action = "Index" });
@@ -149,7 +164,7 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = CreateEndpoint("{controller}/{action}");
-            var linkGenerator = CreateLinkGenerator(new TestEndpointFinder(endpoint));
+            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
             var context = CreateLinkGeneratorContext(
                 new { page = 1, color = new List<string> { "red", "green", "blue" }, message = "textfortest" },
                 new { controller = "Home", action = "Index" });
@@ -166,7 +181,7 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = CreateEndpoint("{controller}/{action}");
-            var linkGenerator = CreateLinkGenerator(new TestEndpointFinder(endpoint));
+            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
             var context = CreateLinkGeneratorContext(
                 suppliedValues: new { action = "Index" },
                 ambientValues: new { controller = "Home" });
@@ -545,7 +560,7 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = CreateEndpoint("{controller}/{action}/{name?}");
-            var linkGenerator = CreateLinkGenerator(new TestEndpointFinder(endpoint));
+            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
             var context = CreateLinkGeneratorContext(
                 suppliedValues: new { action = "Index", controller = "Home", name = "products" });
 
@@ -561,7 +576,7 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = CreateEndpoint("{controller}/{action}/{name?}");
-            var linkGenerator = CreateLinkGenerator(new TestEndpointFinder(endpoint));
+            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
             var context = CreateLinkGeneratorContext(
                 suppliedValues: new { action = "Index", controller = "Home" });
 
@@ -579,7 +594,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint = CreateEndpoint(
                 template: "{controller}/{action}/{name?}",
                 defaultValues: new { name = "default-products" });
-            var linkGenerator = CreateLinkGenerator(new TestEndpointFinder(endpoint));
+            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
             var context = CreateLinkGeneratorContext(
                 suppliedValues: new { action = "Index", controller = "Home", name = "products" });
 
@@ -597,7 +612,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint = CreateEndpoint(
                 template: "{controller}/{action}/{name?}",
                 defaultValues: new { name = "products" });
-            var linkGenerator = CreateLinkGenerator(new TestEndpointFinder(endpoint));
+            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
             var context = CreateLinkGeneratorContext(
                 suppliedValues: new { action = "Index", controller = "Home" });
 
@@ -613,7 +628,7 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = CreateEndpoint("{controller}/{action}/{name}");
-            var linkGenerator = CreateLinkGenerator(new TestEndpointFinder(endpoint));
+            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
             var context = CreateLinkGeneratorContext(
                 suppliedValues: new { action = "Index", controller = "Home", name = "products", format = "json" });
 
@@ -673,7 +688,7 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = CreateEndpoint("{controller}/{action}/{name?}");
-            var linkGenerator = CreateLinkGenerator(new TestEndpointFinder(endpoint));
+            var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
             var context = CreateLinkGeneratorContext(
                 suppliedValues: new { action = "Index", controller = "Home" });
 
@@ -689,7 +704,7 @@ namespace Microsoft.AspNetCore.Routing
         //{
         //    // Arrange
         //    var endpoint = CreateEndpoint("a/{b=15}/{c?}/{d?}");
-        //    var linkGenerator = CreateLinkGenerator(new TestEndpointFinder(endpoint));
+        //    var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
         //    var context = CreateLinkGeneratorContext(
         //        suppliedValues: new { },
         //        ambientValues: new { c = "17" });
@@ -706,7 +721,7 @@ namespace Microsoft.AspNetCore.Routing
         //{
         //    // Arrange
         //    var endpoint = CreateEndpoint("a/{b=15}/{c?}");
-        //    var linkGenerator = CreateLinkGenerator(new TestEndpointFinder(endpoint));
+        //    var linkGenerator = CreateLinkGenerator(CreateEndpointFinder(endpoint));
         //    var context = CreateLinkGeneratorContext(
         //        suppliedValues: new { },
         //        ambientValues: new { c = "17" });
@@ -770,19 +785,11 @@ namespace Microsoft.AspNetCore.Routing
                 Mock.Of<ILogger<DefaultLinkGenerator>>());
         }
 
-        private class TestEndpointFinder : IEndpointFinder
+        private DefaultEndpointFinder CreateEndpointFinder(params Endpoint[] endpoints)
         {
-            private readonly MatcherEndpoint[] _endpoints;
-
-            public TestEndpointFinder(params MatcherEndpoint[] endpoints)
-            {
-                _endpoints = endpoints;
-            }
-
-            public IEnumerable<MatcherEndpoint> FindEndpoints(Address address)
-            {
-                return _endpoints;
-            }
+            return new DefaultEndpointFinder(
+                new CompositeEndpointDataSource(new[] { new DefaultEndpointDataSource(endpoints) }),
+                Mock.Of<ILogger<DefaultEndpointFinder>>());
         }
     }
 }

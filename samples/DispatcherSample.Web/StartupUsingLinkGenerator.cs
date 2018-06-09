@@ -98,7 +98,20 @@ namespace DispatcherSample.Web
                 return Task.CompletedTask;
             }
 
-            var address = endpoint.Address;
+            if (endpoint.Address != null &&
+                (endpoint.Address.MethodInfo != null ||
+                !string.IsNullOrEmpty(endpoint.Address.Name)))
+            {
+                return InvokeUsingAddressAsync(endpoint.Address, httpContext);
+            }
+
+            //todo: non address way of invoking
+
+            return Task.CompletedTask;
+        }
+
+        private Task InvokeUsingAddressAsync(Address address, HttpContext httpContext)
+        {
             if (address.MethodInfo != null)
             {
                 var instance = ActivatorUtilities.CreateInstance(httpContext.RequestServices, address.MethodInfo.DeclaringType);
@@ -112,11 +125,15 @@ namespace DispatcherSample.Web
                     return task;
                 }
             }
+            else if (!string.IsNullOrEmpty(address.Name))
+            {
+                //todo
+            }
 
             return Task.CompletedTask;
         }
 
-        private MatcherEndpoint GetEndpoint(HttpContext httpContext)
+        private Endpoint GetEndpoint(HttpContext httpContext)
         {
             var endpointFeature = httpContext.Features.Get<IEndpointFeature>();
             if (endpointFeature == null)
@@ -124,7 +141,7 @@ namespace DispatcherSample.Web
                 return null;
             }
 
-            return endpointFeature.Endpoint as MatcherEndpoint;
+            return endpointFeature.Endpoint;
         }
     }
 

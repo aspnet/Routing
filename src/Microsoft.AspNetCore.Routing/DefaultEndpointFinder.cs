@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Routing.Matchers;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Routing
@@ -19,21 +18,25 @@ namespace Microsoft.AspNetCore.Routing
             _logger = logger;
         }
 
-        public IEnumerable<MatcherEndpoint> FindEndpoints(Address lookupAddress)
+        public IEnumerable<Endpoint> FindEndpoints(Address lookupAddress)
         {
+            var allEndpoints = _endpointDatasource.Endpoints;
+
             if (lookupAddress == null ||
                 (string.IsNullOrEmpty(lookupAddress.Name) &&
                 lookupAddress.MethodInfo == null))
             {
-                return Enumerable.Empty<MatcherEndpoint>();
+                return allEndpoints;
             }
 
-            var matcherEndpoints = _endpointDatasource.Endpoints
-                .OfType<MatcherEndpoint>()
-                .Where(mep => mep.Address != null);
+            var endpointsWithAddress = allEndpoints.Where(ep => ep.Address != null);
+            if (!endpointsWithAddress.Any())
+            {
+                return allEndpoints;
+            }
 
-            var result = new List<MatcherEndpoint>();
-            foreach (var endpoint in matcherEndpoints)
+            var result = new List<Endpoint>();
+            foreach (var endpoint in endpointsWithAddress)
             {
                 if (!string.IsNullOrEmpty(lookupAddress.Name) &&
                     !string.IsNullOrEmpty(endpoint.Address.Name) &&
