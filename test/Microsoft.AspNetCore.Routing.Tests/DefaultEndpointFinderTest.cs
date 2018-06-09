@@ -82,6 +82,21 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Fact]
+        public void FindEndpoints_ReturnsEmpty_WhenLookupAddress_IsNull()
+        {
+            // Arrange
+            var endpoint1 = CreateEndpoint("/home", new Address("home"));
+            var endpoint2 = CreateEndpoint("/admin", new Address("admin"));
+            var endpointFinder = CreateDefaultEndpointFinder(endpoint1, endpoint2);
+
+            // Act
+            var result = endpointFinder.FindEndpoints(lookupAddress: null);
+
+            // Assert
+            Assert.Empty(result);
+        }
+
+        [Fact]
         public void FindEndpoints_ReturnsEmpty_WhenNoInformationGiven_OnLookupAddress()
         {
             // Arrange

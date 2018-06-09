@@ -21,7 +21,9 @@ namespace Microsoft.AspNetCore.Routing
 
         public IEnumerable<MatcherEndpoint> FindEndpoints(Address lookupAddress)
         {
-            if (string.IsNullOrEmpty(lookupAddress.Name) && lookupAddress.MethodInfo == null)
+            if (lookupAddress == null ||
+                (string.IsNullOrEmpty(lookupAddress.Name) &&
+                lookupAddress.MethodInfo == null))
             {
                 return Enumerable.Empty<MatcherEndpoint>();
             }
