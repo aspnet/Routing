@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Routing
                 return link;
             }
 
-            throw new InvalidOperationException("Could not find a matching endpoint to generate a link");
+            throw new InvalidOperationException("Could not find a matching endpoint to generate a link.");
         }
 
         public bool TryGetLink(LinkGeneratorContext context, out string link)
