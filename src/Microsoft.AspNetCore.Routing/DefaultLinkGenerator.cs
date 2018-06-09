@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Routing
             throw new InvalidOperationException("Could not find a matching endpoint to generate a link");
         }
 
-        public bool TryGetLink(Address address, IDictionary<string, object> values, out string link)
+        public bool TryGetLink(Address address, IDictionary<string, object> suppliedValues, out string link)
         {
             var endpoint = _endpointFinder.FindEndpoint(address);
             if (endpoint == null)
@@ -43,16 +43,18 @@ namespace Microsoft.AspNetCore.Routing
                     $"MethodInfo '{address.MethodInfo.DeclaringType.FullName}.{address.MethodInfo.Name}'.");
             }
 
-            link = GetLink(endpoint.Template, endpoint.Values, values);
+            link = GetLink(endpoint.RouteTemplate, endpoint.Values, suppliedValues);
             return link != null;
         }
 
-        private string GetLink(string template, IReadOnlyDictionary<string, object> defaultValues, IDictionary<string, object> values)
+        private string GetLink(
+            RouteTemplate template,
+            IReadOnlyDictionary<string, object> defaultValues,
+            IDictionary<string, object> suppliedValues)
         {
-            var routeTemplate = TemplateParser.Parse(template);
             var defaults = new RouteValueDictionary(defaultValues);
-            var templateBinder = new TemplateBinder(UrlEncoder.Default, _uriBuildingContextPool, routeTemplate, defaults);
-            return templateBinder.BindValues(new RouteValueDictionary(values));
+            var templateBinder = new TemplateBinder(UrlEncoder.Default, _uriBuildingContextPool, template, defaults);
+            return templateBinder.BindValues(new RouteValueDictionary(suppliedValues));
         }
     }
 }
