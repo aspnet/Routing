@@ -101,12 +101,12 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             };
             var selector = CreateSelector(actions, loggerFactory);
 
-            var routeContext = CreateHttpContext("POST");
+            var httpContext = CreateHttpContext("POST");
             var actionNames = string.Join(", ", actions.Select(action => action.DisplayName));
             var expectedMessage = $"Request matched multiple endpoints for request path '/test'. Matching endpoints: {actionNames}";
 
             // Act
-            Assert.Throws<AmbiguousMatchException>(() => { selector.SelectBestCandidate(routeContext, actions); });
+            Assert.Throws<AmbiguousMatchException>(() => { selector.SelectBestCandidate(httpContext, actions); });
 
             // Assert
             Assert.Empty(sink.Scopes);
@@ -345,13 +345,6 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             Assert.Same(action, best);
         }
 
-        private static HttpContext GetHttpContext(string httpMethod)
-        {
-            var httpContext = new DefaultHttpContext();
-            httpContext.Request.Method = httpMethod;
-            return httpContext;
-        }
-
         private static EndpointSelector CreateSelector(IReadOnlyList<Endpoint> actions, ILoggerFactory loggerFactory = null)
         {
             loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
@@ -367,19 +360,6 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
                 endpointDataSource,
                 GetEndpointConstraintCache(actionConstraintProviders),
                 loggerFactory);
-        }
-
-        private static VirtualPathContext CreateContext(object routeValues)
-        {
-            return CreateContext(routeValues, ambientValues: null);
-        }
-
-        private static VirtualPathContext CreateContext(object routeValues, object ambientValues)
-        {
-            return new VirtualPathContext(
-                new Mock<HttpContext>(MockBehavior.Strict).Object,
-                new RouteValueDictionary(ambientValues),
-                new RouteValueDictionary(routeValues));
         }
 
         private static HttpContext CreateHttpContext(string httpMethod)

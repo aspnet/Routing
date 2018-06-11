@@ -40,7 +40,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<EndpointSelector>();
             services.TryAddSingleton<EndpointConstraintCache>();
 
-            // Will be cached by the DefaultActionSelector
+            // Will be cached by the EndpointSelector
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IEndpointConstraintProvider, DefaultEndpointConstraintProvider>());
 

@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             // Arrange
             var constraint = new HttpMethodEndpointConstraint(httpMethods);
             var context = CreateEndpointConstraintContext(constraint);
-            context.HttpContext = CreateRouteContext("oPtIoNs", accessControlMethod);
+            context.HttpContext = CreateHttpContext("oPtIoNs", accessControlMethod);
 
             // Act
             var result = constraint.Accept(context);
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             // Arrange
             var constraint = new HttpMethodEndpointConstraint(httpMethods);
             var context = CreateEndpointConstraintContext(constraint);
-            context.HttpContext = CreateRouteContext(expectedMethod);
+            context.HttpContext = CreateHttpContext(expectedMethod);
 
             // Act
             var result = constraint.Accept(context);
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             return context;
         }
 
-        private static HttpContext CreateRouteContext(string requestedMethod, string accessControlMethod = null)
+        private static HttpContext CreateHttpContext(string requestedMethod, string accessControlMethod = null)
         {
             var httpContext = new DefaultHttpContext();
 
