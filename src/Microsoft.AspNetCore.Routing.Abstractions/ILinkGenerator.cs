@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Microsoft.AspNetCore.Routing
+﻿namespace Microsoft.AspNetCore.Routing
 {
     public interface ILinkGenerator
     {

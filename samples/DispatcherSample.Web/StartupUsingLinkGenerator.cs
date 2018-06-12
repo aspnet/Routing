@@ -10,12 +10,20 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matchers;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
 namespace DispatcherSample.Web
 {
+    /// <summary>
+    /// This sets up a sample where a custom EndpointDataSource creates endpoints with MethodInfo based address
+    /// and links are generated based on the lookup of this MethodInfo.
+    /// Flow of a request is: Dispatcher selects an endpoint => Endpoint middleware is invoked => Selected endpoint
+    /// invokes a func which creates an invoker called IHubInvoker which uses the current endpoint's MethodInfo to
+    /// instantiate and execute the target method.
+    /// </summary>
     public class StartupUsingLinkGenerator
     {
         public void ConfigureServices(IServiceCollection services)
@@ -24,10 +32,9 @@ namespace DispatcherSample.Web
 
             services.AddRouting();
 
-            services.AddDispatcher(options =>
-            {
-                options.DataSources.Add(new HubEndpointDataSource());
-            });
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<EndpointDataSource, HubEndpointDataSource>());
+
+            services.AddDispatcher();
         }
 
         public void Configure(IApplicationBuilder app)

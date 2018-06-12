@@ -38,18 +38,18 @@ namespace Microsoft.AspNetCore.Routing
             var result = new List<Endpoint>();
             foreach (var endpoint in endpointsWithAddress)
             {
-                if (!string.IsNullOrEmpty(lookupAddress.Name) &&
-                    !string.IsNullOrEmpty(endpoint.Address.Name) &&
-                    string.Equals(lookupAddress.Name, endpoint.Address.Name, StringComparison.OrdinalIgnoreCase))
-                {
-                    result.Add(endpoint);
-                }
-
                 if (lookupAddress.MethodInfo != null &&
                     lookupAddress.MethodInfo.Equals(endpoint.Address.MethodInfo))
                 {
                     result.Add(endpoint);
                     break;
+                }
+
+                if (!string.IsNullOrEmpty(lookupAddress.Name) &&
+                    !string.IsNullOrEmpty(endpoint.Address.Name) &&
+                    string.Equals(lookupAddress.Name, endpoint.Address.Name, StringComparison.OrdinalIgnoreCase))
+                {
+                    result.Add(endpoint);
                 }
             }
 

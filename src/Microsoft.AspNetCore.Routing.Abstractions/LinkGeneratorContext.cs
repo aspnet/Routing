@@ -6,9 +6,9 @@ namespace Microsoft.AspNetCore.Routing
     {
         public Address Address { get; set; }
 
-        public IDictionary<string,object> AmbientValues { get; set; }
+        public IDictionary<string, object> AmbientValues { get; set; }
 
         // values explicitly set by users
-        public IDictionary<string,object> SuppliedValues { get; set; }
+        public IDictionary<string, object> SuppliedValues { get; set; }
     }
 }

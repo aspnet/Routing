@@ -46,7 +46,9 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         public int Order { get; }
         public Func<RequestDelegate, RequestDelegate> Invoker { get; }
         public string Template { get; }
-        public RouteTemplate RouteTemplate { get; }
         public IReadOnlyDictionary<string, object> Values { get; }
+
+        // Todo: needs review
+        public RouteTemplate RouteTemplate { get; }
     }
 }

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.AspNetCore.Routing.TestObjects;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
 
@@ -208,17 +209,6 @@ namespace Microsoft.AspNetCore.Routing
         {
             public void Index() { }
             public void Contact() { }
-        }
-
-        private class TestEndpoint : Endpoint
-        {
-            public TestEndpoint(
-                EndpointMetadataCollection metadata,
-                string displayName,
-                Address address)
-                : base(metadata, displayName, address)
-            {
-            }
         }
     }
 }
