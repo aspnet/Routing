@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
@@ -22,9 +25,7 @@ namespace Microsoft.AspNetCore.Routing
         {
             var allEndpoints = _endpointDatasource.Endpoints;
 
-            if (lookupAddress == null ||
-                (string.IsNullOrEmpty(lookupAddress.Name) &&
-                lookupAddress.MethodInfo == null))
+            if (lookupAddress == null || string.IsNullOrEmpty(lookupAddress.Name))
             {
                 return allEndpoints;
             }
@@ -35,32 +36,18 @@ namespace Microsoft.AspNetCore.Routing
                 return allEndpoints;
             }
 
-            var result = new List<Endpoint>();
             foreach (var endpoint in endpointsWithAddress)
             {
-                if (lookupAddress.MethodInfo != null &&
-                    lookupAddress.MethodInfo.Equals(endpoint.Address.MethodInfo))
+                if (string.Equals(lookupAddress.Name, endpoint.Address.Name, StringComparison.OrdinalIgnoreCase))
                 {
-                    result.Add(endpoint);
-                    break;
-                }
-
-                if (!string.IsNullOrEmpty(lookupAddress.Name) &&
-                    !string.IsNullOrEmpty(endpoint.Address.Name) &&
-                    string.Equals(lookupAddress.Name, endpoint.Address.Name, StringComparison.OrdinalIgnoreCase))
-                {
-                    result.Add(endpoint);
+                    return new[] { endpoint };
                 }
             }
 
-            if (result.Count == 0)
-            {
-                _logger.LogDebug(
-                    $"Could not find endpoint(s) having an address with name '{lookupAddress.Name}' or " +
-                    $"MethodInfo '{lookupAddress.MethodInfo?.DeclaringType.FullName}.{lookupAddress.MethodInfo?.Name}'.");
-            }
+            _logger.LogDebug(
+                $"Could not find an endpoint having an address with name '{lookupAddress.Name}'.");
 
-            return result;
+            return Enumerable.Empty<Endpoint>();
         }
     }
 }

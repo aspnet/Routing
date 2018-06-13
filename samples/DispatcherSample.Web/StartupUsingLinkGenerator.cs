@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -81,7 +82,7 @@ namespace DispatcherSample.Web
                             0,
                             EndpointMetadataCollection.Empty,
                             null,
-                            new Address(method)));
+                            new Address($"{hub.FullName}-{method.Name}")));
                     }
                 }
 
@@ -105,9 +106,7 @@ namespace DispatcherSample.Web
                 return Task.CompletedTask;
             }
 
-            if (endpoint.Address != null &&
-                (endpoint.Address.MethodInfo != null ||
-                !string.IsNullOrEmpty(endpoint.Address.Name)))
+            if (endpoint.Address != null && !string.IsNullOrEmpty(endpoint.Address.Name))
             {
                 return InvokeUsingAddressAsync(endpoint.Address, httpContext);
             }
@@ -119,14 +118,20 @@ namespace DispatcherSample.Web
 
         private Task InvokeUsingAddressAsync(Address address, HttpContext httpContext)
         {
-            if (address.MethodInfo != null)
+            var nameParts = address.Name.Split('-');
+            var type = Assembly.GetExecutingAssembly().GetTypes()
+                .Where(t => string.Equals(t.FullName, nameParts[0], StringComparison.OrdinalIgnoreCase))
+                .First();
+            var methodInfo = type.GetMethod(nameParts[1]);
+
+            if (methodInfo != null)
             {
-                var instance = ActivatorUtilities.CreateInstance(httpContext.RequestServices, address.MethodInfo.DeclaringType);
+                var instance = ActivatorUtilities.CreateInstance(httpContext.RequestServices, type);
                 var hub = (IHub)instance;
                 hub.HttpContext = httpContext;
                 hub.LinkGenerator = httpContext.RequestServices.GetRequiredService<ILinkGenerator>();
 
-                var obj = address.MethodInfo.Invoke(instance, parameters: null);
+                var obj = methodInfo.Invoke(instance, parameters: null);
                 if (obj is Task task)
                 {
                     return task;
@@ -169,7 +174,7 @@ namespace DispatcherSample.Web
         {
             _logger.LogDebug("Inside MainHub.Index");
 
-            var address = new Address(typeof(MainHub).GetMethod(nameof(MainHub.Contact)));
+            var address = new Address($"{typeof(MainHub).FullName}-{nameof(MainHub.Contact)}");
             var link = LinkGenerator.GetLink(new LinkGeneratorContext() { Address = address });
             HttpContext.Response.StatusCode = StatusCodes.Status200OK;
             HttpContext.Response.ContentType = "text/html";

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Routing.TestObjects;
+﻿using System.Reflection;
+using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Xunit;
@@ -24,43 +25,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Fact]
-        public void FindEndpoints_FindsEndpoint_WithMethodInfo()
-        {
-            // Arrange
-            var lookupMethodInfo = typeof(AdminController).GetMethod("Contact");
-            var endpoint1 = CreateEndpoint(new Address(typeof(HomeController).GetMethod("Index")));
-            var endpoint2 = CreateEndpoint(new Address(typeof(HomeController).GetMethod("Contact")));
-            var endpoint3 = CreateEndpoint(new Address(lookupMethodInfo));
-            var endpointFinder = CreateDefaultEndpointFinder(endpoint1, endpoint2, endpoint3);
-
-            // Act
-            var result = endpointFinder.FindEndpoints(new Address(lookupMethodInfo));
-
-            // Assert
-            var endpoint = Assert.Single(result);
-            Assert.Same(endpoint3, endpoint);
-        }
-
-        [Fact]
-        public void FindEndpoints_FindsFirstEndpoint_WithMatchingMethodInfo()
-        {
-            // Arrange
-            var lookupMethodInfo = typeof(AdminController).GetMethod("Contact");
-            var endpoint1 = CreateEndpoint(new Address(typeof(HomeController).GetMethod("Index")));
-            var endpoint2 = CreateEndpoint(new Address(lookupMethodInfo));
-            var endpoint3 = CreateEndpoint(new Address(lookupMethodInfo));
-            var endpointFinder = CreateDefaultEndpointFinder(endpoint1, endpoint2, endpoint3);
-
-            // Act
-            var result = endpointFinder.FindEndpoints(new Address(lookupMethodInfo));
-
-            // Assert
-            var endpoint = Assert.Single(result);
-            Assert.Same(endpoint2, endpoint);
-        }
-
-        [Fact]
-        public void FindEndpoints_FindsMultipleEndpoints_WithMatchingName()
+        public void FindEndpoints_MultipleEndpointsWithSameName_ReturnsFirstEndpoint_WithMatchingName()
         {
             // Arrange
             var name = "common-tag-for-all-my-section's-routes";
@@ -74,10 +39,8 @@ namespace Microsoft.AspNetCore.Routing
             var result = endpointFinder.FindEndpoints(new Address(name));
 
             // Assert
-            Assert.Collection(
-                result,
-                (ep) => Assert.Same(endpoint1, ep),
-                (ep) => Assert.Same(endpoint3, ep));
+            var endpoint = Assert.Single(result);
+            Assert.Same(endpoint, endpoint1);
         }
 
         [Fact]
@@ -143,7 +106,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpointFinder = CreateDefaultEndpointFinder(endpoint1, endpoint2);
 
             // Act
-            var result = endpointFinder.FindEndpoints(new Address(name: null, methodInfo: null));
+            var result = endpointFinder.FindEndpoints(new Address(name: null));
 
             // Assert
             Assert.Collection(
@@ -161,24 +124,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpointFinder = CreateDefaultEndpointFinder(endpoint1, endpoint2);
 
             // Act
-            var result = endpointFinder.FindEndpoints(new Address("DoesNotExists"));
-
-            // Assert
-            Assert.Empty(result);
-        }
-
-        [Fact]
-        public void FindEndpoints_ReturnsEmpty_WhenNoEndpointFound_WithLookupAddress_Method()
-        {
-            // Arrange
-            var lookupMethodInfo = typeof(AdminController).GetMethod("Contact");
-            var endpoint1 = CreateEndpoint(new Address(typeof(HomeController).GetMethod("Index")));
-            var endpoint2 = CreateEndpoint(new Address(typeof(HomeController).GetMethod("Contact")));
-            var endpoint3 = CreateEndpoint(new Address(typeof(AdminController).GetMethod("Index")));
-            var endpointFinder = CreateDefaultEndpointFinder(endpoint1, endpoint2, endpoint3);
-
-            // Act
-            var result = endpointFinder.FindEndpoints(new Address(lookupMethodInfo));
+            var result = endpointFinder.FindEndpoints(new Address("DoesNotExist"));
 
             // Assert
             Assert.Empty(result);
