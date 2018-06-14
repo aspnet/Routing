@@ -39,7 +39,8 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             Invoker = invoker;
             Template = template;
             RouteTemplate = TemplateParser.Parse(template);
-            Values = new RouteValueDictionary(values);
+            var mergedDefaults = GetDefaults(RouteTemplate, new RouteValueDictionary(values));
+            Values = mergedDefaults;
             Order = order;
         }
 
@@ -50,5 +51,29 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
         // Todo: needs review
         public RouteTemplate RouteTemplate { get; }
+
+        private RouteValueDictionary GetDefaults(RouteTemplate parsedTemplate, RouteValueDictionary defaults)
+        {
+            var result = defaults == null ? new RouteValueDictionary() : new RouteValueDictionary(defaults);
+
+            foreach (var parameter in parsedTemplate.Parameters)
+            {
+                if (parameter.DefaultValue != null)
+                {
+                    if (result.ContainsKey(parameter.Name))
+                    {
+                        throw new InvalidOperationException(
+                          Resources.FormatTemplateRoute_CannotHaveDefaultValueSpecifiedInlineAndExplicitly(
+                              parameter.Name));
+                    }
+                    else
+                    {
+                        result.Add(parameter.Name, parameter.DefaultValue);
+                    }
+                }
+            }
+
+            return result;
+        }
     }
 }
