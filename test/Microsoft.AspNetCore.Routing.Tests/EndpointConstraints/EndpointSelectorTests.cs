@@ -237,7 +237,7 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
         public void SelectBestCandidate_MultipleCallsNoConstraint_ReturnsEndpoint()
         {
             // Arrange
-            var noConstraint = new TestEndpoint(EndpointMetadataCollection.Empty, "noConstraint");
+            var noConstraint = new TestEndpoint(EndpointMetadataCollection.Empty, "noConstraint", address: null);
 
             var actions = new Endpoint[] { noConstraint };
 
@@ -260,7 +260,9 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             var noConstraint = new TestEndpoint(new EndpointMetadataCollection(new[]
             {
                 new object(),
-            }), "noConstraint");
+            }),
+            "noConstraint",
+            address: null);
 
             var actions = new Endpoint[] { noConstraint };
 
