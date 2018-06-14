@@ -38,8 +38,8 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
             Invoker = invoker;
             Template = template;
-            RouteTemplate = TemplateParser.Parse(template);
-            var mergedDefaults = GetDefaults(RouteTemplate, new RouteValueDictionary(values));
+            ParsedTemlate = TemplateParser.Parse(template);
+            var mergedDefaults = GetDefaults(ParsedTemlate, new RouteValueDictionary(values));
             Values = mergedDefaults;
             Order = order;
         }
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         public IReadOnlyDictionary<string, object> Values { get; }
 
         // Todo: needs review
-        public RouteTemplate RouteTemplate { get; }
+        public RouteTemplate ParsedTemlate { get; }
 
         private RouteValueDictionary GetDefaults(RouteTemplate parsedTemplate, RouteValueDictionary defaults)
         {

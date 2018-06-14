@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Routing
 
             foreach (var endpoint in matcherEndpoints)
             {
-                link = GetLink(endpoint.RouteTemplate, endpoint.Values, context);
+                link = GetLink(endpoint.ParsedTemlate, endpoint.Values, context);
                 if (link != null)
                 {
                     return true;
