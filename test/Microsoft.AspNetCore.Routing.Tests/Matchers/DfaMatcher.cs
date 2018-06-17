@@ -33,17 +33,29 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var current = 0;
 
             var path = httpContext.Request.Path.Value;
-            var buffer = stackalloc PathSegment[32];
-            var count = FastPathTokenizer.Tokenize(path, buffer, 32);
+            var segments = stackalloc PathSegment[32];
+            var count = FastPathTokenizer.Tokenize(path, segments, 32);
             
             for (var i = 0; i < count; i++)
             {
-                current = states[current].Transitions.GetDestination(buffer, i, path);
+                ref var segment = ref segments[i];
+                var span = path.AsSpan(segment.Start, segment.Length);
+                current = states[current].Transitions.GetDestination(span);
             }
 
             var matches = new List<(Endpoint, RouteValueDictionary)>();
-
             var candidates = states[current].Matches;
+
+            ProcessMatches(path, matches, candidates, segments);
+            
+            feature.Endpoint = matches.Count == 0 ? null : matches[0].Item1;
+            feature.Values = matches.Count == 0 ? null : matches[0].Item2;
+
+            return Task.CompletedTask;
+        }
+
+        private unsafe void ProcessMatches(string path, List<(Endpoint, RouteValueDictionary)> matches, Candidate[] candidates, PathSegment* segments)
+        {
             for (var i = 0; i < candidates.Length; i++)
             {
                 var values = new RouteValueDictionary();
@@ -53,13 +65,13 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                     for (var j = 0; j < parameters.Length; j++)
                     {
                         var parameter = parameters[j];
-                        if (parameter != null && buffer[j].Length == 0)
+                        if (parameter != null && segments[j].Length == 0)
                         {
                             goto notmatch;
                         }
                         else if (parameter != null)
                         {
-                            var value = path.Substring(buffer[j].Start, buffer[j].Length);
+                            var value = path.Substring(segments[j].Start, segments[j].Length);
                             values.Add(parameter, value);
                         }
                     }
@@ -67,13 +79,8 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
                 matches.Add((candidates[i].Endpoint, values));
 
-                notmatch: ;
+                notmatch:;
             }
-            
-            feature.Endpoint = matches.Count == 0 ? null : matches[0].Item1;
-            feature.Values = matches.Count == 0 ? null : matches[0].Item2;
-
-            return Task.CompletedTask;
         }
 
         public struct State
@@ -87,65 +94,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         {
             public Endpoint Endpoint;
             public string[] Parameters;
-        }
-
-        public abstract class JumpTable
-        {
-            public unsafe abstract int GetDestination(PathSegment* segments, int depth, string path);
-        }
-
-        public class JumpTableBuilder
-        {
-            private readonly List<(string text, int destination)> _entries = new List<(string text, int destination)>();
-
-            public int Depth { get; set; }
-
-            public int Exit { get; set; }
-
-            public void AddEntry(string text, int destination)
-            {
-                _entries.Add((text, destination));
-            }
-
-            public JumpTable Build()
-            {
-                return new SimpleJumpTable(Depth, Exit, _entries.ToArray());
-            }
-        }
-
-        private class SimpleJumpTable : JumpTable
-        {
-            private readonly (string text, int destination)[] _entries;
-            private readonly int _depth;
-            private readonly int _exit;
-
-            public SimpleJumpTable(int depth, int exit, (string text, int destination)[] entries)
-            {
-                _depth = depth;
-                _exit = exit;
-                _entries = entries;
-            }
-
-            public unsafe override int GetDestination(PathSegment* segments, int depth, string path)
-            {
-                for (var i = 0; i < _entries.Length; i++)
-                {
-                    var segment = segments[depth];
-                    if (segment.Length == _entries[i].text.Length &&
-                        string.Compare(
-                        path,
-                        segment.Start,
-                        _entries[i].text,
-                        0,
-                        segment.Length,
-                        StringComparison.OrdinalIgnoreCase) == 0)
-                    {
-                        return _entries[i].destination;
-                    }
-                }
-
-                return _exit;
-            }
         }
     }
 }

@@ -289,7 +289,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
             public override void Lower(InstructionBuilder builder)
             {
-                var table = new JumpTableBuilder() { Depth = Depth, };
+                var table = new JumpTableBuilder();
                 var index = builder.AddJumpTable(table);
                 builder.AddInstruction(new Instruction()
                 {
@@ -312,7 +312,8 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 }
 
                 builder.EndBlock();
-                table.Exit = builder.Next;
+                table.ZeroExit = builder.Next;
+                table.DefaultExit = builder.Next;
             }
         }
 

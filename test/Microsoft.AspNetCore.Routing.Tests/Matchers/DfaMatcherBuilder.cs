@@ -109,13 +109,14 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
             var exit = states.Count;
             states.Add(new State() { IsAccepting = false, Matches = Array.Empty<Candidate>(), });
-            tables.Add(new JumpTableBuilder() { Exit = exit, });
+            tables.Add(new JumpTableBuilder() { DefaultExit = exit, ZeroExit = exit, });
 
             for (var i = 0; i < tables.Count; i++)
             {
-                if (tables[i].Exit == -1)
+                if (tables[i].DefaultExit == -1)
                 {
-                    tables[i].Exit = exit;
+                    tables[i].DefaultExit = exit;
+                    tables[i].ZeroExit = exit;
                 }
             }
 
@@ -158,7 +159,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 IsAccepting = node.Matches.Count > 0,
             });
 
-            var table = new JumpTableBuilder() { Depth = node.Depth, };
+            var table = new JumpTableBuilder();
             tables.Add(table);
 
             foreach (var kvp in node.Literals)
@@ -178,7 +179,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 exitIndex = AddNode(exit, states, tables);
             }
 
-            table.Exit = exitIndex;
+            table.DefaultExit = exitIndex;
             return index;
         }
 
