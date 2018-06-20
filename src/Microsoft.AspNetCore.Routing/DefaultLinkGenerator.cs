@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Routing
             IEnumerable<Endpoint> endpoints = null;
             link = null;
 
-            // If endpoints where already provided externally, use them, else find the endpoints using address's name
+            // If endpoints were already provided by another, use them, else find the endpoints using address's name
             if (context.Endpoints == null)
             {
                 var address = context.Address;
