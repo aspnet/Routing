@@ -41,13 +41,22 @@ namespace Microsoft.AspNetCore.Routing
 
         public bool TryGetLink(LinkGeneratorContext context, out string link)
         {
-            var address = context.Address;
-            var endpoints = _endpointFinder.FindEndpoints(address);
+            IEnumerable<Endpoint> endpoints = null;
             link = null;
 
-            if (endpoints == null)
+            // If endpoints where already provided externally, use them, else find the endpoints using address's name
+            if (context.Endpoints == null)
             {
-                return false;
+                var address = context.Address;
+                endpoints = _endpointFinder.FindEndpoints(address);
+                if (endpoints == null)
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                endpoints = context.Endpoints;
             }
 
             var matcherEndpoints = endpoints.OfType<MatcherEndpoint>();
