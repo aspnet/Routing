@@ -3,10 +3,10 @@
 
 namespace Microsoft.AspNetCore.Routing
 {
-    public interface ILinkGenerator
+    public abstract class LinkGenerator
     {
-        bool TryGetLink(LinkGeneratorContext context, out string link);
+        public abstract bool TryGetLink(LinkGeneratorContext context, out string link);
 
-        string GetLink(LinkGeneratorContext context);
+        public abstract string GetLink(LinkGeneratorContext context);
     }
 }

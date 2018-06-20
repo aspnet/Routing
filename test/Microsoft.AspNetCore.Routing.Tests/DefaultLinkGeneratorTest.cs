@@ -781,7 +781,7 @@ namespace Microsoft.AspNetCore.Routing
                 new Address("foo"));
         }
 
-        private ILinkGenerator CreateLinkGenerator(IEndpointFinder endpointFinder)
+        private LinkGenerator CreateLinkGenerator(IEndpointFinder endpointFinder)
         {
             return new DefaultLinkGenerator(
                 endpointFinder,
