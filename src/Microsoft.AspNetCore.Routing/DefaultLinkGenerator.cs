@@ -13,7 +13,7 @@ using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    public class DefaultLinkGenerator : LinkGenerator
+    public class DefaultLinkGenerator : ILinkGenerator
     {
         private readonly IEndpointFinder _endpointFinder;
         private readonly ObjectPool<UriBuildingContext> _uriBuildingContextPool;
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Routing
             _logger = logger;
         }
 
-        public override string GetLink(LinkGeneratorContext context)
+        public string GetLink(LinkGeneratorContext context)
         {
             if (TryGetLink(context, out var link))
             {
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Routing
             throw new InvalidOperationException("Could not find a matching endpoint to generate a link.");
         }
 
-        public override bool TryGetLink(LinkGeneratorContext context, out string link)
+        public bool TryGetLink(LinkGeneratorContext context, out string link)
         {
             IEnumerable<Endpoint> endpoints = null;
             link = null;

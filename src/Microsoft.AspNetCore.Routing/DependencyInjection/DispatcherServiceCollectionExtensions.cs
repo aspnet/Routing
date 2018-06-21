@@ -36,7 +36,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Link generation related services
             services.TryAddSingleton<IEndpointFinder, DefaultEndpointFinder>();
-            services.TryAddSingleton<LinkGenerator, DefaultLinkGenerator>();
+            services.TryAddSingleton<ILinkGenerator, DefaultLinkGenerator>();
             //
             // Endpoint Selection
             //
