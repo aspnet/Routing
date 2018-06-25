@@ -34,6 +34,9 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
         public readonly MatchProcessor[] MatchProcessors;
 
+        // Data for EndpointSelectorPolicy - indexed by policy index in the DFA matcher
+        public readonly object[] PolicyData;
+
         // Used in tests.
         public Candidate(MatcherEndpoint endpoint)
         {
@@ -44,6 +47,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             CatchAll = default;
             ComplexSegments = Array.Empty<(RoutePatternPathSegment pathSegment, int segmentIndex)>();
             MatchProcessors = Array.Empty<MatchProcessor>();
+            PolicyData = Array.Empty<object>();
 
             Flags = CandidateFlags.None;
         }
@@ -54,7 +58,8 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             (string parameterName, int segmentIndex, int slotIndex)[] captures,
             (string parameterName, int segmentIndex, int slotIndex) catchAll,
             (RoutePatternPathSegment pathSegment, int segmentIndex)[] complexSegments,
-            MatchProcessor[] matchProcessors)
+            MatchProcessor[] matchProcessors,
+            object[] policyData)
         {
             Endpoint = endpoint;
             Slots = slots;
@@ -62,6 +67,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             CatchAll = catchAll;
             ComplexSegments = complexSegments;
             MatchProcessors = matchProcessors;
+            PolicyData = policyData;
 
             Flags = CandidateFlags.None;
             for (var i = 0; i < slots.Length; i++)

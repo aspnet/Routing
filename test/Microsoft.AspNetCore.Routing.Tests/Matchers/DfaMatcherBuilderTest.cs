@@ -597,10 +597,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var dataSource = new CompositeEndpointDataSource(Array.Empty<EndpointDataSource>());
             return new DfaMatcherBuilder(
                 Mock.Of<MatchProcessorFactory>(),
-                new EndpointSelector(
-                    dataSource,
-                    new EndpointConstraintCache(dataSource, Array.Empty<IEndpointConstraintProvider>()),
-                    NullLoggerFactory.Instance));
+                Array.Empty<EndpointSelectorPolicy>());
         }
 
         private MatcherEndpoint CreateEndpoint(

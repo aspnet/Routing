@@ -2,10 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.Routing.Matchers
 {
-    internal class CandidateSet
+    internal class CandidateSet : IReadOnlyList<MatcherEndpoint>
     {
         public static readonly CandidateSet Empty = new CandidateSet(Array.Empty<Candidate>(), Array.Empty<int>());
 
@@ -35,6 +38,20 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             Groups = groups;
 
             GroupCount = groups.Length == 0 ? 0 : groups.Length - 1;
+        }
+
+        public MatcherEndpoint this[int index] => Candidates[index].Endpoint;
+
+        public int Count => Candidates.Length;
+
+        public IEnumerator<MatcherEndpoint> GetEnumerator()
+        {
+            return Candidates.Select(c => c.Endpoint).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return GetEnumerator();
         }
 
         // See description on Groups.
