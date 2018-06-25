@@ -40,6 +40,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             if (httpMethod != null)
             {
                 metadata.Add(new HttpMethodEndpointConstraint(new string[] { httpMethod, }));
+                metadata.Add(new HttpMethodMetadata(new string[] { httpMethod, }));
             }
 
             return new MatcherEndpoint(
