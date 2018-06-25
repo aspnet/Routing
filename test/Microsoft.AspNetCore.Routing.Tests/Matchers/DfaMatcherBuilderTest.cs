@@ -3,11 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Routing.Constraints;
-using Microsoft.AspNetCore.Routing.EndpointConstraints;
 using Microsoft.AspNetCore.Routing.Patterns;
-using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Xunit;
 
@@ -28,7 +25,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var root = builder.BuildDfaTree();
 
             // Assert
-            Assert.Same(endpoint, Assert.Single(root.Matches).Endpoint);
+            Assert.Same(endpoint, Assert.Single(root.Matches));
             Assert.Null(root.Parameters);
             Assert.Empty(root.Literals);
         }
@@ -67,7 +64,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             Assert.Equal("c", next.Key);
 
             var c = next.Value;
-            Assert.Same(endpoint, Assert.Single(c.Matches).Endpoint);
+            Assert.Same(endpoint, Assert.Single(c.Matches));
             Assert.Null(c.Parameters);
             Assert.Empty(c.Literals);
         }
@@ -97,7 +94,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             Assert.Empty(b.Literals);
 
             var c = b.Parameters;
-            Assert.Same(endpoint, Assert.Single(c.Matches).Endpoint);
+            Assert.Same(endpoint, Assert.Single(c.Matches));
             Assert.Null(c.Parameters);
             Assert.Empty(c.Literals);
         }
@@ -121,14 +118,14 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var a = root.Parameters;
 
             // The catch all can match a path like '/a'
-            Assert.Same(endpoint, Assert.Single(a.Matches).Endpoint);
+            Assert.Same(endpoint, Assert.Single(a.Matches));
             Assert.Empty(a.Literals);
             Assert.Null(a.Parameters);
 
             // Catch-all nodes include an extra transition that loops to process
             // extra segments.
             var catchAll = a.CatchAll;
-            Assert.Same(endpoint, Assert.Single(catchAll.Matches).Endpoint);
+            Assert.Same(endpoint, Assert.Single(catchAll.Matches));
             Assert.Empty(catchAll.Literals);
             Assert.Same(catchAll, catchAll.Parameters);
             Assert.Same(catchAll, catchAll.CatchAll);
@@ -147,13 +144,13 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var root = builder.BuildDfaTree();
 
             // Assert
-            Assert.Same(endpoint, Assert.Single(root.Matches).Endpoint);
+            Assert.Same(endpoint, Assert.Single(root.Matches));
             Assert.Empty(root.Literals);
 
             // Catch-all nodes include an extra transition that loops to process
             // extra segments.
             var catchAll = root.CatchAll;
-            Assert.Same(endpoint, Assert.Single(catchAll.Matches).Endpoint);
+            Assert.Same(endpoint, Assert.Single(catchAll.Matches));
             Assert.Empty(catchAll.Literals);
             Assert.Same(catchAll, catchAll.Parameters);
         }
@@ -193,7 +190,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             Assert.Equal("c", next.Key);
 
             var c1 = next.Value;
-            Assert.Same(endpoint1, Assert.Single(c1.Matches).Endpoint);
+            Assert.Same(endpoint1, Assert.Single(c1.Matches));
             Assert.Null(c1.Parameters);
             Assert.Empty(c1.Literals);
 
@@ -205,7 +202,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             Assert.Equal("c", next.Key);
 
             var c2 = next.Value;
-            Assert.Same(endpoint2, Assert.Single(c2.Matches).Endpoint);
+            Assert.Same(endpoint2, Assert.Single(c2.Matches));
             Assert.Null(c2.Parameters);
             Assert.Empty(c2.Literals);
         }
@@ -248,8 +245,8 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var c1 = next.Value;
             Assert.Collection(
                 c1.Matches,
-                e => Assert.Same(endpoint1, e.Endpoint),
-                e => Assert.Same(endpoint2, e.Endpoint));
+                e => Assert.Same(endpoint1, e),
+                e => Assert.Same(endpoint2, e));
             Assert.Null(c1.Parameters);
             Assert.Empty(c1.Literals);
 
@@ -261,7 +258,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             Assert.Equal("c", next.Key);
 
             var c2 = next.Value;
-            Assert.Same(endpoint2, Assert.Single(c2.Matches).Endpoint);
+            Assert.Same(endpoint2, Assert.Single(c2.Matches));
             Assert.Null(c2.Parameters);
             Assert.Empty(c2.Literals);
         }
@@ -302,8 +299,8 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var c = next.Value;
             Assert.Collection(
                 c.Matches,
-                e => Assert.Same(endpoint1, e.Endpoint),
-                e => Assert.Same(endpoint2, e.Endpoint));
+                e => Assert.Same(endpoint1, e),
+                e => Assert.Same(endpoint2, e));
             Assert.Null(c.Parameters);
             Assert.Empty(c.Literals);
         }
@@ -331,13 +328,13 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             Assert.Equal("a", next.Key);
 
             var a = next.Value;
-            Assert.Same(endpoint2, Assert.Single(a.Matches).Endpoint);
+            Assert.Same(endpoint2, Assert.Single(a.Matches));
 
             next = Assert.Single(a.Literals);
             Assert.Equal("b", next.Key);
 
             var b1 = next.Value;
-            Assert.Same(endpoint2, Assert.Single(a.Matches).Endpoint);
+            Assert.Same(endpoint2, Assert.Single(a.Matches));
             Assert.Null(b1.Parameters);
 
             next = Assert.Single(b1.Literals);
@@ -346,13 +343,13 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var c1 = next.Value;
             Assert.Collection(
                 c1.Matches,
-                e => Assert.Same(endpoint1, e.Endpoint),
-                e => Assert.Same(endpoint2, e.Endpoint));
+                e => Assert.Same(endpoint1, e),
+                e => Assert.Same(endpoint2, e));
             Assert.Null(c1.Parameters);
             Assert.Empty(c1.Literals);
 
             var catchAll = a.CatchAll;
-            Assert.Same(endpoint2, Assert.Single(catchAll.Matches).Endpoint);
+            Assert.Same(endpoint2, Assert.Single(catchAll.Matches));
             Assert.Same(catchAll, catchAll.Parameters);
             Assert.Same(catchAll, catchAll.CatchAll);
         }
@@ -380,11 +377,11 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             Assert.Equal("a", next.Key);
 
             var a = next.Value;
-            Assert.Same(endpoint2, Assert.Single(a.Matches).Endpoint);
+            Assert.Same(endpoint2, Assert.Single(a.Matches));
             Assert.Empty(a.Literals);
 
             var b1 = a.Parameters;
-            Assert.Same(endpoint2, Assert.Single(a.Matches).Endpoint);
+            Assert.Same(endpoint2, Assert.Single(a.Matches));
             Assert.Null(b1.Parameters);
 
             next = Assert.Single(b1.Literals);
@@ -393,13 +390,13 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var c1 = next.Value;
             Assert.Collection(
                 c1.Matches,
-                e => Assert.Same(endpoint1, e.Endpoint),
-                e => Assert.Same(endpoint2, e.Endpoint));
+                e => Assert.Same(endpoint1, e),
+                e => Assert.Same(endpoint2, e));
             Assert.Null(c1.Parameters);
             Assert.Empty(c1.Literals);
 
             var catchAll = a.CatchAll;
-            Assert.Same(endpoint2, Assert.Single(catchAll.Matches).Endpoint);
+            Assert.Same(endpoint2, Assert.Single(catchAll.Matches));
             Assert.Same(catchAll, catchAll.Parameters);
             Assert.Same(catchAll, catchAll.CatchAll);
         }
@@ -413,7 +410,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var builder = CreateDfaMatcherBuilder();
 
             // Act
-            var candidate = builder.CreateCandidate(new MatcherBuilderEntry(endpoint));
+            var candidate = builder.CreateCandidate(endpoint, score: 0);
 
             // Assert
             Assert.Equal(Candidate.CandidateFlags.None, candidate.Flags);
@@ -433,7 +430,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var builder = CreateDfaMatcherBuilder();
 
             // Act
-            var candidate = builder.CreateCandidate(new MatcherBuilderEntry(endpoint));
+            var candidate = builder.CreateCandidate(endpoint, score: 0);
 
             // Assert
             Assert.Equal(Candidate.CandidateFlags.HasCaptures, candidate.Flags);
@@ -457,7 +454,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var builder = CreateDfaMatcherBuilder();
 
             // Act
-            var candidate = builder.CreateCandidate(new MatcherBuilderEntry(endpoint));
+            var candidate = builder.CreateCandidate(endpoint, score: 0);
 
             // Assert
             Assert.Equal(
@@ -487,7 +484,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var builder = CreateDfaMatcherBuilder();
 
             // Act
-            var candidate = builder.CreateCandidate(new MatcherBuilderEntry(endpoint));
+            var candidate = builder.CreateCandidate(endpoint, score: 0);
 
             // Assert
             Assert.Equal(
@@ -519,7 +516,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var builder = CreateDfaMatcherBuilder();
 
             // Act
-            var candidate = builder.CreateCandidate(new MatcherBuilderEntry(endpoint));
+            var candidate = builder.CreateCandidate(endpoint, score: 0);
 
             // Assert
             Assert.Equal(
@@ -550,7 +547,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var builder = CreateDfaMatcherBuilder();
 
             // Act
-            var candidate = builder.CreateCandidate(new MatcherBuilderEntry(endpoint));
+            var candidate = builder.CreateCandidate(endpoint, score: 0);
 
             // Assert
             Assert.Equal(
@@ -581,7 +578,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var builder = CreateDfaMatcherBuilder();
 
             // Act
-            var candidate = builder.CreateCandidate(new MatcherBuilderEntry(endpoint));
+            var candidate = builder.CreateCandidate(endpoint, score: 0);
 
             // Assert
             Assert.Equal( Candidate.CandidateFlags.HasMatchProcessors, candidate.Flags);
@@ -597,10 +594,8 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var dataSource = new CompositeEndpointDataSource(Array.Empty<EndpointDataSource>());
             return new DfaMatcherBuilder(
                 Mock.Of<MatchProcessorFactory>(),
-                new EndpointSelector(
-                    dataSource,
-                    new EndpointConstraintCache(dataSource, Array.Empty<IEndpointConstraintProvider>()),
-                    NullLoggerFactory.Instance));
+                Mock.Of<EndpointSelector>(),
+                Array.Empty<MatcherPolicy>());
         }
 
         private MatcherEndpoint CreateEndpoint(

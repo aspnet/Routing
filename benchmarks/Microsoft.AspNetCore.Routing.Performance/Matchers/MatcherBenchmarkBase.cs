@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.EndpointConstraints;
+using Microsoft.AspNetCore.Routing.Metadata;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -39,6 +40,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             if (httpMethod != null)
             {
                 metadata.Add(new HttpMethodEndpointConstraint(new string[] { httpMethod, }));
+                metadata.Add(new HttpMethodMetadata(new string[] { httpMethod, }));
             }
 
             return new MatcherEndpoint(

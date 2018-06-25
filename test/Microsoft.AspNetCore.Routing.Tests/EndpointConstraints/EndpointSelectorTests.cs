@@ -4,9 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Matchers;
-using Microsoft.AspNetCore.Routing.TestObjects;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -19,37 +20,37 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
     public class EndpointSelectorTests
     {
         [Fact]
-        public void SelectBestCandidate_MultipleEndpoints_BestMatchSelected()
+        public async Task SelectBestCandidate_MultipleEndpoints_BestMatchSelected()
         {
             // Arrange
-            var defaultEndpoint = new TestEndpoint(
-                EndpointMetadataCollection.Empty,
-                "No constraint endpoint");
+            var defaultEndpoint = CreateEndpoint("No constraint endpoint");
 
-            var postEndpoint = new TestEndpoint(
-                new EndpointMetadataCollection(new object[] { new HttpMethodEndpointConstraint(new[] { "POST" }) }),
-                "POST constraint endpoint");
+            var postEndpoint = CreateEndpoint(
+                "POST constraint endpoint",
+                new HttpMethodEndpointConstraint(new[] { "POST" }));
 
-            var endpoints = new Endpoint[]
-                {
-                    defaultEndpoint,
-                    postEndpoint
-                };
+            var endpoints = new[]
+            {
+                defaultEndpoint,
+                postEndpoint
+            };
 
-            var endpointSelector = CreateSelector(endpoints);
+            var selector = CreateSelector(endpoints);
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Method = "POST";
 
+            var feature = new EndpointFeature();
+
             // Act
-            var bestCandidateEndpoint = endpointSelector.SelectBestCandidate(httpContext, endpoints);
+            await selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
 
             // Assert
-            Assert.NotNull(postEndpoint);
+            Assert.Same(postEndpoint, feature.Endpoint);
         }
 
         [Fact]
-        public void SelectBestCandidate_MultipleEndpoints_AmbiguousMatchExceptionThrown()
+        public async Task SelectBestCandidate_MultipleEndpoints_AmbiguousMatchExceptionThrown()
         {
             // Arrange
             var expectedMessage =
@@ -58,29 +59,26 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
                 "Ambiguous1" + Environment.NewLine +
                 "Ambiguous2";
 
-            var defaultEndpoint1 = new TestEndpoint(
-                EndpointMetadataCollection.Empty,
-                "Ambiguous1");
+            var defaultEndpoint1 = CreateEndpoint("Ambiguous1");
+            var defaultEndpoint2 = CreateEndpoint("Ambiguous2");
 
-            var defaultEndpoint2 = new TestEndpoint(
-                EndpointMetadataCollection.Empty,
-                "Ambiguous2");
+            var endpoints = new[]
+            {
+                defaultEndpoint1,
+                defaultEndpoint2
+            };
 
-            var endpoints = new Endpoint[]
-                {
-                    defaultEndpoint1,
-                    defaultEndpoint2
-                };
-
-            var endpointSelector = CreateSelector(endpoints);
+            var selector = CreateSelector(endpoints);
 
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Method = "POST";
 
+            var feature = new EndpointFeature();
+
             // Act
-            var ex = Assert.ThrowsAny<AmbiguousMatchException>(() =>
+            var ex = await Assert.ThrowsAnyAsync<AmbiguousMatchException>(() =>
             {
-                endpointSelector.SelectBestCandidate(httpContext, endpoints);
+                return selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
             });
 
             // Assert
@@ -88,25 +86,33 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
         }
 
         [Fact]
-        public void SelectBestCandidate_AmbiguousEndpoints_LogIsCorrect()
+        public async Task SelectBestCandidate_AmbiguousEndpoints_LogIsCorrect()
         {
             // Arrange
             var sink = new TestSink();
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
-            var actions = new Endpoint[]
+            var endpoints = new[]
             {
-                new TestEndpoint(EndpointMetadataCollection.Empty, "A1"),
-                new TestEndpoint(EndpointMetadataCollection.Empty, "A2"),
+                CreateEndpoint("A1"),
+                CreateEndpoint("A2"),
             };
-            var selector = CreateSelector(actions, loggerFactory);
+
+            var selector = CreateSelector(endpoints, loggerFactory);
 
             var httpContext = CreateHttpContext("POST");
-            var actionNames = string.Join(", ", actions.Select(action => action.DisplayName));
-            var expectedMessage = $"Request matched multiple endpoints for request path '/test'. Matching endpoints: {actionNames}";
+            var feature = new EndpointFeature();
+
+            var names = string.Join(", ", endpoints.Select(action => action.DisplayName));
+            var expectedMessage =
+                $"Request matched multiple endpoints for request path '/test'. " +
+                $"Matching endpoints: {names}";
 
             // Act
-            Assert.Throws<AmbiguousMatchException>(() => { selector.SelectBestCandidate(httpContext, actions); });
+            await Assert.ThrowsAsync<AmbiguousMatchException>(() =>
+            {
+                return selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
+            });
 
             // Assert
             Assert.Empty(sink.Scopes);
@@ -115,301 +121,294 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
         }
 
         [Fact]
-        public void SelectBestCandidate_PrefersEndpointWithConstraints()
+        public async Task SelectBestCandidate_PrefersEndpointWithConstraints()
         {
             // Arrange
-            var actionWithConstraints = new TestEndpoint(
-                new EndpointMetadataCollection(new[] { new HttpMethodEndpointConstraint(new string[] { "POST" }) }),
-                "Has constraint");
+            var endpointWithConstraint = CreateEndpoint(
+                "Has constraint",
+                new HttpMethodEndpointConstraint(new string[] { "POST" }));
 
-            var actionWithoutConstraints = new TestEndpoint(
-                EndpointMetadataCollection.Empty,
-                "No constraint");
+            var endpointWithoutConstraints = CreateEndpoint("No constraint");
 
-            var actions = new Endpoint[] { actionWithConstraints, actionWithoutConstraints };
+            var endpoints = new[] { endpointWithConstraint, endpointWithoutConstraints };
 
-            var selector = CreateSelector(actions);
-            var context = CreateHttpContext("POST");
+            var selector = CreateSelector(endpoints);
+            var httpContext = CreateHttpContext("POST");
+            var feature = new EndpointFeature();
 
             // Act
-            var action = selector.SelectBestCandidate(context, actions);
+            await selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
 
             // Assert
-            Assert.Same(action, actionWithConstraints);
+            Assert.Same(endpointWithConstraint, endpointWithConstraint);
         }
 
         [Fact]
-        public void SelectBestCandidate_ConstraintsRejectAll()
+        public async Task SelectBestCandidate_ConstraintsRejectAll()
         {
             // Arrange
-            var action1 = new TestEndpoint(
-                new EndpointMetadataCollection(new[] { new BooleanConstraint() { Pass = false, } }),
-                "action1");
+            var endpoint1 = CreateEndpoint(
+                "action1",
+                new BooleanConstraint() { Pass = false, });
 
-            var action2 = new TestEndpoint(
-                new EndpointMetadataCollection(new[] { new BooleanConstraint() { Pass = false, } }),
-                "action2");
+            var endpoint2 = CreateEndpoint(
+                "action2",
+                new BooleanConstraint() { Pass = false, });
 
-            var actions = new Endpoint[] { action1, action2 };
+            var endpoints = new[] { endpoint1, endpoint2 };
 
-            var selector = CreateSelector(actions);
-            var context = CreateHttpContext("POST");
+            var selector = CreateSelector(endpoints);
+            var httpContext = CreateHttpContext("POST");
+            var feature = new EndpointFeature();
 
             // Act
-            var action = selector.SelectBestCandidate(context, actions);
+            await selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
 
             // Assert
-            Assert.Null(action);
+            Assert.Null(feature.Endpoint);
         }
 
         [Fact]
-        public void SelectBestCandidate_ConstraintsRejectAll_DifferentStages()
+        public async Task SelectBestCandidate_ConstraintsRejectAll_DifferentStages()
         {
             // Arrange
-            var action1 = new TestEndpoint(new EndpointMetadataCollection(new[]
-            {
+            var endpoint1 = CreateEndpoint(
+                "action1",
                 new BooleanConstraint() { Pass = false, Order = 0 },
-                new BooleanConstraint() { Pass = true, Order = 1 },
-            }),
-            "action1");
+                new BooleanConstraint() { Pass = true, Order = 1 });
 
-            var action2 = new TestEndpoint(new EndpointMetadataCollection(new[]
-            {
+            var endpoint2 = CreateEndpoint(
+                "action2",
                 new BooleanConstraint() { Pass = true, Order = 0 },
-                new BooleanConstraint() { Pass = false, Order = 1 },
-            }),
-            "action2");
+                new BooleanConstraint() { Pass = false, Order = 1 });
 
-            var actions = new Endpoint[] { action1, action2 };
+            var endpoints = new[] { endpoint1, endpoint2 };
 
-            var selector = CreateSelector(actions);
-            var context = CreateHttpContext("POST");
+            var selector = CreateSelector(endpoints);
+            var httpContext = CreateHttpContext("POST");
+            var feature = new EndpointFeature();
 
             // Act
-            var action = selector.SelectBestCandidate(context, actions);
+            await selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
 
             // Assert
-            Assert.Null(action);
+            Assert.Null(feature.Endpoint);
         }
 
         [Fact]
-        public void SelectBestCandidate_EndpointConstraintFactory()
+        public async Task SelectBestCandidate_EndpointConstraintFactory()
         {
             // Arrange
-            var actionWithConstraints = new TestEndpoint(new EndpointMetadataCollection(new[]
-            {
+            var endpointWithConstraints = CreateEndpoint(
+                "actionWithConstraints",
                 new ConstraintFactory()
                 {
                     Constraint = new BooleanConstraint() { Pass = true },
-                },
-            }),
-            "actionWithConstraints");
+                });
 
-            var actionWithoutConstraints = new TestEndpoint(
-                EndpointMetadataCollection.Empty,
-                "actionWithoutConstraints");
+            var actionWithoutConstraints = CreateEndpoint("actionWithoutConstraints");
 
-            var actions = new Endpoint[] { actionWithConstraints, actionWithoutConstraints };
+            var endpoints = new[] { endpointWithConstraints, actionWithoutConstraints };
 
-            var selector = CreateSelector(actions);
-            var context = CreateHttpContext("POST");
+            var selector = CreateSelector(endpoints);
+            var httpContext = CreateHttpContext("POST");
+            var feature = new EndpointFeature();
 
             // Act
-            var action = selector.SelectBestCandidate(context, actions);
+            await selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
 
             // Assert
-            Assert.Same(action, actionWithConstraints);
+            Assert.Same(endpointWithConstraints, feature.Endpoint);
         }
 
         [Fact]
-        public void SelectBestCandidate_MultipleCallsNoConstraint_ReturnsEndpoint()
+        public async Task SelectBestCandidate_MultipleCallsNoConstraint_ReturnsEndpoint()
         {
             // Arrange
-            var noConstraint = new TestEndpoint(EndpointMetadataCollection.Empty, "noConstraint");
+            var noConstraint = CreateEndpoint("noConstraint");
 
-            var actions = new Endpoint[] { noConstraint };
+            var endpoints = new[] { noConstraint };
 
-            var selector = CreateSelector(actions);
-            var context = CreateHttpContext("POST");
+            var selector = CreateSelector(endpoints);
+            var httpContext = CreateHttpContext("POST");
+            var feature = new EndpointFeature();
 
             // Act
-            var action1 = selector.SelectBestCandidate(context, actions);
-            var action2 = selector.SelectBestCandidate(context, actions);
+            await selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
+            var endpoint1 = feature.Endpoint;
+
+            await selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
+            var endpoint2 = feature.Endpoint;
 
             // Assert
-            Assert.Same(action1, noConstraint);
-            Assert.Same(action2, noConstraint);
+            Assert.Same(endpoint1, noConstraint);
+            Assert.Same(endpoint2, noConstraint);
         }
 
         [Fact]
-        public void SelectBestCandidate_MultipleCallsNonConstraintMetadata_ReturnsEndpoint()
+        public async Task SelectBestCandidate_MultipleCallsNonConstraintMetadata_ReturnsEndpoint()
         {
             // Arrange
-            var noConstraint = new TestEndpoint(new EndpointMetadataCollection(new[]
-            {
-                new object(),
-            }),
-            "noConstraint");
+            var noConstraint = CreateEndpoint("noConstraint", new object());
 
-            var actions = new Endpoint[] { noConstraint };
+            var endpoints = new[] { noConstraint };
 
-            var selector = CreateSelector(actions);
-            var context = CreateHttpContext("POST");
+            var selector = CreateSelector(endpoints);
+            var httpContext = CreateHttpContext("POST");
+            var feature = new EndpointFeature();
 
             // Act
-            var action1 = selector.SelectBestCandidate(context, actions);
-            var action2 = selector.SelectBestCandidate(context, actions);
+            await selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
+            var endpoint1 = feature.Endpoint;
+
+            await selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
+            var endpoint2 = feature.Endpoint;
 
             // Assert
-            Assert.Same(action1, noConstraint);
-            Assert.Same(action2, noConstraint);
+            Assert.Same(endpoint1, noConstraint);
+            Assert.Same(endpoint2, noConstraint);
         }
 
         [Fact]
-        public void SelectBestCandidate_EndpointConstraintFactory_ReturnsNull()
+        public async Task SelectBestCandidate_EndpointConstraintFactory_ReturnsNull()
         {
             // Arrange
-            var nullConstraint = new TestEndpoint(new EndpointMetadataCollection(new[]
-            {
-                new ConstraintFactory(),
-            }),
-            "nullConstraint");
+            var nullConstraint = CreateEndpoint("nullConstraint", new ConstraintFactory());
 
-            var actions = new Endpoint[] { nullConstraint };
+            var endpoints = new[] { nullConstraint };
 
-            var selector = CreateSelector(actions);
-            var context = CreateHttpContext("POST");
+            var selector = CreateSelector(endpoints);
+            var httpContext = CreateHttpContext("POST");
+            var feature = new EndpointFeature();
 
             // Act
-            var action1 = selector.SelectBestCandidate(context, actions);
-            var action2 = selector.SelectBestCandidate(context, actions);
+            await selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
+            var endpoint1 = feature.Endpoint;
+
+            await selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
+            var endpoint2 = feature.Endpoint;
 
             // Assert
-            Assert.Same(action1, nullConstraint);
-            Assert.Same(action2, nullConstraint);
+            Assert.Same(endpoint1, nullConstraint);
+            Assert.Same(endpoint2, nullConstraint);
         }
 
         // There's a custom constraint provider registered that only understands BooleanConstraintMarker
         [Fact]
-        public void SelectBestCandidate_CustomProvider()
+        public async Task SelectBestCandidate_CustomProvider()
         {
             // Arrange
-            var actionWithConstraints = new TestEndpoint(new EndpointMetadataCollection(new[]
-            {
-                new BooleanConstraintMarker() { Pass = true },
-            }),
-            "actionWithConstraints");
+            var endpointWithConstraints = CreateEndpoint(
+                "actionWithConstraints",
+                new BooleanConstraintMarker() { Pass = true });
 
-            var actionWithoutConstraints = new TestEndpoint(
-                EndpointMetadataCollection.Empty,
-                "actionWithoutConstraints");
+            var endpointWithoutConstraints = CreateEndpoint("actionWithoutConstraints");
 
-            var actions = new Endpoint[] { actionWithConstraints, actionWithoutConstraints, };
+            var endpoints = new[] { endpointWithConstraints, endpointWithoutConstraints, };
 
-            var selector = CreateSelector(actions);
-            var context = CreateHttpContext("POST");
+            var selector = CreateSelector(endpoints);
+            var httpContext = CreateHttpContext("POST");
+            var feature = new EndpointFeature();
 
             // Act
-            var action = selector.SelectBestCandidate(context, actions);
+            await selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
 
             // Assert
-            Assert.Same(action, actionWithConstraints);
+            Assert.Same(endpointWithConstraints, feature.Endpoint);
         }
 
         // Due to ordering of stages, the first action will be better.
         [Fact]
-        public void SelectBestCandidate_ConstraintsInOrder()
+        public async Task SelectBestCandidate_ConstraintsInOrder()
         {
             // Arrange
-            var best = new TestEndpoint(new EndpointMetadataCollection(new[]
-            {
-                new BooleanConstraint() { Pass = true, Order = 0, },
-            }),
-            "best");
+            var best = CreateEndpoint("best", new BooleanConstraint() { Pass = true, Order = 0, });
 
-            var worst = new TestEndpoint(new EndpointMetadataCollection(new[]
-            {
-                new BooleanConstraint() { Pass = true, Order = 1, },
-            }),
-            "worst");
+            var worst = CreateEndpoint("worst", new BooleanConstraint() { Pass = true, Order = 1, });
 
-            var actions = new Endpoint[] { best, worst };
+            var endpoints = new[] { best, worst };
 
-            var selector = CreateSelector(actions);
-            var context = CreateHttpContext("POST");
+            var selector = CreateSelector(endpoints);
+            var httpContext = CreateHttpContext("POST");
+            var feature = new EndpointFeature();
 
             // Act
-            var action = selector.SelectBestCandidate(context, actions);
+            await selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
 
             // Assert
-            Assert.Same(action, best);
+            Assert.Same(best, feature.Endpoint);
         }
 
         // Due to ordering of stages, the first action will be better.
         [Fact]
-        public void SelectBestCandidate_ConstraintsInOrder_MultipleStages()
+        public async Task SelectBestCandidate_ConstraintsInOrder_MultipleStages()
         {
             // Arrange
-            var best = new TestEndpoint(new EndpointMetadataCollection(new[]
-            {
+            var best = CreateEndpoint(
+                "best",
                 new BooleanConstraint() { Pass = true, Order = 0, },
                 new BooleanConstraint() { Pass = true, Order = 1, },
-                new BooleanConstraint() { Pass = true, Order = 2, },
-            }),
-            "best");
+                new BooleanConstraint() { Pass = true, Order = 2, });
 
-            var worst = new TestEndpoint(new EndpointMetadataCollection(new[]
-            {
+            var worst = CreateEndpoint(
+                "worst",
                 new BooleanConstraint() { Pass = true, Order = 0, },
                 new BooleanConstraint() { Pass = true, Order = 1, },
-                new BooleanConstraint() { Pass = true, Order = 3, },
-            }),
-            "worst");
+                new BooleanConstraint() { Pass = true, Order = 3, });
 
-            var actions = new Endpoint[] { best, worst };
+            var endpoints = new[] { best, worst };
 
-            var selector = CreateSelector(actions);
-            var context = CreateHttpContext("POST");
+            var selector = CreateSelector(endpoints);
+            var httpContext = CreateHttpContext("POST");
+            var feature = new EndpointFeature();
 
             // Act
-            var action = selector.SelectBestCandidate(context, actions);
+            await selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
 
             // Assert
-            Assert.Same(action, best);
+            Assert.Same(best, feature.Endpoint);
         }
 
         [Fact]
-        public void SelectBestCandidate_Fallback_ToEndpointWithoutConstraints()
+        public async Task SelectBestCandidate_Fallback_ToEndpointWithoutConstraints()
         {
             // Arrange
-            var nomatch1 = new TestEndpoint(new EndpointMetadataCollection(new[]
-            {
+            var nomatch1 = CreateEndpoint(
+                "nomatch1",
                 new BooleanConstraint() { Pass = true, Order = 0, },
                 new BooleanConstraint() { Pass = true, Order = 1, },
-                new BooleanConstraint() { Pass = false, Order = 2, },
-            }),
-            "nomatch1");
+                new BooleanConstraint() { Pass = false, Order = 2, });
 
-            var nomatch2 = new TestEndpoint(new EndpointMetadataCollection(new[]
-            {
+            var nomatch2 = CreateEndpoint(
+                "nomatch2",
                 new BooleanConstraint() { Pass = true, Order = 0, },
                 new BooleanConstraint() { Pass = true, Order = 1, },
-                new BooleanConstraint() { Pass = false, Order = 3, },
-            }),
-            "nomatch2");
+                new BooleanConstraint() { Pass = false, Order = 3, });
 
-            var best = new TestEndpoint(EndpointMetadataCollection.Empty, "best");
+            var best = CreateEndpoint("best");
 
-            var actions = new Endpoint[] { best, nomatch1, nomatch2 };
+            var endpoints = new[] { best, nomatch1, nomatch2 };
 
-            var selector = CreateSelector(actions);
-            var context = CreateHttpContext("POST");
+            var selector = CreateSelector(endpoints);
+            var httpContext = CreateHttpContext("POST");
+            var feature = new EndpointFeature();
 
             // Act
-            var action = selector.SelectBestCandidate(context, actions);
+            await selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
 
             // Assert
-            Assert.Same(action, best);
+            Assert.Same(best, feature.Endpoint);
+        }
+
+        private static MatcherEndpoint CreateEndpoint(string displayName, params object[] metadata)
+        {
+            return new MatcherEndpoint(
+                MatcherEndpoint.EmptyInvoker,
+                RoutePatternFactory.Parse("/"),
+                new RouteValueDictionary(),
+                0,
+                new EndpointMetadataCollection(metadata),
+                displayName);
         }
 
         private static EndpointSelector CreateSelector(IReadOnlyList<Endpoint> actions, ILoggerFactory loggerFactory = null)
@@ -423,7 +422,7 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
                     new BooleanConstraintProvider(),
                 };
 
-            return new EndpointSelector(
+            return new EndpointConstraintEndpointSelector(
                 endpointDataSource,
                 GetEndpointConstraintCache(actionConstraintProviders),
                 loggerFactory);

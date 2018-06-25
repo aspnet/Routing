@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
             var candidates = _baseline.SelectCandidates(path, segments);
 
-            var endpoint = candidates.Candidates[0].Endpoint;
+            var endpoint = candidates[0].Endpoint;
             Validate(Requests[0], Endpoints[9], endpoint);
         }
 
@@ -90,9 +90,9 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             Span<PathSegment> segments = stackalloc PathSegment[FastPathTokenizer.DefaultSegmentCount];
             var count = FastPathTokenizer.Tokenize(path, segments);
 
-            var candidates = _dfa.SelectCandidates(path, segments.Slice(0, count));
+            var candidates = _dfa.FindCandidates(httpContext, path, segments.Slice(0, count));
 
-            var endpoint = candidates.Candidates[0].Endpoint;
+            var endpoint = candidates[0].Endpoint;
             Validate(Requests[0], Endpoints[9], endpoint);
         }
     }
