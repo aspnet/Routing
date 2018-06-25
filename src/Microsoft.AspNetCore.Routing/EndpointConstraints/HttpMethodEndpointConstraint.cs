@@ -7,7 +7,7 @@ using System.Collections.ObjectModel;
 
 namespace Microsoft.AspNetCore.Routing.EndpointConstraints
 {
-    public class HttpMethodEndpointConstraint : IEndpointConstraint
+    public class HttpMethodEndpointConstraint : IEndpointConstraint, IHttpMethodMetadata
     {
         public static readonly int HttpMethodConstraintOrder = 100;
 
@@ -39,6 +39,8 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
         public IEnumerable<string> HttpMethods => _httpMethods;
 
         public int Order => HttpMethodConstraintOrder;
+
+        IReadOnlyList<string> IHttpMethodMetadata.HttpMethods => _httpMethods;
 
         public virtual bool Accept(EndpointConstraintContext context)
         {

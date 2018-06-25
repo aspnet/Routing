@@ -4,23 +4,23 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing.EndpointConstraints;
 using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Routing.Matchers
 {
     internal sealed class DfaMatcher : Matcher
     {
-        private readonly EndpointSelector _endpointSelector;
+        private readonly EndpointSelectorPolicy[] _policies;
+        private readonly EndpointSelector2 _selector;
         private readonly DfaState[] _states;
 
-        public DfaMatcher(EndpointSelector endpointSelector, DfaState[] states)
+        public DfaMatcher(EndpointSelectorPolicy[] policies, EndpointSelector2 selector, DfaState[] states)
         {
-            _endpointSelector = endpointSelector;
+            _policies = policies;
+            _selector = selector;
             _states = states;
         }
 
@@ -70,10 +70,15 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var candidatesArray = candidates.Candidates;
             var groups = candidates.Groups;
 
+            // We need to keep track of which policies have rejected endpoints while
+            // we process policies. This allows us to call back into those policies
+            // after processing all groups.
+            var rejectionState = new bool[_policies.Length];
+
             for (var i = 0; i < groups.Length - 1; i++)
             {
                 var start = groups[i];
-                var length = groups[i + 1] - groups[i];
+                var length = groups[i + 1] - start;
                 var group = candidatesArray.AsSpan(start, length);
 
                 // Yes, these allocate. We should revise how this interaction works exactly
@@ -93,37 +98,63 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                     groupValues))
                 {
                     // We must have some matches because FilterGroup returned true.
+                    // We need this here in case we don't have any policies to execute.
+                    var hasMatches = true;
 
-                    // So: this code is SUPER SUPER temporary. We don't intent to keep
-                    // EndpointSelector around for very long.
-                    var candidatesForEndpointSelector = new List<Endpoint>();
-                    for (var j = 0; j < group.Length; j++)
+                    // This group has some matches, so call into endpoint selector policies.
+                    for (var j = 0; j < _policies.Length; j++)
                     {
-                        if (members.Get(j))
+                        var policy = _policies[j];
+
+                        // Initialize this on the leading edge of the loop, so we can track per-policy
+                        // whether the policy eliminated candidates.
+                        hasMatches = false;
+
+                        for (var k = 0; k < group.Length; k++)
                         {
-                            candidatesForEndpointSelector.Add(group[j].Endpoint);
+                            var isMatch = members.Get(k) && policy.Match(
+                                httpContext,
+                                group[k].Endpoint,
+                                group[k].PolicyData[j],
+                                groupValues[k]);
+
+                            hasMatches |= isMatch;
+                            members.Set(k, isMatch);
+                        }
+
+                        if (!hasMatches)
+                        {
+                            // This policy has rejected some possible matches. We keep track
+                            // of which policies reject matches so we can ask how to handle
+                            // the failure if no endpoint matches.
+                            rejectionState[i] |= true;
+                            break;
                         }
                     }
 
-                    var result = _endpointSelector.SelectBestCandidate(httpContext, candidatesForEndpointSelector);
-                    if (result != null)
+                    if (hasMatches)
                     {
-                        // Find the route values, based on which endpoint was selected. We have
-                        // to do this because the endpoint selector returns an endpoint
-                        // instead of mutating the feature.
-                        for (var j = 0; j < group.Length; j++)
-                        {
-                            if (ReferenceEquals(result, group[j].Endpoint))
-                            {
-                                feature.Endpoint = result;
-                                feature.Invoker = ((MatcherEndpoint)result).Invoker;
-                                feature.Values = groupValues[j];
-                                return Task.CompletedTask;
-                            }
-                        }
+                        var context = new EndpointSelectorContext(
+                            feature,
+                            candidatesArray.AsMemory(start, length),
+                            groupValues,
+                            members);
+                        _selector.Select(context);
+                        //SelectBestCandidate(feature, group, members, groupValues);
+                        return Task.CompletedTask;
                     }
+                }
+            }
 
-                    // End super temporary code
+            // If after all groups we don't yet have any matches, then check if
+            // any matches rejected by policies, and ask those policies how to treat
+            // the failure.
+            for (var i = _policies.Length - 1; i >=0; i--)
+            {
+                _policies[i].Reject(httpContext, feature, candidates);
+                if (feature.Invoker != null)
+                {
+                    break;
                 }
             }
 
@@ -285,6 +316,51 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             }
 
             return true;
+        }
+
+        private void SelectBestCandidate(
+            IEndpointFeature feature,
+            ReadOnlySpan<Candidate> group,
+            BitArray members,
+            RouteValueDictionary[] groupValues)
+        {
+            var found = false;
+            for (var i = 0; i < group.Length; i++)
+            {
+                if (members.Get(i) && found)
+                {
+                    // This is the second match we've found, so there must be an ambiguity.
+                    feature.Endpoint = null;
+                    feature.Invoker = null;
+                    feature.Values = null;
+                    break;
+                }
+                else if (members.Get(i))
+                {
+                    feature.Endpoint = group[i].Endpoint;
+                    feature.Invoker = group[i].Endpoint.Invoker;
+                    feature.Values = groupValues[i];
+                    return;
+                }
+            }
+
+            if (found)
+            {
+                // If we get here it's the result of an ambiguity.
+                var matches = new List<MatcherEndpoint>();
+                for (var i = 0; i < group.Length; i++)
+                {
+                    if (members.Get(i))
+                    {
+                        matches.Add(group[i].Endpoint);
+                    }
+                }
+
+                var message =
+                    "The request matched multiple endpoints. Matches:" + Environment.NewLine +
+                    string.Join(Environment.NewLine, matches.Select(e => e.DisplayName));
+                throw new AmbiguousMatchException(message);
+            }
         }
     }
 }

@@ -4,9 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Routing.EndpointConstraints;
 using Microsoft.AspNetCore.Routing.Patterns;
-using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Routing.Matchers
@@ -17,14 +15,20 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         private readonly IInlineConstraintResolver _constraintResolver = new DefaultInlineConstraintResolver(Options.Create(new RouteOptions()));
 
         private readonly MatchProcessorFactory _matchProcessorFactory;
-        private readonly EndpointSelector _endpointSelector;
+        private readonly EndpointSelectorPolicy[] _policies;
+        private readonly EndpointSelector2 _selector;
+        private readonly MatcherEndpointComparer _comparer;
 
         public DfaMatcherBuilder(
             MatchProcessorFactory matchProcessorFactory,
-            EndpointSelector endpointSelector)
+            IEnumerable<EndpointSelectorPolicy> policies,
+            EndpointSelector2 selector)
         {
-            _matchProcessorFactory = matchProcessorFactory ?? throw new ArgumentNullException(nameof(matchProcessorFactory));
-            _endpointSelector = endpointSelector ?? throw new ArgumentNullException(nameof(endpointSelector));
+            _matchProcessorFactory = matchProcessorFactory;
+            _policies = policies.ToArray();
+            _selector = selector;
+
+            _comparer = new MatcherEndpointComparer(_policies);
         }
 
         public override void AddEndpoint(MatcherEndpoint endpoint)
@@ -38,7 +42,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             // because a 'parameter' node can also traverse the same paths that literal nodes
             // traverse. This means that we need to order the entries first, or else we will
             // miss possible edges in the DFA.
-            _entries.Sort();
+            _entries.Sort((x, y) => _comparer.Compare(x.Endpoint, y.Endpoint));
 
             // Since we're doing a BFS we will process each 'level' of the tree in stages
             // this list will hold the set of items we need to process at the current
@@ -234,12 +238,12 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 states[i] = new DfaState(states[i].Candidates, tables[i].Build());
             }
 
-            return new DfaMatcher(_endpointSelector, states.ToArray());
+            return new DfaMatcher(_policies, _selector, states.ToArray());
         }
 
         private int AddNode(DfaNode node, List<DfaState> states, List<JumpTableBuilder> tables)
         {
-            node.Matches.Sort();
+            node.Matches.Sort((x, y) => _comparer.Compare(x.Endpoint, y.Endpoint));
 
             var stateIndex = states.Count;
             var candidates = new CandidateSet(
@@ -370,13 +374,20 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 }
             }
 
+            var policyData = new object[_policies.Length];
+            for (var i = 0; i < policyData.Length; i++)
+            {
+                policyData[i] = _policies[i].GetMetadata(entry.Endpoint);
+            }
+            
             return new Candidate(
                 entry.Endpoint,
                 slots.ToArray(),
                 captures.ToArray(),
                 catchAll,
                 complexSegments.ToArray(),
-                matchProcessors.ToArray());
+                matchProcessors.ToArray(),
+                policyData);
         }
 
         private int[] GetGroupLengths(DfaNode node)
@@ -389,16 +400,16 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var groups = new List<int>();
 
             var length = 1;
-            var exemplar = node.Matches[0];
+            var exemplar = node.Matches[0].Endpoint;
 
             for (var i = 1; i < node.Matches.Count; i++)
             {
-                if (!exemplar.PriorityEquals(node.Matches[i]))
+                if (!_comparer.Equals(exemplar, node.Matches[i].Endpoint))
                 {
                     groups.Add(length);
                     length = 0;
 
-                    exemplar = node.Matches[i];
+                    exemplar = node.Matches[i].Endpoint;
                 }
 
                 length++;
