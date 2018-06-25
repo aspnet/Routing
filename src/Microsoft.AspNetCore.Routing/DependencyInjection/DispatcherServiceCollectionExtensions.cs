@@ -43,11 +43,13 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IEndpointFinder<string>, NameBasedEndpointFinder>();
             services.TryAddSingleton<IEndpointFinder<RouteValuesBasedEndpointFinderContext>, RouteValuesBasedEndpointFinder>();
             services.TryAddSingleton<LinkGenerator, DefaultLinkGenerator>();
+
             //
             // Endpoint Selection
             //
             services.TryAddSingleton<EndpointSelector>();
             services.TryAddSingleton<EndpointConstraintCache>();
+            services.TryAddSingleton<EndpointSelectorPolicy, HttpMethodEndpointSelectorPolicy>();
 
             // Will be cached by the EndpointSelector
             services.TryAddEnumerable(
