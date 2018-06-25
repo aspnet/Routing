@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Routing
         public RouteValueDictionary SetSingleItem()
         {
             var dictionary = new RouteValueDictionary();
-            dictionary.Add("action", "Index");
+            dictionary["action"] = "Index";
             return dictionary;
         }
 
@@ -37,9 +37,9 @@ namespace Microsoft.AspNetCore.Routing
         public RouteValueDictionary SetThreeItems()
         {
             var dictionary = new RouteValueDictionary();
-            dictionary.Add("action", "Index");
-            dictionary.Add("controller", "Home");
-            dictionary.Add("id", "15");
+            dictionary["action"] = "Index";
+            dictionary["controller"] = "Home";
+            dictionary["id"] = "15";
             return dictionary;
         }
     }
