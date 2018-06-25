@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                     case InstructionCode.Branch:
                         {
                             var table = state.Tables[instruction.Payload];
-                            i = table.GetDestination(buffer, count, path);
+                            i = table.GetDestination(path, buffer[instruction.Depth]);
                             break;
                         }
                     case InstructionCode.Jump:
@@ -143,72 +143,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             Branch,
             Jump,
             Pop, // Only used during the instruction builder phase
-        }
-
-        public abstract class JumpTable
-        {
-            public unsafe abstract int GetDestination(PathSegment* segments, int depth, string path);
-        }
-
-        public class JumpTableBuilder
-        {
-            private readonly List<(string text, int destination)> _entries = new List<(string text, int destination)>();
-
-            public int Depth { get; set; }
-
-            public int Exit { get; set; }
-
-            public void AddEntry(string text, int destination)
-            {
-                _entries.Add((text, destination));
-            }
-
-            public JumpTable Build()
-            {
-                return new SimpleJumpTable(Depth, Exit, _entries.ToArray());
-            }
-        }
-
-        public class SimpleJumpTable : JumpTable
-        {
-            private readonly (string text, int destination)[] _entries;
-            private readonly int _depth;
-            private readonly int _exit;
-
-            public SimpleJumpTable(int depth, int exit, (string text, int destination)[] entries)
-            {
-                _depth = depth;
-                _exit = exit;
-                _entries = entries;
-            }
-
-            public unsafe override int GetDestination(PathSegment* segments, int count, string path)
-            {
-                if (_depth == count)
-                {
-                    return _exit;
-                }
-
-                var start  = segments[_depth].Start;
-                var length = segments[_depth].Length;
-
-                for (var i = 0; i < _entries.Length; i++)
-                {
-                    if (length == _entries[i].text.Length &&
-                        string.Compare(
-                        path,
-                        start,
-                        _entries[i].text,
-                        0,
-                        length,
-                        StringComparison.OrdinalIgnoreCase) == 0)
-                    {
-                        return _entries[i].destination;
-                    }
-                }
-
-                return _exit;
-            }
         }
     }
 }

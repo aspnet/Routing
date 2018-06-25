@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
@@ -30,122 +31,124 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             }
 
             var states = _states;
-            var current = 0;
 
             var path = httpContext.Request.Path.Value;
             var buffer = stackalloc PathSegment[32];
             var count = FastPathTokenizer.Tokenize(path, buffer, 32);
-            
-            for (var i = 0; i < count; i++)
+            var segments = new ReadOnlySpan<PathSegment>((void*)buffer, count);
+
+            var node = FindMatchingNode(path, segments);
+
+            var set = new CandidateSet()
             {
-                current = states[current].Transitions.GetDestination(buffer, i, path);
-            }
+                Path = path,
+                Candidates = states[node].Candidates,
+                CandidateGroups = states[node].CandidateGroups,
+                Segments = segments,
+                Values = new RouteValueDictionary[states[node].Candidates.Length],
+            };
+            var match = SelectCandidate(set);
 
-            var matches = new List<(Endpoint, RouteValueDictionary)>();
-
-            var candidates = states[current].Matches;
-            for (var i = 0; i < candidates.Length; i++)
+            if (match >= 0)
             {
-                var values = new RouteValueDictionary();
-                var parameters = candidates[i].Parameters;
-                if (parameters != null)
-                {
-                    for (var j = 0; j < parameters.Length; j++)
-                    {
-                        var parameter = parameters[j];
-                        if (parameter != null && buffer[j].Length == 0)
-                        {
-                            goto notmatch;
-                        }
-                        else if (parameter != null)
-                        {
-                            var value = path.Substring(buffer[j].Start, buffer[j].Length);
-                            values.Add(parameter, value);
-                        }
-                    }
-                }
-
-                matches.Add((candidates[i].Endpoint, values));
-
-                notmatch: ;
+                feature.Endpoint = set.Candidates[match].Endpoint;
+                feature.Values = set.Values[match];
             }
-            
-            feature.Endpoint = matches.Count == 0 ? null : matches[0].Item1;
-            feature.Values = matches.Count == 0 ? null : matches[0].Item2;
 
             return Task.CompletedTask;
         }
 
-        public struct State
+        private int FindMatchingNode(string path, ReadOnlySpan<PathSegment> segments)
         {
-            public bool IsAccepting;
-            public Candidate[] Matches;
-            public JumpTable Transitions;
-        }
-
-        public struct Candidate
-        {
-            public Endpoint Endpoint;
-            public string[] Parameters;
-        }
-
-        public abstract class JumpTable
-        {
-            public unsafe abstract int GetDestination(PathSegment* segments, int depth, string path);
-        }
-
-        public class JumpTableBuilder
-        {
-            private readonly List<(string text, int destination)> _entries = new List<(string text, int destination)>();
-
-            public int Depth { get; set; }
-
-            public int Exit { get; set; }
-
-            public void AddEntry(string text, int destination)
+            var states = _states;
+            var current = 0;
+            for (var i = 0; i < segments.Length; i++)
             {
-                _entries.Add((text, destination));
+                current = states[current].Transitions.GetDestination(path, segments[i]);
             }
 
-            public JumpTable Build()
-            {
-                return new SimpleJumpTable(Depth, Exit, _entries.ToArray());
-            }
+            return current;
         }
 
-        private class SimpleJumpTable : JumpTable
+        private int SelectCandidate(CandidateSet set)
         {
-            private readonly (string text, int destination)[] _entries;
-            private readonly int _depth;
-            private readonly int _exit;
-
-            public SimpleJumpTable(int depth, int exit, (string text, int destination)[] entries)
+            var offset = 0;
+            for (var i = 0; i < set.CandidateGroups.Length; i++)
             {
-                _depth = depth;
-                _exit = exit;
-                _entries = entries;
-            }
-
-            public unsafe override int GetDestination(PathSegment* segments, int depth, string path)
-            {
-                for (var i = 0; i < _entries.Length; i++)
+                var groupLength = set.CandidateGroups[i];
+                for (var j = offset; j < offset + groupLength; j++)
                 {
-                    var segment = segments[depth];
-                    if (segment.Length == _entries[i].text.Length &&
-                        string.Compare(
-                        path,
-                        segment.Start,
-                        _entries[i].text,
-                        0,
-                        segment.Length,
-                        StringComparison.OrdinalIgnoreCase) == 0)
+                    var values = new RouteValueDictionary();
+                    set.Values[j] = values;
+
+                    var match = true;
+                    var segments = set.Candidates[j].Segments;
+                    for (var k = 0; k < segments.Length; k++)
                     {
-                        return _entries[i].destination;
+                        match |=
+                            segments[k] == null ||
+                            segments[k].Process(values, set.Path.AsSpan(set.Segments[k].Start, set.Segments[k].Length));
+                    }
+
+                    if (match)
+                    {
+                        return j;
                     }
                 }
 
-                return _exit;
+                offset += groupLength;
             }
+
+            return -1;
+        }
+
+        public readonly struct Candidate
+        {
+            public Candidate(Endpoint endpoint, SegmentProcesser[] segments)
+            {
+                Endpoint = endpoint;
+                Segments = segments;
+            }
+
+            public readonly Endpoint Endpoint;
+            public readonly SegmentProcesser[] Segments;
+        }
+
+        public abstract class SegmentProcesser
+        {
+            public abstract bool Process(RouteValueDictionary values, ReadOnlySpan<char> segment);
+        }
+
+        public sealed class ParameterSegmentProcessor : SegmentProcesser
+        {
+            private readonly string _name;
+
+            public ParameterSegmentProcessor(string name)
+            {
+                _name = name;
+            }
+
+            public override bool Process(RouteValueDictionary values, ReadOnlySpan<char> segment)
+            {
+                values[_name] = segment.ToString();
+                return true;
+            }
+        }
+
+        public ref struct CandidateSet
+        {
+            public string Path;
+            public ReadOnlySpan<PathSegment> Segments;
+            public ReadOnlySpan<Candidate> Candidates;
+            public ReadOnlySpan<int> CandidateGroups;
+            public Span<RouteValueDictionary> Values;
+        }
+
+        public struct State
+        {
+            public Candidate[] Candidates;
+            public int[] CandidateGroups;
+            public JumpTable Transitions;
         }
     }
 }

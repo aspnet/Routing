@@ -108,11 +108,16 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             AddNode(root, states, tables);
 
             var exit = states.Count;
-            states.Add(new State() { IsAccepting = false, Matches = Array.Empty<Candidate>(), });
+            states.Add(new State() { Candidates = Array.Empty<Candidate>(), CandidateGroups = Array.Empty<int>(), });
             tables.Add(new JumpTableBuilder() { Exit = exit, });
 
             for (var i = 0; i < tables.Count; i++)
             {
+                if (tables[i].Default == -1)
+                {
+                    tables[i].Default = exit;
+                }
+
                 if (tables[i].Exit == -1)
                 {
                     tables[i].Exit = exit;
@@ -123,8 +128,8 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             {
                 states[i] = new State()
                 {
-                    IsAccepting = states[i].IsAccepting,
-                    Matches = states[i].Matches,
+                    Candidates = states[i].Candidates,
+                    CandidateGroups = states[i].CandidateGroups,
                     Transitions = tables[i].Build(),
                 };
             }
@@ -154,11 +159,11 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var index = states.Count;
             states.Add(new State()
             {
-                Matches = node.Matches.Select(CreateCandidate).ToArray(),
-                IsAccepting = node.Matches.Count > 0,
+                Candidates = node.Matches.Select(CreateCandidate).ToArray(),
+                CandidateGroups = CreateCandidateGroups(node),
             });
 
-            var table = new JumpTableBuilder() { Depth = node.Depth, };
+            var table = new JumpTableBuilder();
             tables.Add(table);
 
             foreach (var kvp in node.Literals)
@@ -172,23 +177,59 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 table.AddEntry(kvp.Key, transition);
             }
 
-            var exitIndex = -1;
+            var defaultIndex = -1;
             if (node.Literals.TryGetValue("*", out var exit))
             {
-                exitIndex = AddNode(exit, states, tables);
+                defaultIndex = AddNode(exit, states, tables);
             }
 
-            table.Exit = exitIndex;
+            table.Default = defaultIndex;
             return index;
         }
 
         private static Candidate CreateCandidate(Entry entry)
         {
-            return new Candidate()
+            var segments = new SegmentProcesser[entry.Pattern.Segments.Count];
+            for (var i = 0; i < segments.Length; i++)
             {
-                Endpoint = entry.Endpoint,
-                Parameters = entry.Pattern.Segments.Select(s => s.IsSimple && s.Parts[0].IsParameter ? s.Parts[0].Name : null).ToArray(),
-            };
+                var segment = entry.Pattern.Segments[i];
+                if (segment.IsSimple && segment.Parts[0].IsParameter)
+                {
+                    segments[i] = new ParameterSegmentProcessor(segment.Parts[0].Name);
+                }
+            }
+
+            return new Candidate(entry.Endpoint, segments);
+        }
+
+        private static int[] CreateCandidateGroups(Node node)
+        {
+            if (node.Matches.Count == 0)
+            {
+                return Array.Empty<int>();
+            }
+
+            var groups = new List<int>();
+
+            var order = node.Matches[0].Order;
+            var precedence = node.Matches[0].Precedence;
+            var length = 1;
+
+            for (var i = 1; i < node.Matches.Count; i++)
+            {
+                if (node.Matches[i].Order != order ||
+                    node.Matches[i].Precedence != precedence)
+                {
+                    groups.Add(length);
+                    length = 0;
+                }
+
+                length++;
+            }
+
+            groups.Add(length);
+
+            return groups.ToArray();
         }
 
         private static void Sort(List<Entry> entries)
