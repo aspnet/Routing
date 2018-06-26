@@ -325,6 +325,7 @@ namespace Microsoft.AspNetCore.Routing
             {
                 Array.Copy(array, index + 1, array, index, _count - index);
                 _count--;
+                array[_count] = default;
                 return true;
             }
 
@@ -428,7 +429,7 @@ namespace Microsoft.AspNetCore.Routing
 
             if (_arrayStorage.Length < capacity)
             {
-                capacity = _arrayStorage.Length == 0 ? 4 : _arrayStorage.Length * 2;
+                capacity = _arrayStorage.Length == 0 ? DefaultCapacity : _arrayStorage.Length * 2;
                 var array = new KeyValuePair<string, object>[capacity];
                 if (_count > 0)
                 {
@@ -445,8 +446,7 @@ namespace Microsoft.AspNetCore.Routing
             var array = _arrayStorage;
             for (var i = 0; i < _count; i++)
             {
-                var key1 = array[i].Key;
-                if (string.Equals(key1, key, StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(array[i].Key, key, StringComparison.OrdinalIgnoreCase))
                 {
                     return i;
                 }
