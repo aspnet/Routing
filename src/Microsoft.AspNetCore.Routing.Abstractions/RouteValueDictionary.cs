@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Routing
     /// </summary>
     public class RouteValueDictionary : IDictionary<string, object>, IReadOnlyDictionary<string, object>
     {
+        // 4 is a good default capacity here because that leaves enough space for area/controller/action/id
         private const int DefaultCapacity = 4;
 
         internal KeyValuePair<string, object>[] _arrayStorage;
@@ -120,17 +121,21 @@ namespace Microsoft.AspNetCore.Routing
                     throw new ArgumentNullException(nameof(key));
                 }
 
-                EnsureCapacity(_count + 1);
+                // We're calling this here for the side-effect of converting from properties
+                // to array. We need to create the array even if we just set an existing value since
+                // property storage is immutable. 
+                EnsureCapacity(_count);
 
-                var index = FindArray(key);
-                var array = _arrayStorage;
+                var index = FindInArray(key);
                 if (index < 0)
                 {
-                    array[_count++] = new KeyValuePair<string, object>(key, value);
+                    EnsureCapacity(_count + 1);
+                    _arrayStorage[_count++] = new KeyValuePair<string, object>(key, value);
                 }
                 else
                 {
-                    array[index] = new KeyValuePair<string, object>(key, value);
+                    
+                    _arrayStorage[index] = new KeyValuePair<string, object>(key, value);
                 }
             }
         }
@@ -212,16 +217,16 @@ namespace Microsoft.AspNetCore.Routing
         {
             if (key == null)
             {
-                throw new ArgumentNullException("key");
+                throw new ArgumentNullException(nameof(key));
             }
 
             EnsureCapacity(_count + 1);
 
-            var index = FindArray(key);
+            var index = FindInArray(key);
             if (index >= 0)
             {
                 var message = Resources.FormatRouteValueDictionary_DuplicateKey(key, nameof(RouteValueDictionary));
-                throw new ArgumentException(message, "key");
+                throw new ArgumentException(message, nameof(key));
             }
 
             _arrayStorage[_count] = new KeyValuePair<string, object>(key, value);
@@ -319,7 +324,7 @@ namespace Microsoft.AspNetCore.Routing
 
             EnsureCapacity(Count);
 
-            var index = FindArray(item.Key);
+            var index = FindInArray(item.Key);
                 var array = _arrayStorage;
             if (index >= 0 && EqualityComparer<object>.Default.Equals(array[index].Value, item.Value))
             {
@@ -347,7 +352,7 @@ namespace Microsoft.AspNetCore.Routing
 
             EnsureCapacity(Count);
 
-            var index = FindArray(key);
+            var index = FindInArray(key);
             if (index >= 0)
             {
                 _count--;
@@ -441,7 +446,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        private int FindArray(string key)
+        private int FindInArray(string key)
         {
             var array = _arrayStorage;
             for (var i = 0; i < _count; i++)
