@@ -7,18 +7,16 @@ using BenchmarkDotNet.Attributes;
 
 namespace Microsoft.AspNetCore.Routing.Matchers
 {
-    // Generated from https://github.com/Azure/azure-rest-api-specs
-    public partial class AzureMatcherBenchmark : MatcherBenchmarkBase
+    // Generated from https://github.com/APIs-guru/openapi-directory
+    // Use https://editor2.swagger.io/ to convert from yaml to json-
+    public partial class MatcherSelectCandidatesGithubBenchmark : MatcherBenchmarkBase
     {
-        private const int SampleCount = 100;
-
         private BarebonesMatcher _baseline;
         private Matcher _dfa;
         private Matcher _instruction;
         private Matcher _route;
         private Matcher _tree;
 
-        private int[] _samples;
         private EndpointFeature _feature;
 
         [GlobalSetup]
@@ -27,10 +25,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             SetupEndpoints();
 
             SetupRequests();
-
-            // The perf is kinda slow for these benchmarks, so we do some sampling
-            // of the request data.
-            _samples = SampleRequests(EndpointCount, SampleCount);
 
             _baseline = (BarebonesMatcher)SetupMatcher(new BarebonesMatcherBuilder());
             _dfa = SetupMatcher(new DfaMatcherBuilder());
@@ -41,76 +35,71 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             _feature = new EndpointFeature();
         }
 
-        [Benchmark(Baseline = true, OperationsPerInvoke = SampleCount)]
+        [Benchmark(Baseline = true, OperationsPerInvoke = EndpointCount)]
         public async Task Baseline()
         {
             var feature = _feature;
-            for (var i = 0; i < SampleCount; i++)
+            for (var i = 0; i < EndpointCount; i++)
             {
-                var sample = _samples[i];
-                var httpContext = _requests[sample];
-                await _baseline._matchers[sample].MatchAsync(httpContext, feature);
-                Validate(httpContext, _endpoints[sample], feature.Endpoint);
+                var httpContext = _requests[i];
+                await _baseline._matchers[i].MatchAsync(httpContext, feature);
+                Validate(httpContext, _endpoints[i], feature.Endpoint);
             }
         }
 
-        [Benchmark(OperationsPerInvoke = SampleCount)]
+        [Benchmark( OperationsPerInvoke = EndpointCount)]
         public async Task Dfa()
         {
             var feature = _feature;
-            for (var i = 0; i < SampleCount; i++)
+            for (var i = 0; i < EndpointCount; i++)
             {
-                var sample = _samples[i];
-                var httpContext = _requests[sample];
+                var httpContext = _requests[i];
                 await _dfa.MatchAsync(httpContext, feature);
-                Validate(httpContext, _endpoints[sample], feature.Endpoint);
+                Validate(httpContext, _endpoints[i], feature.Endpoint);
             }
         }
 
-        [Benchmark(OperationsPerInvoke = SampleCount)]
+        [Benchmark(OperationsPerInvoke = EndpointCount)]
         public async Task Instruction()
         {
             var feature = _feature;
-            for (var i = 0; i < SampleCount; i++)
+            for (var i = 0; i < EndpointCount; i++)
             {
-                var sample = _samples[i];
-                var httpContext = _requests[sample];
+                var httpContext = _requests[i];
                 await _instruction.MatchAsync(httpContext, feature);
-                Validate(httpContext, _endpoints[sample], feature.Endpoint);
+                Validate(httpContext, _endpoints[i], feature.Endpoint);
             }
         }
 
-        [Benchmark(OperationsPerInvoke = SampleCount)]
+        [Benchmark(OperationsPerInvoke = EndpointCount)]
         public async Task LegacyRoute()
         {
             var feature = _feature;
-            for (var i = 0; i < SampleCount; i++)
+            for (var i = 0; i < EndpointCount; i++)
             {
-                var sample = _samples[i];
-                var httpContext = _requests[sample];
+                var httpContext = _requests[i];
 
                 // This is required to make the legacy router implementation work with dispatcher.
                 httpContext.Features.Set<IEndpointFeature>(feature);
 
                 await _route.MatchAsync(httpContext, feature);
-                Validate(httpContext, _endpoints[sample], feature.Endpoint);
+                Validate(httpContext, _endpoints[i], feature.Endpoint);
             }
         }
 
-        [Benchmark(OperationsPerInvoke = SampleCount)]
+        [Benchmark(OperationsPerInvoke = EndpointCount)]
         public async Task LegacyTreeRouter()
         {
             var feature = _feature;
-            for (var i = 0; i < SampleCount; i++)
+            for (var i = 0; i < EndpointCount; i++)
             {
-                var sample = _samples[i];
-                var httpContext = _requests[sample];
+                var httpContext = _requests[i];
 
                 // This is required to make the legacy router implementation work with dispatcher.
                 httpContext.Features.Set<IEndpointFeature>(feature);
 
                 await _tree.MatchAsync(httpContext, feature);
-                Validate(httpContext, _endpoints[sample], feature.Endpoint);
+                Validate(httpContext, _endpoints[i], feature.Endpoint);
             }
         }
     }

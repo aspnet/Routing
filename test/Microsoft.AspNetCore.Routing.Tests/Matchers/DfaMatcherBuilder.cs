@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using Microsoft.AspNetCore.Routing.EndpointConstraints;
 using Microsoft.AspNetCore.Routing.Template;
 using static Microsoft.AspNetCore.Routing.Matchers.DfaMatcher;
 
@@ -20,6 +21,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var parsed = TemplateParser.Parse(endpoint.Template);
             _entries.Add(new Entry()
             {
+                HttpMethod = endpoint.Metadata.OfType<HttpMethodEndpointConstraint>().FirstOrDefault()?.HttpMethods.Single(),
                 Order = 0,
                 Pattern = parsed,
                 Precedence = RoutePrecedence.ComputeInbound(parsed),
@@ -108,7 +110,12 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             AddNode(root, states, tables);
 
             var exit = states.Count;
-            states.Add(new State() { Candidates = Array.Empty<Candidate>(), CandidateGroups = Array.Empty<int>(), });
+            states.Add(new State()
+            {
+                Candidates = Array.Empty<Candidate>(),
+                CandidateIndices = Array.Empty<int>(),
+                CandidateGroups = Array.Empty<int>(),
+            });
             tables.Add(new JumpTableBuilder() { Exit = exit, });
 
             for (var i = 0; i < tables.Count; i++)
@@ -129,6 +136,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 states[i] = new State()
                 {
                     Candidates = states[i].Candidates,
+                    CandidateIndices = states[i].CandidateIndices,
                     CandidateGroups = states[i].CandidateGroups,
                     Transitions = tables[i].Build(),
                 };
@@ -160,6 +168,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             states.Add(new State()
             {
                 Candidates = node.Matches.Select(CreateCandidate).ToArray(),
+                CandidateIndices = Enumerable.Range(0, node.Matches.Count).ToArray(),
                 CandidateGroups = CreateCandidateGroups(node),
             });
 
@@ -189,17 +198,17 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
         private static Candidate CreateCandidate(Entry entry)
         {
-            var segments = new SegmentProcesser[entry.Pattern.Segments.Count];
-            for (var i = 0; i < segments.Length; i++)
+            var processors = new List<MatchProcessor>();
+            for (var i = 0; i < entry.Pattern.Segments.Count; i++)
             {
                 var segment = entry.Pattern.Segments[i];
                 if (segment.IsSimple && segment.Parts[0].IsParameter)
                 {
-                    segments[i] = new ParameterSegmentProcessor(segment.Parts[0].Name);
+                    processors.Add(new ParameterSegmentMatchProcessor(i, segment.Parts[0].Name));
                 }
             }
 
-            return new Candidate(entry.Endpoint, segments);
+            return new Candidate(entry.Endpoint, processors.ToArray());
         }
 
         private static int[] CreateCandidateGroups(Node node)
@@ -213,12 +222,14 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
             var order = node.Matches[0].Order;
             var precedence = node.Matches[0].Precedence;
+            var httpMethodScore = GetHttpMethodScore(node.Matches[0].Endpoint);
             var length = 1;
 
             for (var i = 1; i < node.Matches.Count; i++)
             {
                 if (node.Matches[i].Order != order ||
-                    node.Matches[i].Precedence != precedence)
+                    node.Matches[i].Precedence != precedence ||
+                    GetHttpMethodScore(node.Matches[i].Endpoint) != httpMethodScore)
                 {
                     groups.Add(length);
                     length = 0;
@@ -230,6 +241,16 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             groups.Add(length);
 
             return groups.ToArray();
+
+            int GetHttpMethodScore(Endpoint endpoint)
+            {
+                if (endpoint.Metadata.OfType<HttpMethodEndpointConstraint>().Any())
+                {
+                    return 1;
+                }
+
+                return 0;
+            }
         }
 
         private static void Sort(List<Entry> entries)
@@ -246,6 +267,15 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 if (comparison != 0)
                 {
                     return comparison;
+                }
+
+                if (x.HttpMethod != null && y.HttpMethod == null)
+                {
+                    return 1.CompareTo(0);
+                }
+                else if (x.HttpMethod == null && y.HttpMethod == null)
+                {
+                    return 0.CompareTo(1);
                 }
 
                 return x.Pattern.TemplateText.CompareTo(y.Pattern.TemplateText);
@@ -269,6 +299,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         {
             public int Order;
             public decimal Precedence;
+            public string HttpMethod;
             public RouteTemplate Pattern;
             public Endpoint Endpoint;
         }

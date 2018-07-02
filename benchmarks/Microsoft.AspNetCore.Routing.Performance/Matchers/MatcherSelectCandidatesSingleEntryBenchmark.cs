@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing.Matchers
 {
-    public class SingleEntryMatcherBenchmark : MatcherBenchmarkBase
+    public class MatcherSelectCandidatesSingleEntryBenchmark : MatcherBenchmarkBase
     {
         private Matcher _baseline;
         private Matcher _dfa;

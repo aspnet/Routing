@@ -1,16 +1,14 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing.Matchers
 {
-    internal class InstructionMatcher : Matcher
+    internal class InstructionMatcher : MatcherBase
     {
         private State _state;
 
@@ -24,26 +22,12 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             };
         }
 
-        public unsafe override Task MatchAsync(HttpContext httpContext, IEndpointFeature feature)
+        protected override void SelectCandidates(HttpContext httpContext, ref CandidateSet candidates)
         {
-            if (httpContext == null)
-            {
-                throw new ArgumentNullException(nameof(httpContext));
-            }
-
-            if (feature == null)
-            {
-                throw new ArgumentNullException(nameof(feature));
-            }
-
             var state = _state;
 
-            var path = httpContext.Request.Path.Value;
-            var buffer = stackalloc PathSegment[32];
-            var count = FastPathTokenizer.Tokenize(path, buffer, 32);
-
             var i = 0;
-            var candidates = new List<Candidate>();
+            var matches = new List<int>();
             while (i < state.Instructions.Length)
             {
                 var instruction = state.Instructions[i];
@@ -51,9 +35,9 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 {
                     case InstructionCode.Accept:
                         {
-                            if (count == instruction.Depth)
+                            if (candidates.Segments.Length == instruction.Depth)
                             {
-                                candidates.Add(state.Candidates[instruction.Payload]);
+                                matches.Add(instruction.Payload);
                             }
                             i++;
                             break;
@@ -61,7 +45,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                     case InstructionCode.Branch:
                         {
                             var table = state.Tables[instruction.Payload];
-                            i = table.GetDestination(path, buffer[instruction.Depth]);
+                            i = table.GetDestination(candidates.Path, candidates.Segments[instruction.Depth]);
                             break;
                         }
                     case InstructionCode.Jump:
@@ -72,43 +56,9 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 }
             }
 
-            var matches = new List<(Endpoint, RouteValueDictionary)>();
-            for (i = 0; i < candidates.Count; i++)
-            { 
-                var values = new RouteValueDictionary();
-                var parameters = candidates[i].Parameters;
-                if (parameters != null)
-                {
-                    for (var j = 0; j < parameters.Length; j++)
-                    {
-                        var parameter = parameters[j];
-                        if (parameter != null && buffer[j].Length == 0)
-                        {
-                            goto notmatch;
-                        }
-                        else if (parameter != null)
-                        {
-                            var value = path.Substring(buffer[j].Start, buffer[j].Length);
-                            values.Add(parameter, value);
-                        }
-                    }
-                }
-
-                matches.Add((candidates[i].Endpoint, values));
-
-                notmatch:;
-            }
-
-            feature.Endpoint = matches.Count == 0 ? null : matches[0].Item1;
-            feature.Values = matches.Count == 0 ? null : matches[0].Item2;
-
-            return Task.CompletedTask;
-        }
-
-        public struct Candidate
-        {
-            public Endpoint Endpoint;
-            public string[] Parameters;
+            candidates.Candidates = state.Candidates;
+            candidates.CandidateIndices = matches.ToArray();
+            candidates.CandidateGroups = new int[] { matches.Count, };
         }
 
         public class State
