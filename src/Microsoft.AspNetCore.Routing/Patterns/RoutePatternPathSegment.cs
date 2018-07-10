@@ -10,9 +10,8 @@ namespace Microsoft.AspNetCore.Routing.Patterns
     [DebuggerDisplay("{DebuggerToString()}")]
     public sealed class RoutePatternPathSegment
     {
-        internal RoutePatternPathSegment(string rawText, RoutePatternPart[] parts)
+        internal RoutePatternPathSegment(RoutePatternPart[] parts)
         {
-            RawText = rawText;
             Parts = parts;
         }
 
@@ -20,11 +19,9 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
         public IReadOnlyList<RoutePatternPart> Parts { get; }
 
-        public string RawText { get; }
-
         internal string DebuggerToString()
         {
-            return RawText ?? DebuggerToString(Parts);
+            return DebuggerToString(Parts);
         }
 
         internal static string DebuggerToString(IReadOnlyList<RoutePatternPart> parts)

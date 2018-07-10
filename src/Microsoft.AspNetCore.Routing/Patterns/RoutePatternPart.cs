@@ -9,21 +9,18 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         // needs to be aware of what kind of parts we support.
         //
         // It is abstract so we can add semantics later inside the library.
-        internal RoutePatternPart(RoutePatternPartKind kind, string rawText)
+        internal RoutePatternPart(RoutePatternPartKind partKind)
         {
-            Kind = kind;
-            rawText = RawText;
+            PartKind = partKind;
         }
 
-        public RoutePatternPartKind Kind { get; }
+        public RoutePatternPartKind PartKind { get; }
 
-        public string RawText { get; }
+        public bool IsLiteral => PartKind == RoutePatternPartKind.Literal;
 
-        public bool IsLiteral => Kind == RoutePatternPartKind.Literal;
+        public bool IsParameter => PartKind == RoutePatternPartKind.Parameter;
 
-        public bool IsParameter => Kind == RoutePatternPartKind.Parameter;
-
-        public bool IsSeparator => Kind == RoutePatternPartKind.Separator;
+        public bool IsSeparator => PartKind == RoutePatternPartKind.Separator;
 
         internal abstract string DebuggerToString();
     }

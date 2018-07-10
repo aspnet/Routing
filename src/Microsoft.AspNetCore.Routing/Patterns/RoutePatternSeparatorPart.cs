@@ -8,8 +8,8 @@ namespace Microsoft.AspNetCore.Routing.Patterns
     [DebuggerDisplay("{DebuggerToString()}")]
     public sealed class RoutePatternSeparatorPart : RoutePatternPart
     {
-        internal RoutePatternSeparatorPart(string rawText, string content)
-            : base(RoutePatternPartKind.Separator, rawText)
+        internal RoutePatternSeparatorPart(string content)
+            : base(RoutePatternPartKind.Separator)
         {
             Debug.Assert(!string.IsNullOrEmpty(content));
 
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
         internal override string DebuggerToString()
         {
-            return RawText ?? Content;
+            return Content;
         }
     }
 }

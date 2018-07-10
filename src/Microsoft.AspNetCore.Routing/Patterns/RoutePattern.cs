@@ -42,17 +42,6 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
         public IReadOnlyList<RoutePatternPathSegment> PathSegments { get; }
 
-        public static RoutePattern Parse(string pattern)
-        {
-            return RoutePatternParser.Parse(pattern);
-        }
-
-        public static RoutePattern Parse(string pattern, object defaults, object constraints)
-        {
-            var original = RoutePatternParser.Parse(pattern);
-            return RoutePatternFactory.Pattern(original.RawText, defaults, constraints, original.PathSegments);
-        }
-
         /// <summary>
         /// Gets the parameter matching the given name.
         /// </summary>

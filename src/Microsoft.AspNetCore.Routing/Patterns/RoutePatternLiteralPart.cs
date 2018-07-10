@@ -8,8 +8,8 @@ namespace Microsoft.AspNetCore.Routing.Patterns
     [DebuggerDisplay("{DebuggerToString()}")]
     public sealed class RoutePatternLiteralPart : RoutePatternPart
     {
-        internal RoutePatternLiteralPart(string rawText, string content)
-            : base(RoutePatternPartKind.Literal, rawText)
+        internal RoutePatternLiteralPart(string content)
+            : base(RoutePatternPartKind.Literal)
         {
             Debug.Assert(!string.IsNullOrEmpty(content));
             Content = content;
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
         internal override string DebuggerToString()
         {
-            return RawText ?? Content;
+            return Content;
         }
     }
 }

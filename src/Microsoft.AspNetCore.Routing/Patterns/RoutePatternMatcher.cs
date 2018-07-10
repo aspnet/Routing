@@ -23,15 +23,15 @@ namespace Microsoft.AspNetCore.Routing
         private static readonly char[] Delimiters = new char[] { SeparatorChar };
 
         public RoutePatternMatcher(
-            RoutePattern routePattern,
+            RoutePattern pattern,
             RouteValueDictionary defaults)
         {
-            if (routePattern == null)
+            if (pattern == null)
             {
-                throw new ArgumentNullException(nameof(routePattern));
+                throw new ArgumentNullException(nameof(pattern));
             }
 
-            RoutePattern = routePattern;
+            RoutePattern = pattern;
             Defaults = defaults ?? new RouteValueDictionary();
 
             // Perf: cache the default value for each parameter (other than complex segments).

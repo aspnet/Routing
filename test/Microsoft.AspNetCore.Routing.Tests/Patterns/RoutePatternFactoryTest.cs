@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             var defaults = new { a = "15", b = 17 };
             var constraints = new { };
 
-            var original = RoutePattern.Parse(template);
+            var original = RoutePatternFactory.Parse(template);
 
             // Act
             var actual = RoutePatternFactory.Pattern(
@@ -28,9 +28,9 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 original.PathSegments);
 
             // Assert
-            Assert.Equal("15", actual.GetParameter("a").DefaultValue);
-            Assert.Equal(17, actual.GetParameter("b").DefaultValue);
-            Assert.Equal("19", actual.GetParameter("c").DefaultValue);
+            Assert.Equal("15", actual.GetParameter("a").Default);
+            Assert.Equal(17, actual.GetParameter("b").Default);
+            Assert.Equal("19", actual.GetParameter("c").Default);
 
             Assert.Collection(
                 actual.Defaults.OrderBy(kvp => kvp.Key),
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             var defaults = new { d = "15", e = 17 };
             var constraints = new { };
 
-            var original = RoutePattern.Parse(template);
+            var original = RoutePatternFactory.Parse(template);
 
             // Act
             var actual = RoutePatternFactory.Pattern(
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             var defaults = new { a = "15", };
             var constraints = new { };
 
-            var original = RoutePattern.Parse(template);
+            var original = RoutePatternFactory.Parse(template);
 
             // Act
             var ex = Assert.Throws<InvalidOperationException>(() => RoutePatternFactory.Pattern(
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             var defaults = new { c = "15", };
             var constraints = new { };
 
-            var original = RoutePattern.Parse(template);
+            var original = RoutePatternFactory.Parse(template);
 
             // Act
             var ex = Assert.Throws<InvalidOperationException>(() => RoutePatternFactory.Pattern(
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             var defaults = new { };
             var constraints = new { a = new RegexRouteConstraint("foo"), b = new RegexRouteConstraint("bar") };
 
-            var original = RoutePattern.Parse(template);
+            var original = RoutePatternFactory.Parse(template);
 
             // Act
             var actual = RoutePatternFactory.Pattern(
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             var defaults = new { };
             var constraints = new { d = new RegexRouteConstraint("foo"), e = new RegexRouteConstraint("bar") };
 
-            var original = RoutePattern.Parse(template);
+            var original = RoutePatternFactory.Parse(template);
 
             // Act
             var actual = RoutePatternFactory.Pattern(
@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             var defaults = new { };
             var constraints = new { d = "foo", };
 
-            var original = RoutePattern.Parse(template);
+            var original = RoutePatternFactory.Parse(template);
 
             // Act
             var actual = RoutePatternFactory.Pattern(
@@ -228,7 +228,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             var defaults = new { };
             var constraints = new { d = 17, };
 
-            var original = RoutePattern.Parse(template);
+            var original = RoutePatternFactory.Parse(template);
 
             // Act
             var ex = Assert.Throws<InvalidOperationException>(() => RoutePatternFactory.Pattern(

@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             var expected = Pattern(
                 template,
-                Segment("cool", LiteralPart("cool", "cool")));
+                Segment(LiteralPart("cool")));
 
             // Act
             var actual = RoutePatternParser.Parse(template);
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             // Arrange
             var template = "{p}";
 
-            var expected = Pattern(template, Segment("{p}", ParameterPart("{p}", "p")));
+            var expected = Pattern(template, Segment(ParameterPart("p")));
 
             // Act
             var actual = RoutePatternParser.Parse(template);
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             // Arrange
             var template = "{p?}";
 
-            var expected = Pattern(template, Segment("{p?}", ParameterPart("{p?}", "p", null, RoutePatternParameterKind.Optional)));
+            var expected = Pattern(template, Segment(ParameterPart("p", null, RoutePatternParameterKind.Optional)));
 
             // Act
             var actual = RoutePatternParser.Parse(template);
@@ -68,9 +68,9 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             var expected = Pattern(
                 template,
-                Segment("cool", LiteralPart("cool", "cool")),
-                Segment("awesome", LiteralPart("awesome", "awesome")),
-                Segment("super", LiteralPart("super", "super")));
+                Segment(LiteralPart("cool")),
+                Segment(LiteralPart("awesome")),
+                Segment(LiteralPart("super")));
 
             // Act
             var actual = RoutePatternParser.Parse(template);
@@ -87,9 +87,9 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             var expected = Pattern(
                 template,
-                Segment("{p1}", ParameterPart("{p1}", "p1")),
-                Segment("{p2}", ParameterPart("{p2}", "p2")),
-                Segment("{*p3}", ParameterPart("{*p3}", "p3", null, RoutePatternParameterKind.CatchAll)));
+                Segment(ParameterPart("p1")),
+                Segment(ParameterPart("p2")),
+                Segment(ParameterPart("p3", null, RoutePatternParameterKind.CatchAll)));
 
             // Act
             var actual = RoutePatternParser.Parse(template);
@@ -107,9 +107,8 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             var expected = Pattern(
                 template,
                 Segment(
-                    "cool-{p1}",
-                    LiteralPart("cool-", "cool-"),
-                    ParameterPart("{p1}", "p1")));
+                    LiteralPart("cool-"),
+                    ParameterPart("p1")));
 
             // Act
             var actual = RoutePatternParser.Parse(template);
@@ -127,9 +126,8 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             var expected = Pattern(
                 template,
                 Segment(
-                    "{p1}-cool",
-                    ParameterPart("{p1}", "p1"),
-                    LiteralPart("-cool", "-cool")));
+                    ParameterPart("p1"),
+                    LiteralPart("-cool")));
 
             // Act
             var actual = RoutePatternParser.Parse(template);
@@ -147,10 +145,9 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             var expected = Pattern(
                 template,
                 Segment(
-                    "{p1}-cool-{p2}",
-                    ParameterPart("{p1}", "p1"),
-                    LiteralPart("-cool-", "-cool-"),
-                    ParameterPart("{p2}", "p2")));
+                    ParameterPart("p1"),
+                    LiteralPart("-cool-"),
+                    ParameterPart("p2")));
 
             // Act
             var actual = RoutePatternParser.Parse(template);
@@ -168,10 +165,9 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             var expected = Pattern(
                 template,
                 Segment(
-                    "cool-{p1}-awesome",
-                    LiteralPart("cool-", "cool-"),
-                    ParameterPart("{p1}", "p1"),
-                    LiteralPart("-awesome", "-awesome")));
+                    LiteralPart("cool-"),
+                    ParameterPart("p1"),
+                    LiteralPart("-awesome")));
 
             // Act
             var actual = RoutePatternParser.Parse(template);
@@ -189,10 +185,9 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             var expected = Pattern(
                 template,
                 Segment(
-                    "{p1}.{p2?}",
-                    ParameterPart("{p1}", "p1"),
-                    SeparatorPart(".", "."),
-                    ParameterPart("{p2?}", "p2", null, RoutePatternParameterKind.Optional)));
+                    ParameterPart("p1"),
+                    SeparatorPart("."),
+                    ParameterPart("p2", null, RoutePatternParameterKind.Optional)));
 
             // Act
             var actual = RoutePatternParser.Parse(template);
@@ -210,10 +205,9 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             var expected = Pattern(
                 template,
                 Segment(
-                    "{p1}.{p2}",
-                    ParameterPart("{p1}", "p1"),
-                    LiteralPart(".", "."),
-                    ParameterPart("{p2}", "p2")));
+                    ParameterPart("p1"),
+                    LiteralPart("."),
+                    ParameterPart("p2")));
 
             // Act
             var actual = RoutePatternParser.Parse(template);
@@ -231,12 +225,11 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             var expected = Pattern(
                 template,
                 Segment(
-                    "{p1}.{p2}.{p3?}",
-                    ParameterPart("{p1}", "p1"),
-                    LiteralPart(".", "."),
-                    ParameterPart("{p2}", "p2"),
-                    SeparatorPart(".", "."),
-                    ParameterPart("{p3?}", "p3", null, RoutePatternParameterKind.Optional)));
+                    ParameterPart("p1"),
+                    LiteralPart("."),
+                    ParameterPart("p2"),
+                    SeparatorPart("."),
+                    ParameterPart("p3", null, RoutePatternParameterKind.Optional)));
 
             // Act
             var actual = RoutePatternParser.Parse(template);
@@ -254,12 +247,11 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             var expected = Pattern(
                 template,
                 Segment(
-                    "{p1}.{p2}.{p3}",
-                    ParameterPart("{p1}", "p1"),
-                    LiteralPart(".", "."),
-                    ParameterPart("{p2}", "p2"),
-                    LiteralPart(".", "."),
-                    ParameterPart("{p3}", "p3")));
+                    ParameterPart("p1"),
+                    LiteralPart("."),
+                    ParameterPart("p2"),
+                    LiteralPart("."),
+                    ParameterPart("p3")));
 
             // Act
             var actual = RoutePatternParser.Parse(template);
@@ -277,13 +269,11 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             var expected = Pattern(
                 template,
                 Segment(
-                    "{p1}.{p2?}",
-                    ParameterPart("{p1}", "p1"),
-                    SeparatorPart(".", "."),
-                    ParameterPart("{p2?}", "p2", null, RoutePatternParameterKind.Optional)),
+                    ParameterPart("p1"),
+                    SeparatorPart("."),
+                    ParameterPart("p2", null, RoutePatternParameterKind.Optional)),
                 Segment(
-                    "{p3}",
-                    ParameterPart("{p3}", "p3")));
+                    ParameterPart("p3")));
 
             // Act
             var actual = RoutePatternParser.Parse(template);
@@ -301,13 +291,11 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             var expected = Pattern(
                 template,
                 Segment(
-                    "{p1}",
-                    ParameterPart("{p1}", "p1")),
+                    ParameterPart("p1")),
                 Segment(
-                    "{p2}.{p3?}",
-                    ParameterPart("{p2}", "p2"),
-                    SeparatorPart(".", "."),
-                    ParameterPart("{p3?}", "p3", null, RoutePatternParameterKind.Optional)));
+                    ParameterPart("p2"),
+                    SeparatorPart("."),
+                    ParameterPart("p3", null, RoutePatternParameterKind.Optional)));
 
             // Act
             var actual = RoutePatternParser.Parse(template);
@@ -324,11 +312,10 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             var expected = Pattern(
                 template,
-                Segment("{p2}", ParameterPart("{p2}", "p2")),
+                Segment(ParameterPart("p2")),
                 Segment(
-                    ".{p3?}",
-                    SeparatorPart(".", "."),
-                    ParameterPart("{p3?}", "p3", null, RoutePatternParameterKind.Optional)));
+                    SeparatorPart("."),
+                    ParameterPart("p3", null, RoutePatternParameterKind.Optional)));
 
             // Act
             var actual = RoutePatternParser.Parse(template);
@@ -349,13 +336,11 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             var expected = Pattern(
                 template,
                 Segment(
-                    template,
                     ParameterPart(
-                        template,
                         "p1",
                         null,
                         RoutePatternParameterKind.Standard,
-                        Constraint(constraint, "p1", constraint))));
+                        Constraint("p1", constraint))));
 
             // Act
             var actual = RoutePatternParser.Parse(template);
@@ -655,8 +640,8 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 "A catch-all parameter cannot be marked optional.");
         }
 
-        private class RoutePatternEqualityComparer : 
-            IEqualityComparer<RoutePattern>, 
+        private class RoutePatternEqualityComparer :
+            IEqualityComparer<RoutePattern>,
             IEqualityComparer<RoutePatternConstraintReference>
         {
             public bool Equals(RoutePattern x, RoutePattern y)
@@ -683,11 +668,6 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
                     for (int i = 0; i < x.PathSegments.Count; i++)
                     {
-                        if (x.PathSegments[i].RawText == y.PathSegments[i].RawText)
-                        {
-                            return false;
-                        }
-
                         if (x.PathSegments[i].Parts.Count != y.PathSegments[i].Parts.Count)
                         {
                             return false;
@@ -745,15 +725,14 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             private bool Equals(RoutePatternLiteralPart x, RoutePatternLiteralPart y)
             {
-                return x.RawText == y.RawText && x.Content == y.Content;
+                return x.Content == y.Content;
             }
 
             private bool Equals(RoutePatternParameterPart x, RoutePatternParameterPart y)
             {
                 return
-                    x.RawText == y.RawText &&
                     x.Name == y.Name &&
-                    x.DefaultValue == y.DefaultValue &&
+                    x.Default == y.Default &&
                     x.ParameterKind == y.ParameterKind &&
                     Enumerable.SequenceEqual(x.Constraints, y.Constraints, this);
 
@@ -762,15 +741,14 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             public bool Equals(RoutePatternConstraintReference x, RoutePatternConstraintReference y)
             {
                 return
-                    x.RawText == y.RawText &&
-                    x.Name == y.Name &&
+                    x.ParameterName == y.ParameterName &&
                     x.Content == y.Content &&
                     x.Constraint == y.Constraint;
             }
 
             private bool Equals(RoutePatternSeparatorPart x, RoutePatternSeparatorPart y)
             {
-                return x.RawText == y.RawText && x.Content == y.Content;
+                return x.Content == y.Content;
             }
 
             public int GetHashCode(RoutePattern obj)

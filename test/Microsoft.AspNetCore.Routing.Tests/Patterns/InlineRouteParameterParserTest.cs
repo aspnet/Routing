@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal(parameterName, templatePart.Name);
-            Assert.Null(templatePart.DefaultValue);
+            Assert.Null(templatePart.Default);
             Assert.Empty(templatePart.Constraints);
         }
 
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal("param", templatePart.Name);
-            Assert.Equal("", templatePart.DefaultValue);
+            Assert.Equal("", templatePart.Default);
             Assert.Empty(templatePart.Constraints);
         }
 
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal("param", templatePart.Name);
-            Assert.Null(templatePart.DefaultValue);
+            Assert.Null(templatePart.Default);
             Assert.Empty(templatePart.Constraints);
         }
 
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal("param", templatePart.Name);
-            Assert.Equal("", templatePart.DefaultValue);
+            Assert.Equal("", templatePart.Default);
             Assert.Empty(templatePart.Constraints);
         }
 
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal("param", templatePart.Name);
-            Assert.Equal(":", templatePart.DefaultValue);
+            Assert.Equal(":", templatePart.Default);
             Assert.Empty(templatePart.Constraints);
         }
 
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal("param", templatePart.Name);
-            Assert.Equal("111111", templatePart.DefaultValue);
+            Assert.Equal("111111", templatePart.Default);
 
             var constraint = Assert.Single(templatePart.Constraints);
             Assert.Equal("int", constraint.Content);
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal("param", templatePart.Name);
-            Assert.Equal("111111", templatePart.DefaultValue);
+            Assert.Equal("111111", templatePart.Default);
 
             var constraint = Assert.Single(templatePart.Constraints);
             Assert.Equal(@"test(\d+)", constraint.Content);
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal("param", templatePart.Name);
-            Assert.Equal("12", templatePart.DefaultValue);
+            Assert.Equal("12", templatePart.Default);
             Assert.True(templatePart.IsOptional);
 
             var constraint = Assert.Single(templatePart.Constraints);
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal("param", templatePart.Name);
-            Assert.Equal("12?", templatePart.DefaultValue);
+            Assert.Equal("12?", templatePart.Default);
             Assert.True(templatePart.IsOptional);
 
             var constraint = Assert.Single(templatePart.Constraints);
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             Assert.Equal("param", templatePart.Name);
             Assert.True(templatePart.IsOptional);
 
-            Assert.Equal("abc", templatePart.DefaultValue);
+            Assert.Equal("abc", templatePart.Default);
 
             var constraint = Assert.Single(templatePart.Constraints);
             Assert.Equal(@"test(\d+)", constraint.Content);
@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             // Assert
             Assert.Equal("param", templatePart.Name);
 
-            Assert.Equal("qwer", templatePart.DefaultValue);
+            Assert.Equal("qwer", templatePart.Default);
 
             Assert.Collection(templatePart.Constraints,
                 constraint => Assert.Equal(@"test(\d+)", constraint.Content),
@@ -240,7 +240,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             // Assert
             Assert.Equal("param", templatePart.Name);
 
-            Assert.Equal("=qwer", templatePart.DefaultValue);
+            Assert.Equal("=qwer", templatePart.Default);
 
             Assert.Collection(
                 templatePart.Constraints,
@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal("comparison-operator", templatePart.Name);
-            Assert.Equal(defaultValue, templatePart.DefaultValue);
+            Assert.Equal(defaultValue, templatePart.Default);
 
             var constraint = Assert.Single(templatePart.Constraints);
             Assert.Equal("length(6)", constraint.Content);
@@ -269,14 +269,14 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         public void ParseRouteTemplate_ConstraintsDefaultsAndOptionalsInMultipleSections_ParsedCorrectly()
         {
             // Arrange & Act
-            var routePattern = RoutePattern.Parse(@"some/url-{p1:int:test(3)=hello}/{p2=abc}/{p3?}");
+            var routePattern = RoutePatternFactory.Parse(@"some/url-{p1:int:test(3)=hello}/{p2=abc}/{p3?}");
 
             // Assert
             var parameters = routePattern.Parameters.ToArray();
 
             var param1 = parameters[0];
             Assert.Equal("p1", param1.Name);
-            Assert.Equal("hello", param1.DefaultValue);
+            Assert.Equal("hello", param1.Default);
             Assert.False(param1.IsOptional);
 
             Assert.Collection(param1.Constraints,
@@ -286,7 +286,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             var param2 = parameters[1];
             Assert.Equal("p2", param2.Name);
-            Assert.Equal("abc", param2.DefaultValue);
+            Assert.Equal("abc", param2.Default);
             Assert.False(param2.IsOptional);
 
             var param3 = parameters[2];
@@ -312,7 +312,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal("param", templatePart.Name);
-            Assert.Equal("world", templatePart.DefaultValue);
+            Assert.Equal("world", templatePart.Default);
         }
 
         [Fact]
@@ -337,7 +337,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             // Assert
             Assert.Equal("param", templatePart.Name);
 
-            Assert.Equal("wer", templatePart.DefaultValue);
+            Assert.Equal("wer", templatePart.Default);
 
             var constraint = Assert.Single(templatePart.Constraints);
             Assert.Equal(@"test(\})", constraint.Content);
@@ -365,7 +365,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             // Assert
             Assert.Equal("param", templatePart.Name);
 
-            Assert.Equal("fsd", templatePart.DefaultValue);
+            Assert.Equal("fsd", templatePart.Default);
 
             var constraint = Assert.Single(templatePart.Constraints);
             Assert.Equal(@"test(\))", constraint.Content);
@@ -393,7 +393,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             // Assert
             Assert.Equal("param", templatePart.Name);
 
-            Assert.Equal("mnf", templatePart.DefaultValue);
+            Assert.Equal("mnf", templatePart.Default);
 
             var constraint = Assert.Single(templatePart.Constraints);
             Assert.Equal(@"test(:)", constraint.Content);
@@ -421,7 +421,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             // Assert
             Assert.Equal(":param", templatePart.Name);
 
-            Assert.Equal("12", templatePart.DefaultValue);
+            Assert.Equal("12", templatePart.Default);
 
             var constraint = Assert.Single(templatePart.Constraints);
             Assert.Equal("test", constraint.Content);
@@ -436,7 +436,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             // Assert
             Assert.Equal(":param", templatePart.Name);
 
-            Assert.Equal("12", templatePart.DefaultValue);
+            Assert.Equal("12", templatePart.Default);
 
             Assert.Collection(
                 templatePart.Constraints,
@@ -492,7 +492,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             // Assert
             Assert.Equal("param", templatePart.Name);
 
-            Assert.Equal("jsd", templatePart.DefaultValue);
+            Assert.Equal("jsd", templatePart.Default);
 
             var constraint = Assert.Single(templatePart.Constraints);
             Assert.Equal(@"test(\w,\w)", constraint.Content);
@@ -506,7 +506,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal("param", templatePart.Name);
-            Assert.Equal("", templatePart.DefaultValue);
+            Assert.Equal("", templatePart.Default);
 
             Assert.True(templatePart.IsOptional);
 
@@ -522,7 +522,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal("param", templatePart.Name);
-            Assert.Null(templatePart.DefaultValue);
+            Assert.Null(templatePart.Default);
 
             var constraint = Assert.Single(templatePart.Constraints);
             Assert.Equal("test(=)", constraint.Content);
@@ -536,7 +536,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal("param", templatePart.Name);
-            Assert.Equal("test=bar", templatePart.DefaultValue);
+            Assert.Equal("test=bar", templatePart.Default);
         }
 
         [Fact]
@@ -547,7 +547,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal("param", templatePart.Name);
-            Assert.Null(templatePart.DefaultValue);
+            Assert.Null(templatePart.Default);
 
             var constraint = Assert.Single(templatePart.Constraints);
             Assert.Equal("test(a==b)", constraint.Content);
@@ -561,7 +561,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal("param", templatePart.Name);
-            Assert.Equal("dvds", templatePart.DefaultValue);
+            Assert.Equal("dvds", templatePart.Default);
 
             var constraint = Assert.Single(templatePart.Constraints);
             Assert.Equal("test(a==b)", constraint.Content);
@@ -575,7 +575,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal("par", templatePart.Name);
-            Assert.Equal("=am:test=dvds", templatePart.DefaultValue);
+            Assert.Equal("=am:test=dvds", templatePart.Default);
         }
 
         [Fact]
@@ -586,7 +586,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal("param", templatePart.Name);
-            Assert.Equal("=dvds", templatePart.DefaultValue);
+            Assert.Equal("=dvds", templatePart.Default);
         }
 
         [Fact]
@@ -597,7 +597,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal("par", templatePart.Name);
-            Assert.Equal("am:test(asd)", templatePart.DefaultValue);
+            Assert.Equal("am:test(asd)", templatePart.Default);
         }
 
         [Fact]
@@ -608,7 +608,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal("par", templatePart.Name);
-            Assert.Equal("test(am):est=asd", templatePart.DefaultValue);
+            Assert.Equal("test(am):est=asd", templatePart.Default);
         }
 
         [Fact]
@@ -619,7 +619,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal("param", templatePart.Name);
-            Assert.Equal("sds", templatePart.DefaultValue);
+            Assert.Equal("sds", templatePart.Default);
 
             var constraint = Assert.Single(templatePart.Constraints);
             Assert.Equal("test(=)", constraint.Content);
@@ -660,7 +660,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             // Assert
             Assert.Equal("param", templatePart.Name);
 
-            Assert.Equal("xvc", templatePart.DefaultValue);
+            Assert.Equal("xvc", templatePart.Default);
 
             var constraint = Assert.Single(templatePart.Constraints);
             Assert.Equal(@"test(\{)", constraint.Content);
@@ -727,7 +727,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal("param", templatePart.Name);
-            Assert.Equal("default-value", templatePart.DefaultValue);
+            Assert.Equal("default-value", templatePart.Default);
 
             Assert.Collection(templatePart.Constraints,
                 constraint => Assert.Equal(@"test(abc:somevalue)", constraint.Content),
@@ -743,7 +743,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal("param", templatePart.Name);
-            Assert.Equal("test1", templatePart.DefaultValue);
+            Assert.Equal("test1", templatePart.Default);
 
             var constraint = Assert.Single(templatePart.Constraints);
             Assert.Equal(@"test(constraintvalue", constraint.Content);
@@ -758,7 +758,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             // Assert
             Assert.Equal("param", templatePart.Name);
 
-            Assert.Equal("djk", templatePart.DefaultValue);
+            Assert.Equal("djk", templatePart.Default);
 
             var constraint = Assert.Single(templatePart.Constraints);
             Assert.Equal(@"test(\()", constraint.Content);
@@ -772,7 +772,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal("param", templatePart.Name);
-            Assert.Null(templatePart.DefaultValue);
+            Assert.Null(templatePart.Default);
             Assert.False(templatePart.IsOptional);
 
             var constraint = Assert.Single(templatePart.Constraints);
@@ -787,7 +787,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal("param", templatePart.Name);
-            Assert.Null(templatePart.DefaultValue);
+            Assert.Null(templatePart.Default);
             Assert.True(templatePart.IsOptional);
 
             var constraint = Assert.Single(templatePart.Constraints);
@@ -802,7 +802,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal("param", templatePart.Name);
-            Assert.Equal("sdf", templatePart.DefaultValue);
+            Assert.Equal("sdf", templatePart.Default);
             Assert.False(templatePart.IsOptional);
 
             var constraint = Assert.Single(templatePart.Constraints);
@@ -817,7 +817,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal("param", templatePart.Name);
-            Assert.Equal("sdf", templatePart.DefaultValue);
+            Assert.Equal("sdf", templatePart.Default);
             Assert.True(templatePart.IsOptional);
 
             var constraint = Assert.Single(templatePart.Constraints);
@@ -832,7 +832,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal("par?am", templatePart.Name);
-            Assert.Null(templatePart.DefaultValue);
+            Assert.Null(templatePart.Default);
             Assert.False(templatePart.IsOptional);
 
             var constraint = Assert.Single(templatePart.Constraints);
@@ -847,7 +847,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal("param", templatePart.Name);
-            Assert.Null(templatePart.DefaultValue);
+            Assert.Null(templatePart.Default);
             Assert.False(templatePart.IsOptional);
 
             Assert.Collection(templatePart.Constraints,
@@ -863,7 +863,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal("param", templatePart.Name);
-            Assert.Null(templatePart.DefaultValue);
+            Assert.Null(templatePart.Default);
             Assert.False(templatePart.IsOptional);
 
             var constraint = Assert.Single(templatePart.Constraints);
@@ -878,7 +878,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal("foo", templatePart.Name);
-            Assert.Null(templatePart.DefaultValue);
+            Assert.Null(templatePart.Default);
             Assert.False(templatePart.IsOptional);
 
             var constraint = Assert.Single(templatePart.Constraints);
@@ -893,7 +893,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal("p1", templatePart.Name);
-            Assert.Null(templatePart.DefaultValue);
+            Assert.Null(templatePart.Default);
             Assert.False(templatePart.IsOptional);
 
             var constraint = Assert.Single(templatePart.Constraints);
@@ -908,7 +908,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // Assert
             Assert.Equal("p1", templatePart.Name);
-            Assert.Equal("123-456-7890", templatePart.DefaultValue);
+            Assert.Equal("123-456-7890", templatePart.Default);
             Assert.False(templatePart.IsOptional);
 
             var constraint = Assert.Single(templatePart.Constraints);
@@ -933,7 +933,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             // Assert
             Assert.Equal(expectedParameterName, templatePart.Name);
             Assert.Empty(templatePart.Constraints);
-            Assert.Null(templatePart.DefaultValue);
+            Assert.Null(templatePart.Default);
         }
 
         private RoutePatternParameterPart ParseParameter(string routeParameter)

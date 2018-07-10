@@ -11,14 +11,15 @@ namespace Microsoft.AspNetCore.Routing.Patterns
     [DebuggerDisplay("{DebuggerToString()}")]
     public sealed class RoutePatternConstraintReference
     {
-        internal RoutePatternConstraintReference(string rawText, string name, string content)
+        internal RoutePatternConstraintReference(string parameterName, string content)
         {
-            RawText = rawText;
+            ParameterName = parameterName;
             Content = content;
         }
 
-        internal RoutePatternConstraintReference(string name, IRouteConstraint constraint)
+        internal RoutePatternConstraintReference(string parameterName, IRouteConstraint constraint)
         {
+            ParameterName = parameterName;
             Constraint = constraint;
         }
 
@@ -35,13 +36,11 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         /// <summary>
         /// Gets the parameter name associated with the constraint.
         /// </summary>
-        public string Name { get; }
-
-        public string RawText { get; }
+        public string ParameterName { get; }
 
         private string DebuggerToString()
         {
-            return RawText ?? Content;
+            return Content;
         }
     }
 }

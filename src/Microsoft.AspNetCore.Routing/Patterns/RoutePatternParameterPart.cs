@@ -11,24 +11,23 @@ namespace Microsoft.AspNetCore.Routing.Patterns
     public class RoutePatternParameterPart : RoutePatternPart
     {
         internal RoutePatternParameterPart(
-            string rawText,
-            string name,
-            object defaultValue,
+            string parameterName,
+            object @default,
             RoutePatternParameterKind parameterKind,
             RoutePatternConstraintReference[] constraints)
-            : base(RoutePatternPartKind.Parameter, rawText)
+            : base(RoutePatternPartKind.Parameter)
         {
             // See #475 - this code should have some asserts, but it can't because of the design of RouteParameterParser.
 
-            Name = name;
-            DefaultValue = defaultValue;
+            Name = parameterName;
+            Default = @default;
             ParameterKind = parameterKind;
             Constraints = constraints;
         }
 
         public IReadOnlyList<RoutePatternConstraintReference> Constraints { get; }
 
-        public object DefaultValue { get; }
+        public object Default { get; }
 
         public bool IsCatchAll => ParameterKind == RoutePatternParameterKind.CatchAll;
 
@@ -40,11 +39,6 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
         internal override string DebuggerToString()
         {
-            if (RawText != null)
-            {
-                return RawText;
-            }
-
             var builder = new StringBuilder();
             builder.Append("{");
 
@@ -61,10 +55,10 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 builder.Append(constraint.Constraint);
             }
 
-            if (DefaultValue != null)
+            if (Default != null)
             {
                 builder.Append("=");
-                builder.Append(DefaultValue);
+                builder.Append(Default);
             }
 
             if (IsOptional)

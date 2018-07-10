@@ -10,6 +10,27 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 {
     public static class RoutePatternFactory
     {
+        public static RoutePattern Parse(string pattern)
+        {
+            if (pattern == null)
+            {
+                throw new ArgumentNullException(nameof(pattern));
+            }
+
+            return RoutePatternParser.Parse(pattern);
+        }
+
+        public static RoutePattern Parse(string pattern, object defaults, object constraints)
+        {
+            if (pattern == null)
+            {
+                throw new ArgumentNullException(nameof(pattern));
+            }
+
+            var original = RoutePatternParser.Parse(pattern);
+            return Pattern(original.RawText, defaults, constraints, original.PathSegments);
+        }
+
         public static RoutePattern Pattern(IEnumerable<RoutePatternPathSegment> segments)
         {
             if (segments == null)
@@ -20,14 +41,14 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             return PatternCore(null, null, null, segments);
         }
 
-        public static RoutePattern Pattern(string text, IEnumerable<RoutePatternPathSegment> segments)
+        public static RoutePattern Pattern(string rawText, IEnumerable<RoutePatternPathSegment> segments)
         {
             if (segments == null)
             {
                 throw new ArgumentNullException(nameof(segments));
             }
 
-            return PatternCore(text, null, null, segments);
+            return PatternCore(rawText, null, null, segments);
         }
 
         public static RoutePattern Pattern(
@@ -44,7 +65,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         }
 
         public static RoutePattern Pattern(
-            string text,
+            string rawText,
             object defaults,
             object constraints,
             IEnumerable<RoutePatternPathSegment> segments)
@@ -54,7 +75,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 throw new ArgumentNullException(nameof(segments));
             }
 
-            return PatternCore(text, new RouteValueDictionary(defaults), new RouteValueDictionary(constraints), segments);
+            return PatternCore(rawText, new RouteValueDictionary(defaults), new RouteValueDictionary(constraints), segments);
         }
 
         public static RoutePattern Pattern(params RoutePatternPathSegment[] segments)
@@ -67,14 +88,14 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             return PatternCore(null, null, null, segments);
         }
 
-        public static RoutePattern Pattern(string text, params RoutePatternPathSegment[] segments)
+        public static RoutePattern Pattern(string rawText, params RoutePatternPathSegment[] segments)
         {
             if (segments == null)
             {
                 throw new ArgumentNullException(nameof(segments));
             }
 
-            return PatternCore(text, null, null, segments);
+            return PatternCore(rawText, null, null, segments);
         }
 
         public static RoutePattern Pattern(
@@ -91,7 +112,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         }
 
         public static RoutePattern Pattern(
-            string text,
+            string rawText,
             object defaults,
             object constraints,
             params RoutePatternPathSegment[] segments)
@@ -101,11 +122,11 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 throw new ArgumentNullException(nameof(segments));
             }
 
-            return PatternCore(text, new RouteValueDictionary(defaults), new RouteValueDictionary(constraints), segments);
+            return PatternCore(rawText, new RouteValueDictionary(defaults), new RouteValueDictionary(constraints), segments);
         }
 
         private static RoutePattern PatternCore(
-            string text,
+            string rawText,
             IDictionary<string, object> defaults,
             IDictionary<string, object> constraints,
             IEnumerable<RoutePatternPathSegment> segments)
@@ -162,7 +183,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             }
 
             return new RoutePattern(
-                text,
+                rawText,
                 updatedDefaults,
                 updatedConstraints.ToDictionary(kvp => kvp.Key, kvp => (IReadOnlyList<RoutePatternConstraintReference>)kvp.Value.ToArray()),
                 parameters.ToArray(),
@@ -177,7 +198,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                     updatedParts[i] = VisitPart(part);
                 }
 
-                return SegmentCore(segment.RawText, updatedParts);
+                return SegmentCore(updatedParts);
             }
 
             RoutePatternPart VisitPart(RoutePatternPart part)
@@ -188,11 +209,11 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 }
 
                 var parameter = (RoutePatternParameterPart)part;
-                var @default = parameter.DefaultValue;
+                var @default = parameter.Default;
 
                 if (updatedDefaults.TryGetValue(parameter.Name, out var newDefault))
                 {
-                    if (parameter.DefaultValue != null)
+                    if (parameter.Default != null)
                     {
                         var message = Resources.FormatTemplateRoute_CannotHaveDefaultValueSpecifiedInlineAndExplicitly(parameter.Name);
                         throw new InvalidOperationException(message);
@@ -207,9 +228,9 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                     @default = newDefault;
                 }
                 
-                if (parameter.DefaultValue != null)
+                if (parameter.Default != null)
                 {
-                    updatedDefaults.Add(parameter.Name, parameter.DefaultValue);
+                    updatedDefaults.Add(parameter.Name, parameter.Default);
                 }
 
                 if (!updatedConstraints.TryGetValue(parameter.Name, out var parameterConstraints) &&
@@ -225,7 +246,6 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 }
 
                 return ParameterPartCore(
-                    parameter.RawText,
                     parameter.Name,
                     @default,
                     parameter.ParameterKind,
@@ -240,17 +260,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 throw new ArgumentNullException(nameof(parts));
             }
 
-            return SegmentCore(null, parts);
-        }
-
-        public static RoutePatternPathSegment Segment(string text, IEnumerable<RoutePatternPart> parts)
-        {
-            if (parts == null)
-            {
-                throw new ArgumentNullException(nameof(parts));
-            }
-
-            return SegmentCore(text, parts);
+            return SegmentCore(parts);
         }
 
         public static RoutePatternPathSegment Segment(params RoutePatternPart[] parts)
@@ -260,24 +270,12 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 throw new ArgumentNullException(nameof(parts));
             }
 
-            return SegmentCore(null, parts);
+            return SegmentCore(parts);
         }
 
-        public static RoutePatternPathSegment Segment(string text, params RoutePatternPart[] parts)
+        private static RoutePatternPathSegment SegmentCore(IEnumerable<RoutePatternPart> parts)
         {
-            if (parts == null)
-            {
-                throw new ArgumentNullException(nameof(parts));
-            }
-
-            return SegmentCore(text, parts);
-        }
-
-        private static RoutePatternPathSegment SegmentCore(
-            string text,
-            IEnumerable<RoutePatternPart> parts)
-        {
-            return new RoutePatternPathSegment(text, parts.ToArray());
+            return new RoutePatternPathSegment(parts.ToArray());
         }
 
         public static RoutePatternLiteralPart LiteralPart(string content)
@@ -292,27 +290,12 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 throw new ArgumentException(Resources.FormatTemplateRoute_InvalidLiteral(content));
             }
 
-            return LiteralPartCore(null, content);
+            return LiteralPartCore(content);
         }
 
-        public static RoutePatternLiteralPart LiteralPart(string text, string content)
+        private static RoutePatternLiteralPart LiteralPartCore(string content)
         {
-            if (string.IsNullOrEmpty(content))
-            {
-                throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(content));
-            }
-
-            if (content.IndexOf('?') >= 0)
-            {
-                throw new ArgumentException(Resources.FormatTemplateRoute_InvalidLiteral(content));
-            }
-
-            return LiteralPartCore(text, content);
-        }
-
-        private static RoutePatternLiteralPart LiteralPartCore(string text, string content)
-        {
-            return new RoutePatternLiteralPart(text, content);
+            return new RoutePatternLiteralPart(content);
         }
 
         public static RoutePatternSeparatorPart SeparatorPart(string content)
@@ -322,215 +305,98 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(content));
             }
 
-            return SeparatorPartCore(null, content);
+            return SeparatorPartCore(content);
         }
 
-        public static RoutePatternSeparatorPart SeparatorPart(string text, string content)
+        private static RoutePatternSeparatorPart SeparatorPartCore( string content)
         {
-            if (string.IsNullOrEmpty(content))
+            return new RoutePatternSeparatorPart( content);
+        }
+
+        public static RoutePatternParameterPart ParameterPart(string parameterName)
+        {
+            if (string.IsNullOrEmpty(parameterName))
             {
-                throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(content));
+                throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(parameterName));
             }
 
-            return SeparatorPartCore(text, content);
-        }
-
-        private static RoutePatternSeparatorPart SeparatorPartCore(string text, string content)
-        {
-            return new RoutePatternSeparatorPart(text, content);
-        }
-
-        public static RoutePatternParameterPart ParameterPart(string name)
-        {
-            if (string.IsNullOrEmpty(name))
+            if (parameterName.IndexOfAny(RoutePatternParser.InvalidParameterNameChars) >= 0)
             {
-                throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(name));
-            }
-
-            if (name.IndexOfAny(RoutePatternParser.InvalidParameterNameChars) >= 0)
-            {
-                throw new ArgumentException(Resources.FormatTemplateRoute_InvalidParameterName(name));
+                throw new ArgumentException(Resources.FormatTemplateRoute_InvalidParameterName(parameterName));
             }
 
             return ParameterPartCore(
-                text: null,
-                name: name,
+                parameterName: parameterName,
                 @default: null,
-                kind: RoutePatternParameterKind.Standard,
+                parameterKind: RoutePatternParameterKind.Standard,
                 constraints: Array.Empty<RoutePatternConstraintReference>());
         }
-
-        public static RoutePatternParameterPart ParameterPart(string text, string name)
+        
+        public static RoutePatternParameterPart ParameterPart(string parameterName, object @default)
         {
-            if (string.IsNullOrEmpty(name))
+            if (string.IsNullOrEmpty(parameterName))
             {
-                throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(name));
+                throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(parameterName));
             }
 
-            if (name.IndexOfAny(RoutePatternParser.InvalidParameterNameChars) >= 0)
+            if (parameterName.IndexOfAny(RoutePatternParser.InvalidParameterNameChars) >= 0)
             {
-                throw new ArgumentException(Resources.FormatTemplateRoute_InvalidParameterName(name));
+                throw new ArgumentException(Resources.FormatTemplateRoute_InvalidParameterName(parameterName));
             }
 
             return ParameterPartCore(
-                text: text,
-                name: name,
-                @default: null,
-                kind: RoutePatternParameterKind.Standard,
-                constraints: Array.Empty<RoutePatternConstraintReference>());
-        }
-
-        public static RoutePatternParameterPart ParameterPart(string name, object @default)
-        {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(name));
-            }
-
-            if (name.IndexOfAny(RoutePatternParser.InvalidParameterNameChars) >= 0)
-            {
-                throw new ArgumentException(Resources.FormatTemplateRoute_InvalidParameterName(name));
-            }
-
-            return ParameterPartCore(
-                text: null,
-                name: name,
+                parameterName: parameterName,
                 @default: @default,
-                kind: RoutePatternParameterKind.Standard,
-                constraints: Array.Empty<RoutePatternConstraintReference>());
-        }
-
-        public static RoutePatternParameterPart ParameterPart(string text, string name, object @default)
-        {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(name));
-            }
-
-            if (name.IndexOfAny(RoutePatternParser.InvalidParameterNameChars) >= 0)
-            {
-                throw new ArgumentException(Resources.FormatTemplateRoute_InvalidParameterName(name));
-            }
-
-            return ParameterPartCore(
-                text: text,
-                name: name,
-                @default: @default,
-                kind: RoutePatternParameterKind.Standard,
+                parameterKind: RoutePatternParameterKind.Standard,
                 constraints: Array.Empty<RoutePatternConstraintReference>());
         }
 
         public static RoutePatternParameterPart ParameterPart(
-            string name,
+            string parameterName,
             object @default,
-            RoutePatternParameterKind kind)
+            RoutePatternParameterKind parameterKind)
         {
-            if (string.IsNullOrEmpty(name))
+            if (string.IsNullOrEmpty(parameterName))
             {
-                throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(name));
+                throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(parameterName));
             }
 
-            if (name.IndexOfAny(RoutePatternParser.InvalidParameterNameChars) >= 0)
+            if (parameterName.IndexOfAny(RoutePatternParser.InvalidParameterNameChars) >= 0)
             {
-                throw new ArgumentException(Resources.FormatTemplateRoute_InvalidParameterName(name));
+                throw new ArgumentException(Resources.FormatTemplateRoute_InvalidParameterName(parameterName));
             }
 
-            if (@default != null && kind == RoutePatternParameterKind.Optional)
+            if (@default != null && parameterKind == RoutePatternParameterKind.Optional)
             {
-                throw new ArgumentNullException(Resources.TemplateRoute_OptionalCannotHaveDefaultValue, nameof(kind));
+                throw new ArgumentNullException(Resources.TemplateRoute_OptionalCannotHaveDefaultValue, nameof(parameterKind));
             }
 
             return ParameterPartCore(
-                text: null,
-                name: name,
+                parameterName: parameterName,
                 @default: @default,
-                kind: kind,
+                parameterKind: parameterKind,
                 constraints: Array.Empty<RoutePatternConstraintReference>());
         }
 
         public static RoutePatternParameterPart ParameterPart(
-            string text,
-            string name,
+            string parameterName,
             object @default,
-            RoutePatternParameterKind kind)
-        {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(name));
-            }
-
-            if (name.IndexOfAny(RoutePatternParser.InvalidParameterNameChars) >= 0)
-            {
-                throw new ArgumentException(Resources.FormatTemplateRoute_InvalidParameterName(name));
-            }
-
-            if (@default != null && kind == RoutePatternParameterKind.Optional)
-            {
-                throw new ArgumentNullException(Resources.TemplateRoute_OptionalCannotHaveDefaultValue, nameof(kind));
-            }
-
-            return ParameterPartCore(
-                text: text,
-                name: name,
-                @default: @default,
-                kind: kind,
-                constraints: Array.Empty<RoutePatternConstraintReference>());
-        }
-
-        public static RoutePatternParameterPart ParameterPart(
-            string name,
-            object @default,
-            RoutePatternParameterKind kind,
+            RoutePatternParameterKind parameterKind,
             IEnumerable<RoutePatternConstraintReference> constraints)
         {
-            if (string.IsNullOrEmpty(name))
+            if (string.IsNullOrEmpty(parameterName))
             {
-                throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(name));
+                throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(parameterName));
             }
 
-            if (name.IndexOfAny(RoutePatternParser.InvalidParameterNameChars) >= 0)
+            if (parameterName.IndexOfAny(RoutePatternParser.InvalidParameterNameChars) >= 0)
             {
-                throw new ArgumentException(Resources.FormatTemplateRoute_InvalidParameterName(name));
+                throw new ArgumentException(Resources.FormatTemplateRoute_InvalidParameterName(parameterName));
             }
 
-            if (@default != null && kind == RoutePatternParameterKind.Optional)
+            if (@default != null && parameterKind == RoutePatternParameterKind.Optional)
             {
-                throw new ArgumentNullException(Resources.TemplateRoute_OptionalCannotHaveDefaultValue, nameof(kind));
-            }
-
-            if (constraints == null)
-            {
-                throw new ArgumentNullException(nameof(constraints));
-            }
-
-            return ParameterPartCore(
-                text: null,
-                name: name,
-                @default: @default,
-                kind: kind,
-                constraints: constraints);
-        }
-
-        public static RoutePatternParameterPart ParameterPart(
-            string text,
-            string name,
-            object @default,
-            RoutePatternParameterKind kind,
-            IEnumerable<RoutePatternConstraintReference> constraints)
-        {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(name));
-            }
-
-            if (name.IndexOfAny(RoutePatternParser.InvalidParameterNameChars) >= 0)
-            {
-                throw new ArgumentException(Resources.FormatTemplateRoute_InvalidParameterName(name));
-            }
-
-            if (@default != null && kind == RoutePatternParameterKind.Optional)
-            {
-                throw new ArgumentNullException(Resources.TemplateRoute_OptionalCannotHaveDefaultValue, nameof(kind));
+                throw new ArgumentNullException(Resources.TemplateRoute_OptionalCannotHaveDefaultValue, nameof(parameterKind));
             }
 
             if (constraints == null)
@@ -539,67 +405,31 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             }
 
             return ParameterPartCore(
-                text: text,
-                name: name,
+                parameterName: parameterName,
                 @default: @default,
-                kind: kind,
+                parameterKind: parameterKind,
                 constraints: constraints);
         }
 
         public static RoutePatternParameterPart ParameterPart(
-            string name,
+            string parameterName,
             object @default,
-            RoutePatternParameterKind kind,
+            RoutePatternParameterKind parameterKind,
             params RoutePatternConstraintReference[] constraints)
         {
-            if (string.IsNullOrEmpty(name))
+            if (string.IsNullOrEmpty(parameterName))
             {
-                throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(name));
+                throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(parameterName));
             }
 
-            if (name.IndexOfAny(RoutePatternParser.InvalidParameterNameChars) >= 0)
+            if (parameterName.IndexOfAny(RoutePatternParser.InvalidParameterNameChars) >= 0)
             {
-                throw new ArgumentException(Resources.FormatTemplateRoute_InvalidParameterName(name));
+                throw new ArgumentException(Resources.FormatTemplateRoute_InvalidParameterName(parameterName));
             }
 
-            if (@default != null && kind == RoutePatternParameterKind.Optional)
+            if (@default != null && parameterKind == RoutePatternParameterKind.Optional)
             {
-                throw new ArgumentNullException(Resources.TemplateRoute_OptionalCannotHaveDefaultValue, nameof(kind));
-            }
-
-            if (constraints == null)
-            {
-                throw new ArgumentNullException(nameof(constraints));
-            }
-
-            return ParameterPartCore(
-                text: null,
-                name: name,
-                @default: @default,
-                kind: kind,
-                constraints: constraints);
-        }
-
-        public static RoutePatternParameterPart ParameterPart(
-            string text,
-            string name,
-            object @default,
-            RoutePatternParameterKind kind,
-            params RoutePatternConstraintReference[] constraints)
-        {
-            if (string.IsNullOrEmpty(name))
-            {
-                throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(name));
-            }
-
-            if (name.IndexOfAny(RoutePatternParser.InvalidParameterNameChars) >= 0)
-            {
-                throw new ArgumentException(Resources.FormatTemplateRoute_InvalidParameterName(name));
-            }
-
-            if (@default != null && kind == RoutePatternParameterKind.Optional)
-            {
-                throw new ArgumentNullException(Resources.TemplateRoute_OptionalCannotHaveDefaultValue, nameof(kind));
+                throw new ArgumentNullException(Resources.TemplateRoute_OptionalCannotHaveDefaultValue, nameof(parameterKind));
             }
 
             if (constraints == null)
@@ -608,91 +438,80 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             }
 
             return ParameterPartCore(
-                text: text,
-                name: name,
+                parameterName: parameterName,
                 @default: @default,
-                kind: kind,
+                parameterKind: parameterKind,
                 constraints: constraints);
         }
 
         private static RoutePatternParameterPart ParameterPartCore(
-            string text,
-            string name,
+            string parameterName,
             object @default,
-            RoutePatternParameterKind kind,
+            RoutePatternParameterKind parameterKind,
             IEnumerable<RoutePatternConstraintReference> constraints)
         {
-            if (string.IsNullOrEmpty(name))
+            if (string.IsNullOrEmpty(parameterName))
             {
-                throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(name));
+                throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(parameterName));
             }
 
-            if (name.IndexOfAny(RoutePatternParser.InvalidParameterNameChars) >= 0)
+            if (parameterName.IndexOfAny(RoutePatternParser.InvalidParameterNameChars) >= 0)
             {
-                throw new ArgumentException(Resources.FormatTemplateRoute_InvalidParameterName(name));
+                throw new ArgumentException(Resources.FormatTemplateRoute_InvalidParameterName(parameterName));
             }
 
-            return new RoutePatternParameterPart(text, name, @default, kind, constraints.ToArray());
+            return new RoutePatternParameterPart(parameterName, @default, parameterKind, constraints.ToArray());
         }
 
-        public static RoutePatternConstraintReference Constraint(string name, object constraint)
+        public static RoutePatternConstraintReference Constraint(string parameterName, object constraint)
         {
             // Similar to RouteConstraintBuilder
             if (constraint is IRouteConstraint routeConstraint)
             {
-                return ConstraintCore(name, routeConstraint);
+                return ConstraintCore(parameterName, routeConstraint);
             }
             else if (constraint is string content)
             {
-                return ConstraintCore(name, new RegexRouteConstraint("^(" + content + ")$"));
+                return ConstraintCore(parameterName, new RegexRouteConstraint("^(" + content + ")$"));
             }
             else
             {
                 throw new InvalidOperationException(Resources.FormatConstraintMustBeStringOrConstraint(
-                    name,
+                    parameterName,
                     constraint,
                     typeof(IRouteConstraint)));
             }
         }
 
-        public static RoutePatternConstraintReference Constraint(string name, IRouteConstraint constraint)
+        public static RoutePatternConstraintReference Constraint(string parameterName, IRouteConstraint constraint)
         {
             if (constraint == null)
             {
                 throw new ArgumentNullException(nameof(constraint));
             }
 
-            return ConstraintCore(name, constraint);
+            return ConstraintCore(parameterName, constraint);
         }
 
-        public static RoutePatternConstraintReference Constraint(string name, string constraint)
+        public static RoutePatternConstraintReference Constraint(string parameterName, string constraint)
         {
             if (string.IsNullOrEmpty(constraint))
             {
                 throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(constraint));
             }
 
-            return ConstraintCore(null, name, constraint);
+            return ConstraintCore(parameterName, constraint);
         }
 
-        public static RoutePatternConstraintReference Constraint(string text, string name, string constraint)
-        {
-            if (string.IsNullOrEmpty(constraint))
-            {
-                throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(constraint));
-            }
 
-            return ConstraintCore(text, name, constraint);
+        private static RoutePatternConstraintReference ConstraintCore(string parameterName, IRouteConstraint constraint)
+        {
+            return new RoutePatternConstraintReference(parameterName, constraint);
         }
 
-        private static RoutePatternConstraintReference ConstraintCore(string name, IRouteConstraint constraint)
+        private static RoutePatternConstraintReference ConstraintCore(string parameterName, string constraint)
         {
-            return new RoutePatternConstraintReference(name, constraint);
-        }
-
-        private static RoutePatternConstraintReference ConstraintCore(string text, string name, string constraint)
-        {
-            return new RoutePatternConstraintReference(text, name, constraint);
+            return new RoutePatternConstraintReference(parameterName, constraint);
         }
     }
 }

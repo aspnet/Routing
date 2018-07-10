@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             if (IsSegmentValid(context, parts))
             {
-                segments.Add(new RoutePatternPathSegment(null, parts.ToArray()));
+                segments.Add(new RoutePatternPathSegment(parts.ToArray()));
                 return true;
             }
             else
@@ -223,7 +223,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 return false;
             }
 
-            if (templatePart.IsOptional && templatePart.DefaultValue != null)
+            if (templatePart.IsOptional && templatePart.Default != null)
             {
                 // Cannot be optional and have a default value.
                 // The only way to declare an optional parameter is to have a ? at the end,
@@ -307,7 +307,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             var decoded = encoded.Replace("}}", "}").Replace("{{", "{");
             if (IsValidLiteral(context, decoded))
             {
-                parts.Add(RoutePatternFactory.LiteralPart(encoded, decoded));
+                parts.Add(RoutePatternFactory.LiteralPart(decoded));
                 return true;
             }
             else
@@ -393,7 +393,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                             return false;
                         }
 
-                        parts[i - 1] = RoutePatternFactory.SeparatorPart(previousPart.RawText, ((RoutePatternLiteralPart)previousPart).Content);
+                        parts[i - 1] = RoutePatternFactory.SeparatorPart(((RoutePatternLiteralPart)previousPart).Content);
                     }
                     else
                     {
