@@ -39,13 +39,13 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var strings = _strings;
             var segments = _segments;
 
-            var index = 0;
+            var destination = 0;
             for (var i = 0; i < strings.Length; i++)
             {
-                index = segments[i].Length == 0 ? -1 : 0;
+                destination = segments[i].Length == 0 ? -1 : 0;
             }
 
-            return index;
+            return destination;
         }
 
         [Benchmark(OperationsPerInvoke = 5)]
@@ -54,13 +54,13 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var strings = _strings;
             var segments = _segments;
 
-            var index = 0;
+            var destination = 0;
             for (var i = 0; i < strings.Length; i++)
             {
-                index = _table.GetDestination(strings[i], segments[i]);
+                destination = _table.GetDestination(strings[i], segments[i]);
             }
 
-            return index;
+            return destination;
         }
     }
 }

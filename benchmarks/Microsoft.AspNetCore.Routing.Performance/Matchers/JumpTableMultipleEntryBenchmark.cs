@@ -54,13 +54,13 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var strings = _strings;
             var segments = _segments;
 
-            var index = 0;
+            var destination = 0;
             for (var i = 0; i < strings.Length; i++)
             {
                 var @string = strings[i];
                 var segment = segments[i];
 
-                index = segment.Length == 0 ? -1 :
+                destination = segment.Length == 0 ? -1 :
                     segment.Length != @string.Length ? 1 :
                     string.Compare(
                         @string,
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                         StringComparison.OrdinalIgnoreCase);
             }
 
-            return index;
+            return destination;
         }
 
         [Benchmark(OperationsPerInvoke = 100)]
@@ -80,13 +80,13 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var strings = _strings;
             var segments = _segments;
 
-            var index = 0;
+            var destination = 0;
             for (var i = 0; i < strings.Length; i++)
             {
-                index = _linearSearch.GetDestination(strings[i], segments[i]);
+                destination = _linearSearch.GetDestination(strings[i], segments[i]);
             }
 
-            return index;
+            return destination;
         }
 
         [Benchmark(OperationsPerInvoke = 100)]
@@ -95,13 +95,13 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var strings = _strings;
             var segments = _segments;
 
-            var index = 0;
+            var destination = 0;
             for (var i = 0; i < strings.Length; i++)
             {
-                index = _dictionary.GetDestination(strings[i], segments[i]);
+                destination = _dictionary.GetDestination(strings[i], segments[i]);
             }
 
-            return index;
+            return destination;
         }
 
         private static string[] GetStrings(int count)

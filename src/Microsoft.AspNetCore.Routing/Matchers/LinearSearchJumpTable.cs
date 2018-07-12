@@ -2,19 +2,24 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
+using System.Text;
 
 namespace Microsoft.AspNetCore.Routing.Matchers
 {
     internal class LinearSearchJumpTable : JumpTable
     {
-        private readonly int _default;
-        private readonly int _exit;
+        private readonly int _defaultDestination;
+        private readonly int _exitDestination;
         private readonly (string text, int destination)[] _entries;
 
-        public LinearSearchJumpTable(int @default, int exit, (string text, int destination)[] entries)
+        public LinearSearchJumpTable(
+            int defaultDestination,
+            int exitDestination,
+            (string text, int destination)[] entries)
         {
-            _default = @default;
-            _exit = exit;
+            _defaultDestination = defaultDestination;
+            _exitDestination = exitDestination;
             _entries = entries;
         }
 
@@ -22,7 +27,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         {
             if (segment.Length == 0)
             {
-                return _exit;
+                return _exitDestination;
             }
 
             var entries = _entries;
@@ -42,7 +47,27 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 }
             }
 
-            return _default;
+            return _defaultDestination;
+        }
+
+        public override string DebuggerToString()
+        {
+            var builder = new StringBuilder();
+            builder.Append("{ ");
+
+            builder.Append(string.Join(", ", _entries.Select(e => $"{e.text}: {e.destination}")));
+
+            builder.Append("$+: ");
+            builder.Append(_defaultDestination);
+            builder.Append(", ");
+
+            builder.Append("$0: ");
+            builder.Append(_defaultDestination);
+
+            builder.Append(" }");
+
+
+            return builder.ToString();
         }
     }
 }

@@ -40,13 +40,13 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var strings = _strings;
             var segments = _segments;
 
-            var index = 0;
+            var destination = 0;
             for (var i = 0; i < strings.Length; i++)
             {
                 var @string = strings[i];
                 var segment = segments[i];
 
-                index = segment.Length == 0 ? -1 :
+                destination = segment.Length == 0 ? -1 :
                     segment.Length != 11 ? 1 :
                     string.Compare(
                         @string,
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                         StringComparison.OrdinalIgnoreCase);
             }
 
-            return index;
+            return destination;
         }
 
         [Benchmark(OperationsPerInvoke = 5)]
@@ -66,13 +66,13 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var strings = _strings;
             var segments = _segments;
 
-            var index = 0;
+            var destination = 0;
             for (var i = 0; i < strings.Length; i++)
             {
-                index = _table.GetDestination(strings[i], segments[i]);
+                destination = _table.GetDestination(strings[i], segments[i]);
             }
 
-            return index;
+            return destination;
         }
     }
 }

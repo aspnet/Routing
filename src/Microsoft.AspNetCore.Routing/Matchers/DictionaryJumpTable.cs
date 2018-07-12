@@ -3,19 +3,24 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace Microsoft.AspNetCore.Routing.Matchers
 {
     internal class DictionaryJumpTable : JumpTable
     {
-        private readonly int _default;
-        private readonly int _exit;
+        private readonly int _defaultDestination;
+        private readonly int _exitDestination;
         private readonly Dictionary<string, int> _dictionary;
 
-        public DictionaryJumpTable(int @default, int exit, (string text, int destination)[] entries)
+        public DictionaryJumpTable(
+            int defaultDestination,
+            int exitDestination,
+            (string text, int destination)[] entries)
         {
-            _default = @default;
-            _exit = exit;
+            _defaultDestination = defaultDestination;
+            _exitDestination = exitDestination;
 
             _dictionary = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             for (var i = 0; i < entries.Length; i++)
@@ -28,7 +33,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         {
             if (segment.Length == 0)
             {
-                return _exit;
+                return _exitDestination;
             }
 
             var text = path.Substring(segment.Start, segment.Length);
@@ -37,7 +42,27 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 return destination;
             }
 
-            return _default;
+            return _defaultDestination;
+        }
+
+        public override string DebuggerToString()
+        {
+            var builder = new StringBuilder();
+            builder.Append("{ ");
+
+            builder.Append(string.Join(", ", _dictionary.Select(kvp => $"{kvp.Key}: {kvp.Value}")));
+
+            builder.Append("$+: ");
+            builder.Append(_defaultDestination);
+            builder.Append(", ");
+
+            builder.Append("$0: ");
+            builder.Append(_defaultDestination);
+
+            builder.Append(" }");
+
+
+            return builder.ToString();
         }
     }
 }

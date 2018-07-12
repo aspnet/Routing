@@ -7,15 +7,19 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 {
     internal class SingleEntryJumpTable : JumpTable
     {
-        private readonly int _default;
-        private readonly int _exit;
+        private readonly int _defaultDestination;
+        private readonly int _exitDestination;
         private readonly string _text;
         private readonly int _destination;
 
-        public SingleEntryJumpTable(int @default, int exit, string text, int destination)
+        public SingleEntryJumpTable(
+            int defaultDestination,
+            int exitDestination,
+            string text,
+            int destination)
         {
-            _default = @default;
-            _exit = exit;
+            _defaultDestination = defaultDestination;
+            _exitDestination = exitDestination;
             _text = text;
             _destination = destination;
         }
@@ -24,7 +28,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         {
             if (segment.Length == 0)
             {
-                return _exit;
+                return _exitDestination;
             }
 
             if (segment.Length == _text.Length &&
@@ -39,12 +43,12 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 return _destination;
             }
 
-            return _default;
+            return _defaultDestination;
         }
 
         public override string DebuggerToString()
         {
-            return $"{{ {_text}: {_destination}, $default: {_default}, $0: {_exit} }}";
+            return $"{{ {_text}: {_destination}, $+: {_defaultDestination}, $0: {_exitDestination} }}";
         }
     }
 }

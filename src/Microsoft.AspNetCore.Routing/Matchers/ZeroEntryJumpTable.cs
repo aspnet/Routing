@@ -5,23 +5,23 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 {
     internal class ZeroEntryJumpTable : JumpTable
     {
-        private readonly int _default;
-        private readonly int _exit;
+        private readonly int _defaultDestination;
+        private readonly int _exitDestination;
 
-        public ZeroEntryJumpTable(int @default, int exit)
+        public ZeroEntryJumpTable(int defaultDestination, int exitDestination)
         {
-            _default = @default;
-            _exit = exit;
+            _defaultDestination = defaultDestination;
+            _exitDestination = exitDestination;
         }
 
         public unsafe override int GetDestination(string path, PathSegment segment)
         {
-            return segment.Length == 0 ? _exit : _default;
+            return segment.Length == 0 ? _exitDestination : _defaultDestination;
         }
 
         public override string DebuggerToString()
         {
-            return $"{{ $default: {_default}, $0: {_exit} }}";
+            return $"{{ $+: {_defaultDestination}, $0: {_exitDestination} }}";
         }
     }
 }

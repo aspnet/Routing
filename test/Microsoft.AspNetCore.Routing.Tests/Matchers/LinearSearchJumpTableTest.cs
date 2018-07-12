@@ -6,9 +6,12 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 {
     public class LinearSearchJumpTableTest : MultipleEntryJumpTableTest
     {
-        internal override JumpTable CreateTable(int @default, int exit, params (string text, int destination)[] entries)
+        internal override JumpTable CreateTable(
+            int defaultDestination,
+            int existDestination,
+            params (string text, int destination)[] entries)
         {
-            return new LinearSearchJumpTable(@default, exit, entries);
+            return new LinearSearchJumpTable(defaultDestination, existDestination, entries);
         }
     }
 }

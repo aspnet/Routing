@@ -8,8 +8,8 @@ namespace Microsoft.AspNetCore.Routing.Matchers
     public abstract class MultipleEntryJumpTableTest
     {
         internal abstract JumpTable CreateTable(
-            int @default,
-            int exit,
+            int defaultDestination,
+            int exitDestination,
             params (string text, int destination)[] entries);
 
         [Fact]

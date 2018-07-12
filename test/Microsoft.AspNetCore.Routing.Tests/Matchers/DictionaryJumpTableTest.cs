@@ -5,9 +5,12 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 {
     public class DictionaryJumpTableTest : MultipleEntryJumpTableTest
     {
-        internal override JumpTable CreateTable(int @default, int exit, params (string text, int destination)[] entries)
+        internal override JumpTable CreateTable(
+            int defaultDestination,
+            int exitDestination,
+            params (string text, int destination)[] entries)
         {
-            return new DictionaryJumpTable(@default, exit, entries);
+            return new DictionaryJumpTable(defaultDestination, exitDestination, entries);
         }
     }
 }
