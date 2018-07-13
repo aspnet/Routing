@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         //
         // Ex: {hello} - this method is responsible for parsing 'hello'
         // The factoring between this class and RoutePatternParser is due to legacy.
-        public static RoutePatternParameterPart ParseRouteParameter(string text, string parameter)
+        public static RoutePatternParameterPart ParseRouteParameter(string parameter)
         {
             if (parameter == null)
             {
@@ -221,11 +221,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             } while (state != ParseState.End);
 
-            return new ConstraintParseResults
-            {
-                CurrentIndex = currentIndex,
-                Constraints = constraints
-            };
+            return new ConstraintParseResults(currentIndex, constraints);
         }
 
         private enum ParseState
@@ -236,11 +232,17 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             End
         }
 
-        private struct ConstraintParseResults
+        private readonly struct ConstraintParseResults
         {
-            public int CurrentIndex;
+            public readonly int CurrentIndex;
 
-            public IEnumerable<RoutePatternConstraintReference> Constraints;
+            public readonly IReadOnlyList<RoutePatternConstraintReference> Constraints;
+            
+            public ConstraintParseResults(int currentIndex, IReadOnlyList<RoutePatternConstraintReference> constraints)
+            {
+                CurrentIndex = currentIndex;
+                Constraints = constraints;
+            }
         }
     }
 }

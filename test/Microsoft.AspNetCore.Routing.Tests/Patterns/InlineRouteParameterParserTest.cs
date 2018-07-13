@@ -939,7 +939,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         private RoutePatternParameterPart ParseParameter(string routeParameter)
         {
             // See: #475 - these tests don't pass the 'whole' text.
-            var templatePart = RouteParameterParser.ParseRouteParameter(string.Empty, routeParameter);
+            var templatePart = RouteParameterParser.ParseRouteParameter(routeParameter);
             return templatePart;
         }
     }

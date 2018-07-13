@@ -49,6 +49,11 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         /// <returns>The matching parameter or <c>null</c> if no parameter matches the given name.</returns>
         public RoutePatternParameterPart GetParameter(string name)
         {
+            if (name == null)
+            {
+                throw new ArgumentNullException(nameof(name));
+            }
+
             for (var i = 0; i < Parameters.Count; i++)
             {
                 var parameter = Parameters[i];

@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             var trimmedPattern = TrimPrefix(pattern);
 
-            var context = new TemplateParserContext(trimmedPattern);
+            var context = new Context(trimmedPattern);
             var segments = new List<RoutePatternPathSegment>();
 
             while (context.MoveNext())
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             }
         }
 
-        private static bool ParseSegment(TemplateParserContext context, List<RoutePatternPathSegment> segments)
+        private static bool ParseSegment(Context context, List<RoutePatternPathSegment> segments)
         {
             Debug.Assert(context != null);
             Debug.Assert(segments != null);
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             }
         }
 
-        private static bool ParseParameter(TemplateParserContext context, List<RoutePatternPart> parts)
+        private static bool ParseParameter(Context context, List<RoutePatternPart> parts)
         {
             Debug.Assert(context.Current == OpenBrace);
             context.Mark();
@@ -214,7 +214,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             // At this point, we need to parse the raw name for inline constraint,
             // default values and optional parameters.
-            var templatePart = RouteParameterParser.ParseRouteParameter(text, decoded);
+            var templatePart = RouteParameterParser.ParseRouteParameter(decoded);
 
             // See #475 - this is here because InlineRouteParameterParser can't return errors
             if (decoded.StartsWith("*", StringComparison.Ordinal) && decoded.EndsWith("?", StringComparison.Ordinal))
@@ -245,7 +245,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             }
         }
 
-        private static bool ParseLiteral(TemplateParserContext context, List<RoutePatternPart> parts)
+        private static bool ParseLiteral(Context context, List<RoutePatternPart> parts)
         {
             context.Mark();
 
@@ -316,7 +316,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             }
         }
 
-        private static bool IsAllValid(TemplateParserContext context, List<RoutePatternPathSegment> segments)
+        private static bool IsAllValid(Context context, List<RoutePatternPathSegment> segments)
         {
             // A catch-all parameter must be the last part of the last segment
             for (var i = 0; i < segments.Count; i++)
@@ -325,8 +325,8 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 for (var j = 0; j < segment.Parts.Count; j++)
                 {
                     var part = segment.Parts[j];
-                    if (part.IsParameter &&
-                        ((RoutePatternParameterPart)part).IsCatchAll &&
+                    if (part is RoutePatternParameterPart parameter
+                        && parameter.IsCatchAll &&
                         (i != segments.Count - 1 || j != segment.Parts.Count - 1))
                     {
                         context.Error = Resources.TemplateRoute_CatchAllMustBeLast;
@@ -338,13 +338,13 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             return true;
         }
 
-        private static bool IsSegmentValid(TemplateParserContext context, List<RoutePatternPart> parts)
+        private static bool IsSegmentValid(Context context, List<RoutePatternPart> parts)
         {
             // If a segment has multiple parts, then it can't contain a catch all.
             for (var i = 0; i < parts.Count; i++)
             {
                 var part = parts[i];
-                if (part.IsParameter && ((RoutePatternParameterPart)part).IsCatchAll && parts.Count > 1)
+                if (part is RoutePatternParameterPart parameter && parameter.IsCatchAll && parts.Count > 1)
                 {
                     context.Error = Resources.TemplateRoute_CannotHaveCatchAllInMultiSegment;
                     return false;
@@ -357,7 +357,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             {
                 var part = parts[i];
 
-                if (part.IsParameter && ((RoutePatternParameterPart)part).IsOptional && parts.Count > 1)
+                if (part is RoutePatternParameterPart parameter && parameter.IsOptional && parts.Count > 1)
                 {
                     // This optional parameter is the last part in the segment
                     if (i == parts.Count - 1)
@@ -373,7 +373,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                             context.Error = string.Format(
                                 Resources.TemplateRoute_OptionalParameterCanbBePrecededByPeriod,
                                 RoutePatternPathSegment.DebuggerToString(parts),
-                                ((RoutePatternParameterPart)part).Name,
+                                parameter.Name,
                                 parts[i - 1].DebuggerToString());
 
                             return false;
@@ -387,7 +387,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                             context.Error = string.Format(
                                 Resources.TemplateRoute_OptionalParameterCanbBePrecededByPeriod,
                                 RoutePatternPathSegment.DebuggerToString(parts),
-                                ((RoutePatternParameterPart)part).Name,
+                                parameter.Name,
                                 parts[i - 1].DebuggerToString());
 
                             return false;
@@ -404,7 +404,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                         context.Error = string.Format(
                             Resources.TemplateRoute_OptionalParameterHasTobeTheLast,
                             RoutePatternPathSegment.DebuggerToString(parts),
-                            ((RoutePatternParameterPart)part).Name,
+                            parameter.Name,
                             parts[i + 1].DebuggerToString());
 
                         return false;
@@ -429,7 +429,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             return true;
         }
 
-        private static bool IsValidParameterName(TemplateParserContext context, string parameterName)
+        private static bool IsValidParameterName(Context context, string parameterName)
         {
             if (parameterName.Length == 0 || parameterName.IndexOfAny(InvalidParameterNameChars) >= 0)
             {
@@ -446,7 +446,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             return true;
         }
 
-        private static bool IsValidLiteral(TemplateParserContext context, string literal)
+        private static bool IsValidLiteral(Context context, string literal)
         {
             Debug.Assert(context != null);
             Debug.Assert(literal != null);
@@ -478,15 +478,15 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         }
 
         [DebuggerDisplay("{DebuggerToString()}")]
-        private class TemplateParserContext
+        private class Context
         {
             private readonly string _template;
             private int _index;
             private int? _mark;
 
-            private HashSet<string> _parameterNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            private readonly HashSet<string> _parameterNames = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-            public TemplateParserContext(string template)
+            public Context(string template)
             {
                 Debug.Assert(template != null);
                 _template = template;

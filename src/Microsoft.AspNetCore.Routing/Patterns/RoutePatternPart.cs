@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         // needs to be aware of what kind of parts we support.
         //
         // It is abstract so we can add semantics later inside the library.
-        internal RoutePatternPart(RoutePatternPartKind partKind)
+        private protected RoutePatternPart(RoutePatternPartKind partKind)
         {
             PartKind = partKind;
         }

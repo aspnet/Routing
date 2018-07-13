@@ -157,22 +157,19 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 foreach (var kvp in constraints)
                 {
                     updatedConstraints.Add(kvp.Key, new List<RoutePatternConstraintReference>()
-                {
-                    Constraint(kvp.Key, kvp.Value),
-                });
+                    {
+                        Constraint(kvp.Key, kvp.Value),
+                    });
                 }
             }
 
+            var parameters = new List<RoutePatternParameterPart>();
             var updatedSegments = segments.ToArray();
             for (var i = 0; i < updatedSegments.Length; i++)
             {
-                updatedSegments[i] = VisitSegment(updatedSegments[i]);
-            }
-
-            var parameters = new List<RoutePatternParameterPart>();
-            for (var i = 0; i < updatedSegments.Length; i++)
-            {
-                var segment = updatedSegments[i];
+                var segment = VisitSegment(updatedSegments[i]);
+                updatedSegments[i] = segment;
+                
                 for (var j = 0; j < segment.Parts.Count; j++)
                 {
                     if (segment.Parts[j] is RoutePatternParameterPart parameter)
@@ -308,9 +305,9 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             return SeparatorPartCore(content);
         }
 
-        private static RoutePatternSeparatorPart SeparatorPartCore( string content)
+        private static RoutePatternSeparatorPart SeparatorPartCore(string content)
         {
-            return new RoutePatternSeparatorPart( content);
+            return new RoutePatternSeparatorPart(content);
         }
 
         public static RoutePatternParameterPart ParameterPart(string parameterName)
