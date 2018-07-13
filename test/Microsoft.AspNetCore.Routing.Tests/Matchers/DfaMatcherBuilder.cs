@@ -113,12 +113,12 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
             for (var i = 0; i < tables.Count; i++)
             {
-                if (tables[i].DefaultDestination == -1)
+                if (tables[i].DefaultDestination == JumpTableBuilder.InvalidDestination)
                 {
                     tables[i].DefaultDestination = exit;
                 }
 
-                if (tables[i].ExitDestination == -1)
+                if (tables[i].ExitDestination == JumpTableBuilder.InvalidDestination)
                 {
                     tables[i].ExitDestination = exit;
                 }

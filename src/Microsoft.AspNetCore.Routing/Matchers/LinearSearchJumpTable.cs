@@ -66,7 +66,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
             builder.Append(" }");
 
-
             return builder.ToString();
         }
     }
