@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 new RouteValueDictionary(),
                 new List<MatchProcessorReference>(),
                 0,
-                EndpointMetadataCollection.Empty,
+                new EndpointMetadataCollection(metadata),
                 template);
         }
 

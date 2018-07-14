@@ -13,23 +13,17 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 {
     internal class DfaMatcherBuilder : MatcherBuilder
     {
-        private List<Entry> _entries = new List<Entry>();
+        private List<MatcherBuilderEntry> _entries = new List<MatcherBuilderEntry>();
 
         public override void AddEndpoint(MatcherEndpoint endpoint)
         {
             var parsed = TemplateParser.Parse(endpoint.Template);
-            _entries.Add(new Entry()
-            {
-                Order = 0,
-                Pattern = parsed,
-                Precedence = RoutePrecedence.ComputeInbound(parsed),
-                Endpoint = endpoint,
-            });
+            _entries.Add(new MatcherBuilderEntry(endpoint));
         }
 
         public override Matcher Build()
         {
-            Sort(_entries);
+            _entries.Sort();
 
             var root = new Node() { Depth = -1 };
 
@@ -108,7 +102,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             AddNode(root, states, tables);
 
             var exit = states.Count;
-            states.Add(new State() { IsAccepting = false, Matches = Array.Empty<Candidate>(), });
+            states.Add(new State() { IsAccepting = false, Matches = CandidateSet.Empty, });
             tables.Add(new JumpTableBuilder() { DefaultDestination = exit, ExitDestination = exit, });
 
             for (var i = 0; i < tables.Count; i++)
@@ -154,12 +148,19 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
         private static int AddNode(Node node, List<State> states, List<JumpTableBuilder> tables)
         {
-            Sort(node.Matches);
+            node.Matches.Sort();
 
             var index = states.Count;
+
+            // This is just temporary. This code ignores groups for now, and creates
+            // a single group with all matches.
+            var candidates = new CandidateSet(
+                node.Matches.Select(CreateCandidate).ToArray(),
+                CandidateSet.MakeGroups(new int[] { node.Matches.Count, }));
+
             states.Add(new State()
             {
-                Matches = node.Matches.Select(CreateCandidate).ToArray(),
+                Matches = candidates,
                 IsAccepting = node.Matches.Count > 0,
             });
 
@@ -187,33 +188,12 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             return index;
         }
 
-        private static Candidate CreateCandidate(Entry entry)
+        private static Candidate CreateCandidate(MatcherBuilderEntry entry)
         {
-            return new Candidate()
-            {
-                Endpoint = entry.Endpoint,
-                Parameters = entry.Pattern.Segments.Select(s => s.IsSimple && s.Parts[0].IsParameter ? s.Parts[0].Name : null).ToArray(),
-            };
-        }
-
-        private static void Sort(List<Entry> entries)
-        {
-            entries.Sort((x, y) =>
-            {
-                var comparison = x.Order.CompareTo(y.Order);
-                if (comparison != 0)
-                {
-                    return comparison;
-                }
-
-                comparison = x.Precedence.CompareTo(y.Precedence);
-                if (comparison != 0)
-                {
-                    return comparison;
-                }
-
-                return x.Pattern.TemplateText.CompareTo(y.Pattern.TemplateText);
-            });
+            var parameters = entry.Pattern.Segments
+                .Select(s => s.IsSimple && s.Parts[0].IsParameter ? s.Parts[0].Name : null)
+                .ToArray();
+            return new Candidate(entry.Endpoint, parameters);
         }
 
         private static Node DeepCopy(Node node)
@@ -229,20 +209,12 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             return node;
         }
 
-        private class Entry
-        {
-            public int Order;
-            public decimal Precedence;
-            public RouteTemplate Pattern;
-            public Endpoint Endpoint;
-        }
-
         [DebuggerDisplay("{DebuggerToString(),nq}")]
         private class Node
         {
             public int Depth { get; set; }
 
-            public List<Entry> Matches { get; } = new List<Entry>();
+            public List<MatcherBuilderEntry> Matches { get; } = new List<MatcherBuilderEntry>();
 
             public Dictionary<string, Node> Literals { get; } = new Dictionary<string, Node>(StringComparer.OrdinalIgnoreCase);
 

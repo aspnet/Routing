@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
@@ -7,9 +7,12 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing.Matchers
 {
-    public class SingleEntryMatcherBenchmark : MatcherBenchmarkBase
+    // Just like TechEmpower Plaintext
+    public partial class MatcherSingleEntryBenchmark : MatcherBenchmarkBase
     {
-        private Matcher _baseline;
+        private const int SampleCount = 100;
+
+        private BarebonesMatcher _baseline;
         private Matcher _dfa;
         private Matcher _route;
         private Matcher _tree;
@@ -27,7 +30,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             _requests[0].RequestServices = CreateServices();
             _requests[0].Request.Path = "/plaintext";
 
-            _baseline = SetupMatcher(new TrivialMatcherBuilder());
+            _baseline = (BarebonesMatcher)SetupMatcher(new BarebonesMatcherBuilder());
             _dfa = SetupMatcher(new DfaMatcherBuilder());
             _route = SetupMatcher(new RouteMatcherBuilder());
             _tree = SetupMatcher(new TreeRouterMatcherBuilder());
@@ -45,28 +48,20 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         public async Task Baseline()
         {
             var feature = _feature;
-            await _baseline.MatchAsync(_requests[0], feature);
-            Validate(_requests[0], _endpoints[0], feature.Endpoint);
+            var httpContext = _requests[0];
+
+            await _baseline.MatchAsync(httpContext, feature);
+            Validate(httpContext, _endpoints[0], feature.Endpoint);
         }
 
         [Benchmark]
         public async Task Dfa()
         {
             var feature = _feature;
-            await _dfa.MatchAsync(_requests[0], feature);
-            Validate(_requests[0], _endpoints[0], feature.Endpoint);
-        }
+            var httpContext = _requests[0];
 
-        [Benchmark]
-        public async Task LegacyRoute()
-        {
-            var feature = _feature;
-
-            // This is required to make the legacy router implementation work with dispatcher.
-            _requests[0].Features.Set<IEndpointFeature>(feature);
-
-            await _route.MatchAsync(_requests[0], feature);
-            Validate(_requests[0], _endpoints[0], feature.Endpoint);
+            await _dfa.MatchAsync(httpContext, feature);
+            Validate(httpContext, _endpoints[0], feature.Endpoint);
         }
 
         [Benchmark]
@@ -74,11 +69,26 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         {
             var feature = _feature;
 
-            // This is required to make the legacy router implementation work with dispatcher.
-            _requests[0].Features.Set<IEndpointFeature>(feature);
+            var httpContext = _requests[0];
 
-            await _tree.MatchAsync(_requests[0], feature);
-            Validate(_requests[0], _endpoints[0], feature.Endpoint);
+            // This is required to make the legacy router implementation work with dispatcher.
+            httpContext.Features.Set<IEndpointFeature>(feature);
+
+            await _tree.MatchAsync(httpContext, feature);
+            Validate(httpContext, _endpoints[0], feature.Endpoint);
+        }
+
+        [Benchmark]
+        public async Task LegacyRouter()
+        {
+            var feature = _feature;
+            var httpContext = _requests[0];
+
+            // This is required to make the legacy router implementation work with dispatcher.
+            httpContext.Features.Set<IEndpointFeature>(feature);
+
+            await _route.MatchAsync(httpContext, feature);
+            Validate(httpContext, _endpoints[0], feature.Endpoint);
         }
     }
 }
