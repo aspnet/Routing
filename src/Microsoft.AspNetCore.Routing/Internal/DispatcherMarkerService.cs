@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
     /// A marker class used to determine if all the dispatcher services were added
     /// to the <see cref="IServiceCollection"/> before dispatcher is configured.
     /// </summary>
-    public class DispatcherMarkerService
+    internal class DispatcherMarkerService
     {
     }
 }
