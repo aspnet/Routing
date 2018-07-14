@@ -25,9 +25,9 @@ namespace Microsoft.AspNetCore.Builder
         {
             VerifyDispatcherIsRegistered(builder);
 
-            if (!builder.Properties.TryGetValue(DispatcherRegisteredKey, out var isRegistered))
+            if (!builder.Properties.TryGetValue(DispatcherRegisteredKey, out _))
             {
-                var message = $"{nameof(DispatcherMiddleware)} must be added to the request execution pipeline to use {nameof(EndpointMiddleware)}. " +
+                var message = $"{nameof(DispatcherMiddleware)} must be added to the request execution pipeline before {nameof(EndpointMiddleware)}. " +
                     $"Please add {nameof(DispatcherMiddleware)} by calling '{nameof(IApplicationBuilder)}.{nameof(UseDispatcher)}' inside the call to 'Configure(...)' in the application startup code.";
 
                 throw new InvalidOperationException(message);

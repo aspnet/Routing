@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Builder
 
             // Assert
             Assert.Equal(
-                "DispatcherMiddleware must be added to the request execution pipeline to use EndpointMiddleware. " +
+                "DispatcherMiddleware must be added to the request execution pipeline before EndpointMiddleware. " +
                 "Please add DispatcherMiddleware by calling 'IApplicationBuilder.UseDispatcher' " +
                 "inside the call to 'Configure(...)' in the application startup code.",
                 ex.Message);

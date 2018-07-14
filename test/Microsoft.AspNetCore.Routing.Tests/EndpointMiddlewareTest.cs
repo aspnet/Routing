@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Routing
 
             Assert.Equal(
                 "Unable to execute an endpoint because the DispatcherMiddleware was not run for this request. " +
-                "Ensure DispatcherMiddleware is added to the request execution pipeline in application startup code.",
+                "Ensure DispatcherMiddleware is added to the request execution pipeline before EndpointMiddleware in application startup code.",
                 ex.Message);
         }
 
