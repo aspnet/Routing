@@ -29,61 +29,61 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
         private void SetupEndpoints()
         {
-            _endpoints = new MatcherEndpoint[10];
-            _endpoints[0] = CreateEndpoint("/another-really-cool-entry");
-            _endpoints[1] = CreateEndpoint("/Some-Entry");
-            _endpoints[2] = CreateEndpoint("/a/path/with/more/segments");
-            _endpoints[3] = CreateEndpoint("/random/name");
-            _endpoints[4] = CreateEndpoint("/random/name2");
-            _endpoints[5] = CreateEndpoint("/random/name3");
-            _endpoints[6] = CreateEndpoint("/random/name4");
-            _endpoints[7] = CreateEndpoint("/plaintext1");
-            _endpoints[8] = CreateEndpoint("/plaintext2");
-            _endpoints[9] = CreateEndpoint("/plaintext");
+            Endpoints = new MatcherEndpoint[10];
+            Endpoints[0] = CreateEndpoint("/another-really-cool-entry");
+            Endpoints[1] = CreateEndpoint("/Some-Entry");
+            Endpoints[2] = CreateEndpoint("/a/path/with/more/segments");
+            Endpoints[3] = CreateEndpoint("/random/name");
+            Endpoints[4] = CreateEndpoint("/random/name2");
+            Endpoints[5] = CreateEndpoint("/random/name3");
+            Endpoints[6] = CreateEndpoint("/random/name4");
+            Endpoints[7] = CreateEndpoint("/plaintext1");
+            Endpoints[8] = CreateEndpoint("/plaintext2");
+            Endpoints[9] = CreateEndpoint("/plaintext");
         }
 
         private void SetupRequests()
         {
-            _requests = new HttpContext[1];
-            _requests[0] = new DefaultHttpContext();
-            _requests[0].RequestServices = CreateServices();
-            _requests[0].Request.Path = "/plaintext";
+            Requests = new HttpContext[1];
+            Requests[0] = new DefaultHttpContext();
+            Requests[0].RequestServices = CreateServices();
+            Requests[0].Request.Path = "/plaintext";
         }
 
         // For this case we're specifically targeting the last entry to hit 'worst case'
         // performance for the matchers that scale linearly.
         private Matcher SetupMatcher(MatcherBuilder builder)
         {
-            builder.AddEndpoint(_endpoints[0]);
-            builder.AddEndpoint(_endpoints[1]);
-            builder.AddEndpoint(_endpoints[2]);
-            builder.AddEndpoint(_endpoints[3]);
-            builder.AddEndpoint(_endpoints[4]);
-            builder.AddEndpoint(_endpoints[5]);
-            builder.AddEndpoint(_endpoints[6]);
-            builder.AddEndpoint(_endpoints[7]);
-            builder.AddEndpoint(_endpoints[8]);
-            builder.AddEndpoint(_endpoints[9]);
+            builder.AddEndpoint(Endpoints[0]);
+            builder.AddEndpoint(Endpoints[1]);
+            builder.AddEndpoint(Endpoints[2]);
+            builder.AddEndpoint(Endpoints[3]);
+            builder.AddEndpoint(Endpoints[4]);
+            builder.AddEndpoint(Endpoints[5]);
+            builder.AddEndpoint(Endpoints[6]);
+            builder.AddEndpoint(Endpoints[7]);
+            builder.AddEndpoint(Endpoints[8]);
+            builder.AddEndpoint(Endpoints[9]);
             return builder.Build();
         }
 
         [Benchmark(Baseline = true)]
         public unsafe void Baseline()
         {
-            var httpContext = _requests[0];
+            var httpContext = Requests[0];
             var path = httpContext.Request.Path.Value;
             var segments = new ReadOnlySpan<PathSegment>(Array.Empty<PathSegment>());
 
             var candidates = _baseline.SelectCandidates(path, segments);
 
             var endpoint = candidates.Candidates[0].Endpoint;
-            Validate(_requests[0], _endpoints[9], endpoint);
+            Validate(Requests[0], Endpoints[9], endpoint);
         }
 
         [Benchmark]
         public unsafe void Dfa()
         {
-            var httpContext = _requests[0];
+            var httpContext = Requests[0];
             var path = httpContext.Request.Path.Value;
             var buffer = stackalloc PathSegment[FastPathTokenizer.DefaultSegmentCount];
             var count = FastPathTokenizer.Tokenize(path, buffer, FastPathTokenizer.DefaultSegmentCount);
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var candidates = _dfa.SelectCandidates(path, segments);
 
             var endpoint = candidates.Candidates[0].Endpoint;
-            Validate(_requests[0], _endpoints[9], endpoint);
+            Validate(Requests[0], Endpoints[9], endpoint);
         }
     }
 }

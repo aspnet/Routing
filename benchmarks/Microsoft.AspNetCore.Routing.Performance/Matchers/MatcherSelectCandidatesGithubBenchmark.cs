@@ -30,15 +30,15 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         {
             for (var i = 0; i < EndpointCount; i++)
             {
-                var httpContext = _requests[i];
+                var httpContext = Requests[i];
 
                 var path = httpContext.Request.Path.Value;
                 var segments = new ReadOnlySpan<PathSegment>(Array.Empty<PathSegment>());
 
-                var candidates = _baseline._matchers[i].SelectCandidates(path, segments);
+                var candidates = _baseline.Matchers[i].SelectCandidates(path, segments);
 
                 var endpoint = candidates.Candidates[0].Endpoint;
-                Validate(httpContext, _endpoints[i], endpoint);
+                Validate(httpContext, Endpoints[i], endpoint);
             }
         }
 
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         {
             for (var i = 0; i < EndpointCount; i++)
             {
-                var httpContext = _requests[i];
+                var httpContext = Requests[i];
 
                 var path = httpContext.Request.Path.Value;
                 var buffer = stackalloc PathSegment[FastPathTokenizer.DefaultSegmentCount];
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 var candidates = _dfa.SelectCandidates(path, segments);
 
                 var endpoint = candidates.Candidates[0].Endpoint;
-                Validate(httpContext, _endpoints[i], endpoint);
+                Validate(httpContext, Endpoints[i], endpoint);
             }
         }
     }

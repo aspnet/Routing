@@ -12,11 +12,11 @@ namespace Microsoft.AspNetCore.Routing.Matchers
     // to establish a lower bound for perf comparisons.
     internal class BarebonesMatcher : Matcher
     {
-        public readonly InnerMatcher[] _matchers;
+        public readonly InnerMatcher[] Matchers;
 
         public BarebonesMatcher(InnerMatcher[] matchers)
         {
-            _matchers = matchers;
+            Matchers = matchers;
         }
 
         public override Task MatchAsync(HttpContext httpContext, IEndpointFeature feature)
@@ -31,11 +31,11 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 throw new ArgumentNullException(nameof(feature));
             }
 
-            for (var i = 0; i < _matchers.Length; i++)
+            for (var i = 0; i < Matchers.Length; i++)
             {
-                if (_matchers[i].TryMatch(httpContext.Request.Path.Value))
+                if (Matchers[i].TryMatch(httpContext.Request.Path.Value))
                 {
-                    feature.Endpoint = _matchers[i]._endpoint;
+                    feature.Endpoint = Matchers[i].Endpoint;
                     feature.Values = new RouteValueDictionary();
                 }
             }
@@ -45,14 +45,15 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
         public sealed class InnerMatcher : Matcher
         {
+            public readonly MatcherEndpoint Endpoint;
+
             private readonly string[] _segments;
-            public readonly MatcherEndpoint _endpoint;
             private readonly CandidateSet _candidates;
 
             public InnerMatcher(string[] segments, MatcherEndpoint endpoint)
             {
                 _segments = segments;
-                _endpoint = endpoint;
+                Endpoint = endpoint;
 
                 _candidates = new CandidateSet(
                     new Candidate[] { new Candidate(endpoint), },
@@ -126,7 +127,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             {
                 if (TryMatch(httpContext.Request.Path.Value))
                 {
-                    feature.Endpoint = _endpoint;
+                    feature.Endpoint = Endpoint;
                     feature.Values = new RouteValueDictionary();
                 }
 

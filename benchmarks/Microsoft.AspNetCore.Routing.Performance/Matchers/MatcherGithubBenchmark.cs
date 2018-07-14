@@ -36,9 +36,9 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var feature = _feature;
             for (var i = 0; i < EndpointCount; i++)
             {
-                var httpContext = _requests[i];
-                await _baseline._matchers[i].MatchAsync(httpContext, feature);
-                Validate(httpContext, _endpoints[i], feature.Endpoint);
+                var httpContext = Requests[i];
+                await _baseline.Matchers[i].MatchAsync(httpContext, feature);
+                Validate(httpContext, Endpoints[i], feature.Endpoint);
             }
         }
 
@@ -48,9 +48,9 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var feature = _feature;
             for (var i = 0; i < EndpointCount; i++)
             {
-                var httpContext = _requests[i];
+                var httpContext = Requests[i];
                 await _dfa.MatchAsync(httpContext, feature);
-                Validate(httpContext, _endpoints[i], feature.Endpoint);
+                Validate(httpContext, Endpoints[i], feature.Endpoint);
             }
         }
 
@@ -60,13 +60,13 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var feature = _feature;
             for (var i = 0; i < EndpointCount; i++)
             {
-                var httpContext = _requests[i];
+                var httpContext = Requests[i];
 
                 // This is required to make the legacy router implementation work with dispatcher.
                 httpContext.Features.Set<IEndpointFeature>(feature);
 
                 await _tree.MatchAsync(httpContext, feature);
-                Validate(httpContext, _endpoints[i], feature.Endpoint);
+                Validate(httpContext, Endpoints[i], feature.Endpoint);
             }
         }
     }

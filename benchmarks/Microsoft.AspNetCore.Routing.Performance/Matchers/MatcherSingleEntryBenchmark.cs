@@ -22,13 +22,13 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         [GlobalSetup]
         public void Setup()
         {
-            _endpoints = new MatcherEndpoint[1];
-            _endpoints[0] = CreateEndpoint("/plaintext");
+            Endpoints = new MatcherEndpoint[1];
+            Endpoints[0] = CreateEndpoint("/plaintext");
 
-            _requests = new HttpContext[1];
-            _requests[0] = new DefaultHttpContext();
-            _requests[0].RequestServices = CreateServices();
-            _requests[0].Request.Path = "/plaintext";
+            Requests = new HttpContext[1];
+            Requests[0] = new DefaultHttpContext();
+            Requests[0].RequestServices = CreateServices();
+            Requests[0].Request.Path = "/plaintext";
 
             _baseline = (BarebonesMatcher)SetupMatcher(new BarebonesMatcherBuilder());
             _dfa = SetupMatcher(new DfaMatcherBuilder());
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
         private Matcher SetupMatcher(MatcherBuilder builder)
         {
-            builder.AddEndpoint(_endpoints[0]);
+            builder.AddEndpoint(Endpoints[0]);
             return builder.Build();
         }
 
@@ -48,20 +48,20 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         public async Task Baseline()
         {
             var feature = _feature;
-            var httpContext = _requests[0];
+            var httpContext = Requests[0];
 
             await _baseline.MatchAsync(httpContext, feature);
-            Validate(httpContext, _endpoints[0], feature.Endpoint);
+            Validate(httpContext, Endpoints[0], feature.Endpoint);
         }
 
         [Benchmark]
         public async Task Dfa()
         {
             var feature = _feature;
-            var httpContext = _requests[0];
+            var httpContext = Requests[0];
 
             await _dfa.MatchAsync(httpContext, feature);
-            Validate(httpContext, _endpoints[0], feature.Endpoint);
+            Validate(httpContext, Endpoints[0], feature.Endpoint);
         }
 
         [Benchmark]
@@ -69,26 +69,26 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         {
             var feature = _feature;
 
-            var httpContext = _requests[0];
+            var httpContext = Requests[0];
 
             // This is required to make the legacy router implementation work with dispatcher.
             httpContext.Features.Set<IEndpointFeature>(feature);
 
             await _tree.MatchAsync(httpContext, feature);
-            Validate(httpContext, _endpoints[0], feature.Endpoint);
+            Validate(httpContext, Endpoints[0], feature.Endpoint);
         }
 
         [Benchmark]
         public async Task LegacyRouter()
         {
             var feature = _feature;
-            var httpContext = _requests[0];
+            var httpContext = Requests[0];
 
             // This is required to make the legacy router implementation work with dispatcher.
             httpContext.Features.Set<IEndpointFeature>(feature);
 
             await _route.MatchAsync(httpContext, feature);
-            Validate(httpContext, _endpoints[0], feature.Endpoint);
+            Validate(httpContext, Endpoints[0], feature.Endpoint);
         }
     }
 }
