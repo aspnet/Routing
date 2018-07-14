@@ -447,16 +447,6 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             RoutePatternParameterKind parameterKind,
             IEnumerable<RoutePatternConstraintReference> constraints)
         {
-            if (string.IsNullOrEmpty(parameterName))
-            {
-                throw new ArgumentException(Resources.Argument_NullOrEmpty, nameof(parameterName));
-            }
-
-            if (parameterName.IndexOfAny(RoutePatternParser.InvalidParameterNameChars) >= 0)
-            {
-                throw new ArgumentException(Resources.FormatTemplateRoute_InvalidParameterName(parameterName));
-            }
-
             return new RoutePatternParameterPart(parameterName, @default, parameterKind, constraints.ToArray());
         }
 

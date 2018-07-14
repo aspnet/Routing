@@ -59,7 +59,9 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
                 if (context.Index <= i)
                 {
-                    throw new InvalidProgramException("Infinite loop in the parser. This is a bug.");
+                    // This shouldn't happen, but we want to crash if it does.
+                    var message = "Infinite loop detected in the parser. Please open an issue.";
+                    throw new InvalidProgramException(message);
                 }
             }
 
@@ -128,7 +130,9 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
                 if (context.Index <= i)
                 {
-                    throw new InvalidProgramException("Infinite loop in the parser. This is a bug.");
+                    // This shouldn't happen, but we want to crash if it does.
+                    var message = "Infinite loop detected in the parser. Please open an issue.";
+                    throw new InvalidProgramException(message);
                 }
             }
 
