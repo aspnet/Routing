@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             AddNode(root, states, tables);
 
             var exit = states.Count;
-            states.Add(new State() { IsAccepting = false, Matches = CandidateSet.Empty, });
+            states.Add(new State(CandidateSet.Empty, null));
             tables.Add(new JumpTableBuilder() { DefaultDestination = exit, ExitDestination = exit, });
 
             for (var i = 0; i < tables.Count; i++)
@@ -120,12 +120,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
             for (var i = 0; i < states.Count; i++)
             {
-                states[i] = new State()
-                {
-                    IsAccepting = states[i].IsAccepting,
-                    Matches = states[i].Matches,
-                    Transitions = tables[i].Build(),
-                };
+                states[i] = new State(states[i].Candidates, tables[i].Build());
             }
 
             return new DfaMatcher(states.ToArray());
@@ -158,11 +153,8 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 node.Matches.Select(CreateCandidate).ToArray(),
                 CandidateSet.MakeGroups(new int[] { node.Matches.Count, }));
 
-            states.Add(new State()
-            {
-                Matches = candidates,
-                IsAccepting = node.Matches.Count > 0,
-            });
+            // JumpTable temporarily null. Will be patched later.
+            states.Add(new State(candidates, null));
 
             var table = new JumpTableBuilder();
             tables.Add(table);

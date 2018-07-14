@@ -3,7 +3,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.EndpointConstraints;
@@ -107,14 +107,25 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 current = states[current].Transitions.GetDestination(path, segments[i]);
             }
 
-            return states[current].Matches;
+            return states[current].Candidates;
         }
 
-        public struct State
+        [DebuggerDisplay("{DebuggerToString(),nq}")]
+        public readonly struct State
         {
-            public bool IsAccepting;
-            public CandidateSet Matches;
-            public JumpTable Transitions;
+            public readonly CandidateSet Candidates;
+            public readonly JumpTable Transitions;
+
+            public State(CandidateSet candidates, JumpTable transitions)
+            {
+                Candidates = candidates;
+                Transitions = transitions;
+            }
+
+            public string DebuggerToString()
+            {
+                return $"m: {Candidates.Candidates?.Length ?? 0}, j: ({Transitions?.DebuggerToString()})";
+            }
         }
     }
 }
