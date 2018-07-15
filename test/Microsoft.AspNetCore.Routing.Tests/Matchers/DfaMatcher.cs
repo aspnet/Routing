@@ -42,6 +42,8 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             // This code ignores groups for right now.
             for (var i = 0; i < candidates.Candidates.Length; i++)
             {
+                var isMatch = true;
+
                 var candidate = candidates.Candidates[i];
                 var values = new RouteValueDictionary();
                 var parameters = candidate.Parameters;
@@ -52,7 +54,8 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                         var parameter = parameters[j];
                         if (parameter != null && segments[j].Length == 0)
                         {
-                            goto notmatch;
+                            isMatch = false;
+                            break;
                         }
                         else if (parameter != null)
                         {
@@ -67,12 +70,13 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 var httpMethodConstraint = candidate.Endpoint.Metadata.GetMetadata<HttpMethodEndpointConstraint>();
                 if (httpMethodConstraint != null && !MatchHttpMethod(httpContext.Request.Method, httpMethodConstraint))
                 {
-                    goto notmatch;
+                    isMatch = false;
                 }
 
-                matches.Add((candidate.Endpoint, values));
-
-                notmatch: ;
+                if (isMatch)
+                {
+                    matches.Add((candidate.Endpoint, values));
+                }
             }
             
             feature.Endpoint = matches.Count == 0 ? null : matches[0].Item1;
