@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             _states = states;
         }
 
-        public unsafe override Task MatchAsync(HttpContext httpContext, IEndpointFeature feature)
+        public override Task MatchAsync(HttpContext httpContext, IEndpointFeature feature)
         {
             if (httpContext == null)
             {
@@ -32,11 +32,10 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             }
 
             var path = httpContext.Request.Path.Value;
-            var buffer = stackalloc PathSegment[FastPathTokenizer.DefaultSegmentCount];
-            var count = FastPathTokenizer.Tokenize(path, buffer, FastPathTokenizer.DefaultSegmentCount);
-            var segments = new ReadOnlySpan<PathSegment>((void*)buffer, count);
+            Span<PathSegment> segments = stackalloc PathSegment[FastPathTokenizer.DefaultSegmentCount];
+            var count = FastPathTokenizer.Tokenize(path, segments);
 
-            var candidates = SelectCandidates(path, segments);
+            var candidates = SelectCandidates(path, segments.Slice(0, count));
 
             var matches = new List<(Endpoint, RouteValueDictionary)>();
 
@@ -51,13 +50,13 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                     for (var j = 0; j < parameters.Length; j++)
                     {
                         var parameter = parameters[j];
-                        if (parameter != null && buffer[j].Length == 0)
+                        if (parameter != null && segments[j].Length == 0)
                         {
                             goto notmatch;
                         }
                         else if (parameter != null)
                         {
-                            var value = path.Substring(buffer[j].Start, buffer[j].Length);
+                            var value = path.Substring(segments[j].Start, segments[j].Length);
                             values.Add(parameter, value);
                         }
                     }

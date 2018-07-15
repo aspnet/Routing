@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         }
 
         [Benchmark(Baseline = true)]
-        public unsafe void Baseline()
+        public void Baseline()
         {
             var httpContext = Requests[0];
             var path = httpContext.Request.Path.Value;
@@ -47,15 +47,14 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         }
 
         [Benchmark]
-        public unsafe void Dfa()
+        public void Dfa()
         {
             var httpContext = Requests[0];
             var path = httpContext.Request.Path.Value;
-            var buffer = stackalloc PathSegment[FastPathTokenizer.DefaultSegmentCount];
-            var count = FastPathTokenizer.Tokenize(path, buffer, FastPathTokenizer.DefaultSegmentCount);
-            var segments = new ReadOnlySpan<PathSegment>((void*)buffer, count);
+            Span<PathSegment> segments = stackalloc PathSegment[FastPathTokenizer.DefaultSegmentCount];
+            var count = FastPathTokenizer.Tokenize(path, segments);
 
-            var candidates = _dfa.SelectCandidates(path, segments);
+            var candidates = _dfa.SelectCandidates(path, segments.Slice(0, count));
 
             var endpoint = candidates.Candidates[0].Endpoint;
             Validate(Requests[0], Endpoints[0], endpoint);
