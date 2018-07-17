@@ -1489,6 +1489,63 @@ namespace Microsoft.AspNetCore.Routing.Tests
             Assert.Equal("value3", storage[1].Value);
         }
 
+        [Fact]
+        public void From_TakesOwnershipOfArray()
+        {
+            // Arrange
+            var array = new KeyValuePair<string, object>[]
+            {
+                new KeyValuePair<string, object>("a", 0),
+                new KeyValuePair<string, object>("b", 1),
+                new KeyValuePair<string, object>("c", 2),
+            };
+
+            var dictionary = RouteValueDictionary.From(array);
+
+            // Act - modifying the array should modify the dictionary
+            array[0] = new KeyValuePair<string, object>("aa", 10);
+
+            // Assert
+            Assert.Equal(3, dictionary.Count);
+            Assert.Equal(10, dictionary["aa"]);
+        }
+
+        [Fact]
+        public void From_RemovesGapsInArray()
+        {
+            // Arrange
+            var array = new KeyValuePair<string, object>[]
+            {
+                new KeyValuePair<string, object>(null, null),
+                new KeyValuePair<string, object>("a", 0),
+                new KeyValuePair<string, object>(null, null),
+                new KeyValuePair<string, object>(null, null),
+                new KeyValuePair<string, object>("b", 1),
+                new KeyValuePair<string, object>("c", 2),
+                new KeyValuePair<string, object>("d", 3),
+                new KeyValuePair<string, object>(null, null),
+            };
+
+            // Act - calling From should modify the array
+            var dictionary = RouteValueDictionary.From(array);
+
+            // Assert
+            Assert.Equal(4, dictionary.Count);
+            Assert.Equal(
+                new KeyValuePair<string, object>[]
+                {
+                    new KeyValuePair<string, object>("d", 3),
+                    new KeyValuePair<string, object>("a", 0),
+                    new KeyValuePair<string, object>("c", 2),
+                    new KeyValuePair<string, object>("b", 1),
+                    new KeyValuePair<string, object>(null, null),
+                    new KeyValuePair<string, object>(null, null),
+                    new KeyValuePair<string, object>(null, null),
+                    new KeyValuePair<string, object>(null, null),
+                },
+                array);
+        }
+
         private class RegularType
         {
             public bool IsAwesome { get; set; }
