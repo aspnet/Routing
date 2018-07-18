@@ -185,7 +185,6 @@ namespace Microsoft.AspNetCore.Routing
                 }
                 else
                 {
-
                     _arrayStorage[index] = new KeyValuePair<string, object>(key, value);
                 }
             }
