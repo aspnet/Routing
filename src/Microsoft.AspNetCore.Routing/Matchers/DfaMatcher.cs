@@ -134,13 +134,13 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         {
             var states = _states;
 
-            var current = 0;
+            var destination = 0;
             for (var i = 0; i < segments.Length; i++)
             {
-                current = states[current].Transitions.GetDestination(path, segments[i]);
+                destination = states[destination].Transitions.GetDestination(path, segments[i]);
             }
 
-            return states[current].Candidates;
+            return states[destination].Candidates;
         }
 
         private bool FilterGroup(
@@ -154,6 +154,8 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var hasMatch = false;
             for (var i = 0; i < group.Length; i++)
             {
+                // PERF: specifically not copying group[i] into a local. It's a relatively
+                // fat struct and we don't want to eagerly copy it.
                 var flags = group[i].Flags;
 
                 // First process all of the parameters and defaults.
@@ -164,25 +166,29 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 }
                 else
                 {
-                    var slots = group[i].Slots;
-                    var valuesArray = new KeyValuePair<string, object>[slots.Length];
+                    // The Slots array has the default values of the route values in it.
+                    //
+                    // We want to create a new array for the route values based on Slots
+                    // as a prototype.
+                    var prototype = group[i].Slots;
+                    var slots = new KeyValuePair<string, object>[prototype.Length];
 
                     if ((flags & Candidate.CandidateFlags.HasDefaults) != 0)
                     {
-                        Array.Copy(slots, 0, valuesArray, 0, slots.Length);
+                        Array.Copy(prototype, 0, slots, 0, prototype.Length);
                     }
 
                     if ((flags & Candidate.CandidateFlags.HasCaptures) != 0)
                     {
-                        ProcessCaptures(valuesArray, group[i].Captures, path, segments);
+                        ProcessCaptures(slots, group[i].Captures, path, segments);
                     }
 
                     if ((flags & Candidate.CandidateFlags.HasCatchAll) != 0)
-                    {
-                        ProcessCatchAll(valuesArray, group[i].CatchAll, path, segments);
+                    { 
+                        ProcessCatchAll(slots, group[i].CatchAll, path, segments);
                     }
 
-                    values = RouteValueDictionary.From(valuesArray);
+                    values = RouteValueDictionary.FromArray(slots);
                 }
 
                 groupValues[i] = values;
@@ -209,20 +215,20 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         }
 
         private void ProcessCaptures(
-            KeyValuePair<string, object>[] values,
-            (string parameterName, int segment, int index)[] captures,
+            KeyValuePair<string, object>[] slots,
+            (string parameterName, int segmentIndex, int slotIndex)[] captures,
             string path,
             ReadOnlySpan<PathSegment> segments)
         {
             for (var i = 0; i < captures.Length; i++)
             {
                 var parameterName = captures[i].parameterName;
-                if (segments.Length > captures[i].segment)
+                if (segments.Length > captures[i].segmentIndex)
                 {
-                    var segment = segments[captures[i].segment];
+                    var segment = segments[captures[i].segmentIndex];
                     if (parameterName != null && segment.Length > 0)
                     {
-                        values[captures[i].index] = new KeyValuePair<string, object>(
+                        slots[captures[i].slotIndex] = new KeyValuePair<string, object>(
                             parameterName,
                             path.Substring(segment.Start, segment.Length));
                     }
@@ -231,29 +237,29 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         }
 
         private void ProcessCatchAll(
-            KeyValuePair<string, object>[] values,
-            (string parameterName, int segment, int index) catchAll,
+            KeyValuePair<string, object>[] slots,
+            (string parameterName, int segmentIndex, int slotIndex) catchAll,
             string path,
             ReadOnlySpan<PathSegment> segments)
         {
-            if (segments.Length > catchAll.segment)
+            if (segments.Length > catchAll.segmentIndex)
             {
-                var segment = segments[catchAll.segment];
-                values[catchAll.index] = new KeyValuePair<string, object>(
+                var segment = segments[catchAll.segmentIndex];
+                slots[catchAll.slotIndex] = new KeyValuePair<string, object>(
                     catchAll.parameterName,
                     path.Substring(segment.Start));
             }
         }
 
         private bool ProcessComplexSegments(
-            (RoutePatternPathSegment pathSegment, int segment)[] complexSegments,
+            (RoutePatternPathSegment pathSegment, int segmentIndex)[] complexSegments,
             string path,
             ReadOnlySpan<PathSegment> segments,
             RouteValueDictionary values)
         {
             for (var i = 0; i < complexSegments.Length; i++)
             {
-                var segment = segments[complexSegments[i].segment];
+                var segment = segments[complexSegments[i].segmentIndex];
                 var text = path.Substring(segment.Start, segment.Length);
                 if (!RoutePatternMatcher.MatchComplexSegment(complexSegments[i].pathSegment, text, values))
                 {

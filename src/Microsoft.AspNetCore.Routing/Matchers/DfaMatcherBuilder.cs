@@ -240,7 +240,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         {
             node.Matches.Sort();
 
-            var index = states.Count;
+            var stateIndex = states.Count;
             var candidates = new CandidateSet(
                 node.Matches.Select(CreateCandidate).ToArray(),
                 CandidateSet.MakeGroups(GetGroupLengths(node)));
@@ -288,12 +288,12 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 table.ExitDestination = table.DefaultDestination;
             }
 
-            return index;
+            return stateIndex;
 
             int Transition(DfaNode next)
             {
                 // Break cycles
-                return ReferenceEquals(node, next) ? index : AddNode(next, states, tables);
+                return ReferenceEquals(node, next) ? stateIndex : AddNode(next, states, tables);
             }
         }
 
@@ -302,8 +302,8 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         {
             var assignments = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             var slots = new List<KeyValuePair<string, object>>();
-            var captures = new List<(string parameterName, int segment, int index)>();
-            (string parameterName, int segment, int index) catchAll = default;
+            var captures = new List<(string parameterName, int segmentIndex, int slotIndex)>();
+            (string parameterName, int segmentIndex, int slotIndex) catchAll = default;
 
             foreach (var kvp in entry.Endpoint.Defaults)
             {
@@ -325,10 +325,10 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                     continue;
                 }
 
-                if (!assignments.TryGetValue(part.Name, out var index))
+                if (!assignments.TryGetValue(part.Name, out var slotIndex))
                 {
-                    index = assignments.Count;
-                    assignments.Add(part.Name, index);
+                    slotIndex = assignments.Count;
+                    assignments.Add(part.Name, slotIndex);
 
                     var hasDefaultValue = part.DefaultValue != null || part.IsCatchAll;
                     slots.Add(hasDefaultValue ? new KeyValuePair<string, object>(part.Name, part.DefaultValue) : default);
@@ -336,15 +336,15 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
                 if (part.IsCatchAll)
                 {
-                    catchAll = (part.Name, i, index);
+                    catchAll = (part.Name, i, slotIndex);
                 }
                 else
                 {
-                    captures.Add((part.Name, i, index));
+                    captures.Add((part.Name, i, slotIndex));
                 }
             }
 
-            var complexSegments = new List<(RoutePatternPathSegment pathSegment, int segment)>();
+            var complexSegments = new List<(RoutePatternPathSegment pathSegment, int segmentIndex)>();
             for (var i = 0; i < entry.Pattern.Segments.Count; i++)
             {
                 var segment = entry.Pattern.Segments[i];
@@ -414,15 +414,16 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                     return true;
                 }
 
-                if (segment.Parts[0].IsLiteral)
+                var part = segment.Parts[0];
+                if (part.IsLiteral)
                 {
                     return true;
                 }
 
-                if (!segment.Parts[0].IsOptional &&
-                    !segment.Parts[0].IsCatchAll &&
-                    segment.Parts[0].DefaultValue == null &&
-                    !entry.Endpoint.Defaults.ContainsKey(segment.Parts[0].Name))
+                if (!part.IsOptional &&
+                    !part.IsCatchAll &&
+                    part.DefaultValue == null &&
+                    !entry.Endpoint.Defaults.ContainsKey(part.Name))
                 {
                     return true;
                 }

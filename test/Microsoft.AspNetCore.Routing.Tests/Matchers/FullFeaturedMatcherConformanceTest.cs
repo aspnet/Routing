@@ -190,6 +190,8 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             // Assert
             DispatcherAssert.AssertNotMatch(feature);
 
+            // Need to access these to prevent a warning from the xUnit analyzer.
+            // Some of these tests will match (and process the values) and some will not.
             GC.KeepAlive(keys);
             GC.KeepAlive(values);
         }

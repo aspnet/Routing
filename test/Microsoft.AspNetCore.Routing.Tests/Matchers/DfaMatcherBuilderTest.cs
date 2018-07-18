@@ -567,7 +567,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             Assert.Equal(default, candidate.CatchAll);
             Assert.Collection(
                 candidate.ComplexSegments,
-                s => Assert.Equal(0, s.segment));
+                s => Assert.Equal(0, s.segmentIndex));
             Assert.Empty(candidate.MatchProcessors);
         }
 

@@ -23,14 +23,14 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
         // List of parameters to capture. Segment is the segment index, index is the 
         // index into the values array.
-        public readonly (string parameterName, int segment, int slot)[] Captures;
+        public readonly (string parameterName, int segmentIndex, int slotIndex)[] Captures;
 
         // Catchall parameter to capture (limit one per template).
-        public readonly (string parameterName, int segment, int slot) CatchAll;
+        public readonly (string parameterName, int segmentIndex, int slotIndex) CatchAll;
 
         // Complex segments are processed in a separate pass because they require a
         // RouteValueDictionary.
-        public readonly (RoutePatternPathSegment pathSegment, int segment)[] ComplexSegments;
+        public readonly (RoutePatternPathSegment pathSegment, int segmentIndex)[] ComplexSegments;
 
         public readonly MatchProcessor[] MatchProcessors;
 
@@ -40,9 +40,9 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             Endpoint = endpoint;
 
             Slots = Array.Empty<KeyValuePair<string, object>>();
-            Captures = Array.Empty<(string parameterName, int segment, int slot)>();
+            Captures = Array.Empty<(string parameterName, int segmentIndex, int slotIndex)>();
             CatchAll = default;
-            ComplexSegments = Array.Empty<(RoutePatternPathSegment pathSegment, int segment)>();
+            ComplexSegments = Array.Empty<(RoutePatternPathSegment pathSegment, int segmentIndex)>();
             MatchProcessors = Array.Empty<MatchProcessor>();
 
             Flags = CandidateFlags.None;
@@ -51,9 +51,9 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         public Candidate(
             MatcherEndpoint endpoint,
             KeyValuePair<string, object>[] slots,
-            (string parameterName, int segment, int slot)[] captures,
-            (string parameterName, int segment, int slot) catchAll,
-            (RoutePatternPathSegment pathSegment, int segment)[] complexSegments,
+            (string parameterName, int segmentIndex, int slotIndex)[] captures,
+            (string parameterName, int segmentIndex, int slotIndex) catchAll,
+            (RoutePatternPathSegment pathSegment, int segmentIndex)[] complexSegments,
             MatchProcessor[] matchProcessors)
         {
             Endpoint = endpoint;

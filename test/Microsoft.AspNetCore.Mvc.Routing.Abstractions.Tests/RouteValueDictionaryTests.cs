@@ -1490,7 +1490,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
         }
 
         [Fact]
-        public void From_TakesOwnershipOfArray()
+        public void FromArray_TakesOwnershipOfArray()
         {
             // Arrange
             var array = new KeyValuePair<string, object>[]
@@ -1500,7 +1500,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
                 new KeyValuePair<string, object>("c", 2),
             };
 
-            var dictionary = RouteValueDictionary.From(array);
+            var dictionary = RouteValueDictionary.FromArray(array);
 
             // Act - modifying the array should modify the dictionary
             array[0] = new KeyValuePair<string, object>("aa", 10);
@@ -1511,7 +1511,20 @@ namespace Microsoft.AspNetCore.Routing.Tests
         }
 
         [Fact]
-        public void From_RemovesGapsInArray()
+        public void FromArray_EmptyArray()
+        {
+            // Arrange
+            var array = Array.Empty<KeyValuePair<string, object>>();
+
+            // Act
+            var dictionary = RouteValueDictionary.FromArray(array);
+
+            // Assert
+            Assert.Empty(dictionary);
+        }
+
+        [Fact]
+        public void FromArray_RemovesGapsInArray()
         {
             // Arrange
             var array = new KeyValuePair<string, object>[]
@@ -1527,7 +1540,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
             };
 
             // Act - calling From should modify the array
-            var dictionary = RouteValueDictionary.From(array);
+            var dictionary = RouteValueDictionary.FromArray(array);
 
             // Assert
             Assert.Equal(4, dictionary.Count);

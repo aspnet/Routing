@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Routing
         /// </summary>
         /// <param name="items">The items array.</param>
         /// <returns>A new <see cref="RouteValueDictionary"/>.</returns>
-        public static RouteValueDictionary From(KeyValuePair<string, object>[] items)
+        public static RouteValueDictionary FromArray(KeyValuePair<string, object>[] items)
         {
             if (items == null)
             {
