@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.Extensions.Primitives;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -9,6 +10,10 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
 {
     public class HttpMethodEndpointConstraint : IEndpointConstraint
     {
+        private readonly string OriginHeader = "Origin";
+        private readonly string AccessControlRequestMethod = "Access-Control-Request-Method";
+        private readonly string PreflightHttpMethod = "OPTIONS";
+
         public static readonly int HttpMethodConstraintOrder = 100;
 
         private readonly IReadOnlyList<string> _httpMethods;
@@ -55,6 +60,28 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             var request = context.HttpContext.Request;
             var method = request.Method;
 
+            if (HttpMethodSupported(method))
+            {
+                return true;
+            }
+
+            // Check if request is a CORS OPTIONS request
+            if (string.Equals(request.Method, PreflightHttpMethod, StringComparison.OrdinalIgnoreCase) &&
+                request.Headers.ContainsKey(OriginHeader) &&
+                request.Headers.TryGetValue(AccessControlRequestMethod, out var accessControlRequestMethod) &&
+                !StringValues.IsNullOrEmpty(accessControlRequestMethod))
+            {
+                if (HttpMethodSupported(accessControlRequestMethod))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool HttpMethodSupported(string method)
+        {
             for (var i = 0; i < _httpMethods.Count; i++)
             {
                 var supportedMethod = _httpMethods[i];

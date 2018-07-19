@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         [Theory]
         [MemberData(nameof(AcceptCaseInsensitiveData))]
-        public void HttpMethodEndpointConstraint_IgnoresPreflightRequests(IEnumerable<string> httpMethods, string accessControlMethod)
+        public void HttpMethodEndpointConstraint_AcceptsPreflightRequests(IEnumerable<string> httpMethods, string accessControlMethod)
         {
             // Arrange
             var constraint = new HttpMethodEndpointConstraint(httpMethods);
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             var result = constraint.Accept(context);
 
             // Assert
-            Assert.False(result, "Request should have been rejected.");
+            Assert.True(result, "Request should have been rejected.");
         }
 
         [Theory]
