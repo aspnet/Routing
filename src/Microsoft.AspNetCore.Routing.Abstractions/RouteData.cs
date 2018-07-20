@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Routing
         /// <summary>
         /// Creates a new <see cref="RouteData"/> instance with the specified values.
         /// </summary>
-        /// <param name="values">The <see cref="RouteValueDictionary"/> copied for values.</param>
+        /// <param name="values">The <see cref="RouteValueDictionary"/> values.</param>
         public RouteData(RouteValueDictionary values)
         {
             if (values == null)
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(values));
             }
 
-            _values = new RouteValueDictionary(values);
+            _values = values;
         }
 
         /// <summary>
