@@ -30,8 +30,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
         public override Matcher Build()
         {
-            _endpoints.Sort();
-
             var cache = new EndpointConstraintCache(
                 new CompositeEndpointDataSource(Array.Empty<EndpointDataSource>()),
                 new[] { new DefaultEndpointConstraintProvider(), });

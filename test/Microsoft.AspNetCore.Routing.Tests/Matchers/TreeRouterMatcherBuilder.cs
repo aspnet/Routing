@@ -31,8 +31,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
         public override Matcher Build()
         {
-            _endpoints.Sort();
-
             var builder = new TreeRouteBuilder(
                 NullLoggerFactory.Instance,
                 new DefaultObjectPool<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy()),

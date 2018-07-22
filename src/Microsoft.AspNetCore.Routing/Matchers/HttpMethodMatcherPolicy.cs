@@ -15,6 +15,8 @@ namespace Microsoft.AspNetCore.Routing.Matchers
     {
         public IComparer<Endpoint> Comparer => EndpointMetadataComparer<IHttpMethodMetadata>.Default;
 
+        // The order value is chosen to be less than 0, so that it comes before naively
+        // written policies.
         public override int Order => -1000;
 
         public bool AppliesToNode(IReadOnlyList<Endpoint> endpoints)
@@ -77,8 +79,8 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             //
             // The rationale for this is that we want to report a 405 if none of
             // the supported methods match, but we don't want to report a 405 in a
-            // case where an application defines an endpoin that handles all verbs, but
-            // a constraint rejectsthe request, or a complex segment fails to parse. We
+            // case where an application defines an endpoint that handles all verbs, but
+            // a constraint rejects the request, or a complex segment fails to parse. We
             // consider a case like that a 'user input validation' failure  rather than
             // a semantic violation of HTTP.
             //

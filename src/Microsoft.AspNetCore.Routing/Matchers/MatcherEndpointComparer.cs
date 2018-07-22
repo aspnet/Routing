@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
     //
     // NOTE:
     // When ordering endpoints, we compare the route templates as an absolute last resort.
-    // This is used as a factor to unsure that we always have a predictable ordering
+    // This is used as a factor to ensure that we always have a predictable ordering
     // for tests, errors, etc.
     //
     // When we group endpoints we don't consider the route template, because we're trying
@@ -97,8 +97,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
             public int Compare(MatcherEndpoint x, MatcherEndpoint y)
             {
-                return RoutePrecedence.ComputeInbound(x.RoutePattern)
-                    .CompareTo(RoutePrecedence.ComputeInbound(y.RoutePattern));
+                return x.RoutePattern.InboundPrecedence.CompareTo(y.RoutePattern.InboundPrecedence);
             }
         }
     }
