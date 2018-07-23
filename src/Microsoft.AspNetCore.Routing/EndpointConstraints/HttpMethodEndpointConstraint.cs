@@ -4,17 +4,26 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Routing.EndpointConstraints
 {
     public class HttpMethodEndpointConstraint : IEndpointConstraint
     {
+        private readonly string OriginHeader = "Origin";
+        private readonly string AccessControlRequestMethod = "Access-Control-Request-Method";
+        private readonly string PreflightHttpMethod = "OPTIONS";
+
         public static readonly int HttpMethodConstraintOrder = 100;
 
         private readonly IReadOnlyList<string> _httpMethods;
 
         // Empty collection means any method will be accepted.
-        public HttpMethodEndpointConstraint(IEnumerable<string> httpMethods)
+        public HttpMethodEndpointConstraint(IEnumerable<string> httpMethods) : this(httpMethods, false)
+        {
+        }
+
+        public HttpMethodEndpointConstraint(IEnumerable<string> httpMethods, bool acceptCorsPreflight)
         {
             if (httpMethods == null)
             {
@@ -34,11 +43,14 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             }
 
             _httpMethods = new ReadOnlyCollection<string>(methods);
+            AcceptCorsPreflight = acceptCorsPreflight;
         }
 
         public IEnumerable<string> HttpMethods => _httpMethods;
 
         public int Order => HttpMethodConstraintOrder;
+
+        public bool AcceptCorsPreflight { get; }
 
         public virtual bool Accept(EndpointConstraintContext context)
         {
@@ -55,6 +67,29 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             var request = context.HttpContext.Request;
             var method = request.Method;
 
+            if (HttpMethodSupported(method))
+            {
+                return true;
+            }
+
+            // Check if request is a CORS OPTIONS request
+            if (AcceptCorsPreflight &&
+                string.Equals(request.Method, PreflightHttpMethod, StringComparison.OrdinalIgnoreCase) &&
+                request.Headers.ContainsKey(OriginHeader) &&
+                request.Headers.TryGetValue(AccessControlRequestMethod, out var accessControlRequestMethod) &&
+                !StringValues.IsNullOrEmpty(accessControlRequestMethod))
+            {
+                if (HttpMethodSupported(accessControlRequestMethod))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        private bool HttpMethodSupported(string method)
+        {
             for (var i = 0; i < _httpMethods.Count; i++)
             {
                 var supportedMethod = _httpMethods[i];
