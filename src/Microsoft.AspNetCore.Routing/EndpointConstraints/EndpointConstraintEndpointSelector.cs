@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             // Perf: Avoid allocations
             for (var i = 0; i < candidateSet.Count; i++)
             {
-                if (candidateSet[i].IsValidCandiate)
+                if (candidateSet[i].IsValidCandidate)
                 {
                     var endpoint = candidateSet[i].Endpoint;
                     var constraints = _endpointConstraintCache.GetEndpointConstraints(context, endpoint);

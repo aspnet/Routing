@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             Endpoint = endpoint;
             Score = score;
 
-            IsValidCandiate = true;
+            IsValidCandidate = true;
             Values = null;
         }
 
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
         public int Score { get; }
 
-        public bool IsValidCandiate { get; set; }
+        public bool IsValidCandidate { get; set; }
 
         public RouteValueDictionary Values { get; set; }
     }

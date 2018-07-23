@@ -118,11 +118,11 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 dictionary.Add((string)edges[i].State, edges[i].Destination);
             }
 
-            if (dictionary.TryGetValue("*", out var matchesAnyVerb))
+            if (dictionary.TryGetValue(AnyMethod, out var matchesAnyVerb))
             {
                 // If we have endpoints that match any HTTP method, use that as the exit.
                 exitDestination = matchesAnyVerb;
-                dictionary.Remove("*");
+                dictionary.Remove(AnyMethod);
             }
 
             return new DictionaryPolicyJumpTable(exitDestination, dictionary);

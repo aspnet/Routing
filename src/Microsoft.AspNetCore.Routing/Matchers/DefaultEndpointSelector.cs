@@ -23,14 +23,15 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             {
                 ref var state = ref candidates[i];
 
-                if (state.IsValidCandiate && foundScore == null)
+                var isValid = state.IsValidCandidate;
+                if (isValid && foundScore == null)
                 {
                     // This is the first match we've seen - speculatively assign it.
                     endpoint = state.Endpoint;
                     values = state.Values;
                     foundScore = state.Score;
                 }
-                else if (state.IsValidCandiate && foundScore < state.Score)
+                else if (isValid && foundScore < state.Score)
                 {
                     // This candidate is lower priority than the one we've seen
                     // so far, we can stop.
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                     // Don't worry about the 'null < state.Score' case, it returns false.
                     break;
                 }
-                else if (state.IsValidCandiate && foundScore == state.Score)
+                else if (isValid && foundScore == state.Score)
                 {
                     // This is the second match we've found of the same score, so there 
                     // must be an ambiguity.
@@ -70,7 +71,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             for (var i = 0; i < candidates.Count; i++)
             {
                 ref var state = ref candidates[i];
-                if (state.IsValidCandiate)
+                if (state.IsValidCandidate)
                 {
                     matches.Add(state.Endpoint);
                 }

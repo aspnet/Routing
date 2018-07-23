@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                     isMatch &= ProcessMatchProcessors(candiate.MatchProcessors, httpContext, values);
                 }
 
-                state.IsValidCandiate = isMatch;
+                state.IsValidCandidate = isMatch;
             }
 
             return _selector.SelectAsync(httpContext, feature, candidateSet);
