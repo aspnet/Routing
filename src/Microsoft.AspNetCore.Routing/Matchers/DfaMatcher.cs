@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -46,8 +44,8 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
             // FindCandidateSet will process the DFA and return a candidate set. This does
             // some preliminary matching of the URL (mostly the literal segments).
-            var candidatesArray = FindCandidateSet(httpContext, path, segments);
-            if (candidatesArray.Length == 0)
+            var candidates = FindCandidateSet(httpContext, path, segments);
+            if (candidates.Length == 0)
             {
                 return Task.CompletedTask;
             }
@@ -61,19 +59,23 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             // Now we'll iterate each endpoint to capture route values, process constraints,
             // and process complex segments.
 
-            // `candidatesArray` has all of our internal state that we use to process the
+            // `candidates` has all of our internal state that we use to process the
             // set of endpoints before we call the EndpointSelector.
             //
-            // `candidates` is the mutable state that we pass to the EndpointSelector.
-            var candidates = new CandidateSet(candidatesArray);
+            // `candidateSet` is the mutable state that we pass to the EndpointSelector.
+            var candidateSet = new CandidateSet(candidates);
 
-            for (var i = 0; i < candidatesArray.Length; i++)
+            for (var i = 0; i < candidates.Length; i++)
             {
-                ref var state = ref candidates[i];
+                // PERF: using ref here to avoid copying around big structs.
+                //
+                // Reminder!
+                // candidate: readonly data about the endpoint and how to match
+                // state: mutable storarge for our processing
+                ref var candiate = ref candidates[i];
+                ref var state = ref candidateSet[i];
 
-                // PERF: specifically not copying candidatesArray[i] into a local. It's a relatively
-                // fat struct and we don't want to eagerly copy it.
-                var flags = candidatesArray[i].Flags;
+                var flags = candiate.Flags;
 
                 // First process all of the parameters and defaults.
                 RouteValueDictionary values;
@@ -87,7 +89,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                     //
                     // We want to create a new array for the route values based on Slots
                     // as a prototype.
-                    var prototype = candidatesArray[i].Slots;
+                    var prototype = candiate.Slots;
                     var slots = new KeyValuePair<string, object>[prototype.Length];
 
                     if ((flags & Candidate.CandidateFlags.HasDefaults) != 0)
@@ -97,12 +99,12 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
                     if ((flags & Candidate.CandidateFlags.HasCaptures) != 0)
                     {
-                        ProcessCaptures(slots, candidatesArray[i].Captures, path, segments);
+                        ProcessCaptures(slots, candiate.Captures, path, segments);
                     }
 
                     if ((flags & Candidate.CandidateFlags.HasCatchAll) != 0)
                     {
-                        ProcessCatchAll(slots, candidatesArray[i].CatchAll, path, segments);
+                        ProcessCatchAll(slots, candiate.CatchAll, path, segments);
                     }
 
                     values = RouteValueDictionary.FromArray(slots);
@@ -116,18 +118,18 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 var isMatch = true;
                 if ((flags & Candidate.CandidateFlags.HasComplexSegments) != 0)
                 {
-                    isMatch &= ProcessComplexSegments(candidatesArray[i].ComplexSegments, path, segments, values);
+                    isMatch &= ProcessComplexSegments(candiate.ComplexSegments, path, segments, values);
                 }
 
                 if ((flags & Candidate.CandidateFlags.HasMatchProcessors) != 0)
                 {
-                    isMatch &= ProcessMatchProcessors(candidatesArray[i].MatchProcessors, httpContext, values);
+                    isMatch &= ProcessMatchProcessors(candiate.MatchProcessors, httpContext, values);
                 }
 
                 state.IsValidCandiate = isMatch;
             }
 
-            return _selector.SelectAsync(httpContext, feature, candidates);
+            return _selector.SelectAsync(httpContext, feature, candidateSet);
         }
 
         internal Candidate[] FindCandidateSet(
