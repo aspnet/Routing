@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
             // Build the trees of policy nodes (like HTTP methods). Post-order traversal
             // means that we won't have infinite recursion.
-            root.TraversePostOrder(ApplyPolicies);
+            root.Visit(ApplyPolicies);
 
             return root;
         }

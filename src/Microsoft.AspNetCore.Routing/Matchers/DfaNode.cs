@@ -39,28 +39,28 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
         public Dictionary<object, DfaNode> PolicyEdges { get; }
 
-        public void TraversePostOrder(Action<DfaNode> visitor)
+        public void Visit(Action<DfaNode> visitor)
         {
             foreach (var kvp in Literals)
             {
-                kvp.Value.TraversePostOrder(visitor);
+                kvp.Value.Visit(visitor);
             }
 
             // Break cycles
             if (Parameters != null && !ReferenceEquals(this, Parameters))
             {
-                Parameters.TraversePostOrder(visitor);
+                Parameters.Visit(visitor);
             }
 
             // Break cycles
             if (CatchAll != null && !ReferenceEquals(this, CatchAll))
             {
-                CatchAll.TraversePostOrder(visitor);
+                CatchAll.Visit(visitor);
             }
 
             foreach (var kvp in PolicyEdges)
             {
-                kvp.Value.TraversePostOrder(visitor);
+                kvp.Value.Visit(visitor);
             }
 
             visitor(this);
