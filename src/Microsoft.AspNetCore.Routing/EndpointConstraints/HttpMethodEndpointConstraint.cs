@@ -19,7 +19,11 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
         private readonly IReadOnlyList<string> _httpMethods;
 
         // Empty collection means any method will be accepted.
-        public HttpMethodEndpointConstraint(IEnumerable<string> httpMethods)
+        public HttpMethodEndpointConstraint(IEnumerable<string> httpMethods) : this(httpMethods, false)
+        {
+        }
+
+        public HttpMethodEndpointConstraint(IEnumerable<string> httpMethods, bool acceptCorsPreflight)
         {
             if (httpMethods == null)
             {
@@ -39,11 +43,14 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             }
 
             _httpMethods = new ReadOnlyCollection<string>(methods);
+            AcceptCorsPreflight = acceptCorsPreflight;
         }
 
         public IEnumerable<string> HttpMethods => _httpMethods;
 
         public int Order => HttpMethodConstraintOrder;
+
+        public bool AcceptCorsPreflight { get; }
 
         public virtual bool Accept(EndpointConstraintContext context)
         {
@@ -66,7 +73,8 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             }
 
             // Check if request is a CORS OPTIONS request
-            if (string.Equals(request.Method, PreflightHttpMethod, StringComparison.OrdinalIgnoreCase) &&
+            if (AcceptCorsPreflight &&
+                string.Equals(request.Method, PreflightHttpMethod, StringComparison.OrdinalIgnoreCase) &&
                 request.Headers.ContainsKey(OriginHeader) &&
                 request.Headers.TryGetValue(AccessControlRequestMethod, out var accessControlRequestMethod) &&
                 !StringValues.IsNullOrEmpty(accessControlRequestMethod))
