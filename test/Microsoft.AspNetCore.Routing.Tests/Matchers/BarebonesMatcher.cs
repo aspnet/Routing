@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 return segment == _segments.Length;
             }
 
-            internal Candidate[] SelectCandidates(string path, ReadOnlySpan<PathSegment> segments)
+            internal Candidate[] FindCandidateSet(string path, ReadOnlySpan<PathSegment> segments)
             {
                 if (TryMatch(path))
                 {

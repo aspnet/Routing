@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         }
 
         // This is here so this can be tested alongside DFA matcher.
-        internal Candidate[] SelectCandidates(string path, ReadOnlySpan<PathSegment> segments)
+        internal Candidate[] FindCandidateSet(string path, ReadOnlySpan<PathSegment> segments)
         {
             if (string.Equals(_endpoint.RoutePattern.RawText, path, StringComparison.OrdinalIgnoreCase))
             {

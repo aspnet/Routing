@@ -44,9 +44,9 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var count = FastPathTokenizer.Tokenize(path, buffer);
             var segments = buffer.Slice(0, count);
 
-            // SelectCandidates will process the DFA and return a candidate set. This does
+            // FindCandidateSet will process the DFA and return a candidate set. This does
             // some preliminary matching of the URL (mostly the literal segments).
-            var candidatesArray = FindCandidates(httpContext, path, segments);
+            var candidatesArray = FindCandidateSet(httpContext, path, segments);
             if (candidatesArray.Length == 0)
             {
                 return Task.CompletedTask;
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             return _selector.SelectAsync(httpContext, feature, candidates);
         }
 
-        internal Candidate[] FindCandidates(
+        internal Candidate[] FindCandidateSet(
             HttpContext httpContext,
             string path,
             ReadOnlySpan<PathSegment> segments)

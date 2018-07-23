@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing.Matchers
 {
-    public class MatcherSelectCandidatesSingleEntryBenchmark : MatcherBenchmarkBase
+    public class MatcheFindCandidateSetSingleEntryBenchmark : MatcherBenchmarkBase
     {
         private TrivialMatcher _baseline;
         private DfaMatcher _dfa;
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             var path = httpContext.Request.Path.Value;
             var segments = new ReadOnlySpan<PathSegment>(Array.Empty<PathSegment>());
 
-            var candidates = _baseline.SelectCandidates(path, segments);
+            var candidates = _baseline.FindCandidateSet(path, segments);
 
             var endpoint = candidates[0].Endpoint;
             Validate(Requests[0], Endpoints[0], endpoint);
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             Span<PathSegment> segments = stackalloc PathSegment[FastPathTokenizer.DefaultSegmentCount];
             var count = FastPathTokenizer.Tokenize(path, segments);
 
-            var candidates = _dfa.FindCandidates(httpContext, path, segments.Slice(0, count));
+            var candidates = _dfa.FindCandidateSet(httpContext, path, segments.Slice(0, count));
 
             var endpoint = candidates[0].Endpoint;
             Validate(Requests[0], Endpoints[0], endpoint);
