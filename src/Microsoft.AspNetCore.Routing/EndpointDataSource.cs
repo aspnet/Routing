@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Routing
 {
     public abstract class EndpointDataSource
     {
-        public abstract IChangeToken ChangeToken { get; }
+        public virtual IChangeToken ChangeToken { get; }
 
         // Plan is to replace ChangeToken property with GetChangeToken
         // Temporarily have both to avoid breaking MVC
