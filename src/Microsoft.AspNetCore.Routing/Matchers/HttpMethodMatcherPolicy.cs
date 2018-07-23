@@ -13,6 +13,8 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 {
     public sealed class HttpMethodEndpointSelectorPolicy : MatcherPolicy, IEndpointComparerPolicy, INodeBuilderPolicy
     {
+        private const string AnyMethod = "*";
+
         public IComparer<Endpoint> Comparer => EndpointMetadataComparer<IHttpMethodMetadata>.Default;
 
         // The order value is chosen to be less than 0, so that it comes before naively
@@ -41,7 +43,9 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         {
             // The algorithm here is designed to be preserve the order of the endpoints
             // while also being relatively simple. Preserving order is important.
-            var allHttpMethods = CollectHttpMethods();
+            var allHttpMethods = endpoints
+                    .SelectMany(e => GetHttpMethods(e))
+                    .Distinct();
 
             var dictionary = new Dictionary<string, List<Endpoint>>();
             foreach (var httpMethod in allHttpMethods)
@@ -49,7 +53,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 dictionary.Add(httpMethod, new List<Endpoint>());
             }
 
-            dictionary.Add("*", new List<Endpoint>());
+            dictionary.Add(AnyMethod, new List<Endpoint>());
 
             for (var i = 0; i < endpoints.Count; i++)
             {
@@ -86,9 +90,9 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             //
             // This will make 405 much more likely in API-focused applications, and somewhat
             // unlikely in a traditional MVC application. That's good.
-            if (dictionary["*"].Count == 0)
+            if (dictionary[AnyMethod].Count == 0)
             {
-                dictionary["*"].Add(CreateRejectionEndpoint(allHttpMethods));
+                dictionary[AnyMethod].Add(CreateRejectionEndpoint(allHttpMethods));
             }
 
             var edges = new List<PolicyNodeEdge>();
@@ -98,13 +102,6 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             }
 
             return edges;
-
-            IEnumerable<string> CollectHttpMethods()
-            {
-                return endpoints
-                    .SelectMany(e => GetHttpMethods(e))
-                    .Distinct();
-            }
 
             IReadOnlyList<string> GetHttpMethods(Endpoint e)
             {

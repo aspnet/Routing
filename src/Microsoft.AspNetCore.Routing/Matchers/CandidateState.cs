@@ -7,12 +7,8 @@ namespace Microsoft.AspNetCore.Routing.Matchers
     {
         // Provided for testability
         public CandidateState(MatcherEndpoint endpoint)
+            : this(endpoint, score: 0)
         {
-            Endpoint = endpoint;
-
-            Score = 0;
-            IsValidCandiate = true;
-            Values = null;
         }
 
         public CandidateState(MatcherEndpoint endpoint, int score)

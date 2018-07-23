@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             // because a 'parameter' node can also traverse the same paths that literal nodes
             // traverse. This means that we need to order the entries first, or else we will
             // miss possible edges in the DFA.
-            _endpoints.Sort((x, y) => _comparer.Compare(x, y));
+            _endpoints.Sort(_comparer);
 
             // Since we're doing a BFS we will process each 'level' of the tree in stages
             // this list will hold the set of items we need to process at the current
@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             List<DfaState> states,
             List<(JumpTableBuilder pathBuilder, PolicyJumpTableBuilder policyBuilder)> tableBuilders)
         {
-            node.Matches.Sort((x, y) => _comparer.Compare(x, y));
+            node.Matches.Sort(_comparer);
 
             var stateIndex = states.Count;
 

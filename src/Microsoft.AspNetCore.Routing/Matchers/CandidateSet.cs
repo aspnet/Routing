@@ -8,6 +8,9 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 {
     public sealed class CandidateSet
     {
+        // We inline storage for 4 candidates here to avoid allocations in common
+        // cases. There's no real reason why 4 is important, it just seemed like 
+        // a plausible number.
         private CandidateState _state0;
         private CandidateState _state1;
         private CandidateState _state2;
@@ -110,6 +113,8 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
         public int Count { get; }
 
+        // Note that this is a ref-return because of both mutability and performance.
+        // We don't want to copy these fat structs if it can be avoided.
         public ref CandidateState this[int index]
         {
             // PERF: Force inlining

@@ -16,6 +16,8 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             IEndpointFeature feature,
             CandidateSet candidates)
         {
+            MatcherEndpoint endpoint = null;
+            RouteValueDictionary values = null;
             int? foundScore = null;
             for (var i = 0; i < candidates.Count; i++)
             {
@@ -24,10 +26,8 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 if (state.IsValidCandiate && foundScore == null)
                 {
                     // This is the first match we've seen - speculatively assign it.
-                    feature.Endpoint = state.Endpoint;
-                    feature.Invoker = state.Endpoint.Invoker;
-                    feature.Values = state.Values;
-
+                    endpoint = state.Endpoint;
+                    values = state.Values;
                     foundScore = state.Score;
                 }
                 else if (state.IsValidCandiate && foundScore < state.Score)
@@ -44,15 +44,19 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                     // must be an ambiguity.
                     //
                     // Don't worry about the 'null == state.Score' case, it returns false.
-                    feature.Endpoint = null;
-                    feature.Invoker = null;
-                    feature.Values = null;
 
                     ReportAmbiguity(candidates);
 
                     // Unreachable, ReportAmbiguity always throws.
                     throw new NotSupportedException();
                 }
+            }
+
+            if (endpoint != null)
+            {
+                feature.Endpoint = endpoint;
+                feature.Invoker = endpoint.Invoker;
+                feature.Values = values;
             }
 
             return Task.CompletedTask;
