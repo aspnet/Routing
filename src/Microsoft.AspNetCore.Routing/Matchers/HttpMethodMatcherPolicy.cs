@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
                 for (var j = 0; j < httpMethods.Count; j++)
                 {
-                    dictionary[httpMethods[i]].Add(endpoint);
+                    dictionary[httpMethods[j]].Add(endpoint);
                 }
             }
 
