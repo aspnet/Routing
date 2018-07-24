@@ -18,8 +18,9 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
         private CandidateState[] _additionalCandidates;
 
-        // Provided to make testing possible/easy.
-        public CandidateSet(MatcherEndpoint[] endpoints)
+        // Provided to make testing possible/easy for someone implementing
+        // an EndpointSelector.
+        public CandidateSet(MatcherEndpoint[] endpoints, int[] scores)
         {
             Count = endpoints.Length;
 
@@ -29,37 +30,37 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                     return;
 
                 case 1:
-                    _state0 = new CandidateState(endpoints[0], score: 0);
+                    _state0 = new CandidateState(endpoints[0], score: scores[0]);
                     break;
 
                 case 2:
-                    _state0 = new CandidateState(endpoints[0], score: 0);
-                    _state1 = new CandidateState(endpoints[1], score: 0);
+                    _state0 = new CandidateState(endpoints[0], score: scores[0]);
+                    _state1 = new CandidateState(endpoints[1], score: scores[1]);
                     break;
 
                 case 3:
-                    _state0 = new CandidateState(endpoints[0], score: 0);
-                    _state1 = new CandidateState(endpoints[1], score: 0);
-                    _state2 = new CandidateState(endpoints[2], score: 0);
+                    _state0 = new CandidateState(endpoints[0], score: scores[0]);
+                    _state1 = new CandidateState(endpoints[1], score: scores[1]);
+                    _state2 = new CandidateState(endpoints[2], score: scores[2]);
                     break;
 
                 case 4:
-                    _state0 = new CandidateState(endpoints[0], score: 0);
-                    _state1 = new CandidateState(endpoints[1], score: 0);
-                    _state2 = new CandidateState(endpoints[2], score: 0);
-                    _state3 = new CandidateState(endpoints[3], score: 0);
+                    _state0 = new CandidateState(endpoints[0], score: scores[0]);
+                    _state1 = new CandidateState(endpoints[1], score: scores[1]);
+                    _state2 = new CandidateState(endpoints[2], score: scores[2]);
+                    _state3 = new CandidateState(endpoints[3], score: scores[3]);
                     break;
 
                 default:
-                    _state0 = new CandidateState(endpoints[0], score: 0);
-                    _state1 = new CandidateState(endpoints[1], score: 0);
-                    _state2 = new CandidateState(endpoints[2], score: 0);
-                    _state3 = new CandidateState(endpoints[3], score: 0);
+                    _state0 = new CandidateState(endpoints[0], score: scores[0]);
+                    _state1 = new CandidateState(endpoints[1], score: scores[1]);
+                    _state2 = new CandidateState(endpoints[2], score: scores[2]);
+                    _state3 = new CandidateState(endpoints[3], score: scores[3]);
 
                     _additionalCandidates = new CandidateState[endpoints.Length - 4];
                     for (var i = 4; i < endpoints.Length; i++)
                     {
-                        _additionalCandidates[i - 4] = new CandidateState(endpoints[i], score: 0);
+                        _additionalCandidates[i - 4] = new CandidateState(endpoints[i], score: scores[i]);
                     }
                     break;
             }

@@ -588,28 +588,81 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             Assert.Empty(candidate.ComplexSegments);
             Assert.Single(candidate.MatchProcessors);
         }
+        
+        [Fact]
+        public void CreateCandidates_CreatesScoresCorrectly()
+        {
+            // Arrange
+            var endpoints = new[]
+            {
+                CreateEndpoint("/a/b/c", constraints: new { a = new IntRouteConstraint(), }, metadata: new object[] { new TestMetadata1(), new TestMetadata2(), }),
+                CreateEndpoint("/a/b/c", constraints: new { a = new AlphaRouteConstraint(), }, metadata: new object[] { new TestMetadata1(), new TestMetadata2(), }),
+                CreateEndpoint("/a/b/c", constraints: new { a = new IntRouteConstraint(), }, metadata: new object[] { new TestMetadata1(), }),
+                CreateEndpoint("/a/b/c", constraints: new { a = new IntRouteConstraint(), }, metadata: new object[] { new TestMetadata2(), }),
+                CreateEndpoint("/a/b/c", constraints: new { }, metadata: new object[] { }),
+                CreateEndpoint("/a/b/c", constraints: new { }, metadata: new object[] { }),
+            };
 
-        private static DfaMatcherBuilder CreateDfaMatcherBuilder()
+            var builder = CreateDfaMatcherBuilder(new TestMetadata1MatcherPolicy(), new TestMetadata2MatcherPolicy());
+
+            // Act
+            var candidates = builder.CreateCandidates(endpoints);
+
+            // Assert
+            Assert.Collection(
+                candidates,
+                c => Assert.Equal(0, c.Score),
+                c => Assert.Equal(0, c.Score),
+                c => Assert.Equal(1, c.Score),
+                c => Assert.Equal(2, c.Score),
+                c => Assert.Equal(3, c.Score),
+                c => Assert.Equal(3, c.Score));
+        }
+
+        private static DfaMatcherBuilder CreateDfaMatcherBuilder(params MatcherPolicy[] policies)
         {
             var dataSource = new CompositeEndpointDataSource(Array.Empty<EndpointDataSource>());
             return new DfaMatcherBuilder(
                 Mock.Of<MatchProcessorFactory>(),
                 Mock.Of<EndpointSelector>(),
-                Array.Empty<MatcherPolicy>());
+                policies);
         }
 
         private MatcherEndpoint CreateEndpoint(
             string template,
             object defaults = null,
-            object constraints = null)
+            object constraints = null,
+            params object[] metadata)
         {
             return new MatcherEndpoint(
                 MatcherEndpoint.EmptyInvoker,
                 RoutePatternFactory.Parse(template, new RouteValueDictionary(defaults), new RouteValueDictionary(constraints)),
                 new RouteValueDictionary(),
                 0,
-                new EndpointMetadataCollection(Array.Empty<object>()),
+                new EndpointMetadataCollection(metadata),
                 "test");
+        }
+
+        private class TestMetadata1
+        {
+        }
+
+        private class TestMetadata1MatcherPolicy : MatcherPolicy, IEndpointComparerPolicy
+        {
+            public override int Order => 100;
+
+            public IComparer<Endpoint> Comparer => EndpointMetadataComparer<TestMetadata1>.Default;
+        }
+
+        private class TestMetadata2
+        {
+        }
+
+        private class TestMetadata2MatcherPolicy : MatcherPolicy, IEndpointComparerPolicy
+        {
+            public override int Order => 101;
+
+            public IComparer<Endpoint> Comparer => EndpointMetadataComparer<TestMetadata2>.Default;
         }
     }
 }

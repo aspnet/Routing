@@ -14,9 +14,10 @@ namespace Microsoft.AspNetCore.Routing.Matchers
     public sealed class HttpMethodEndpointSelectorPolicy : MatcherPolicy, IEndpointComparerPolicy, INodeBuilderPolicy
     {
         // Used in tests
-        internal static readonly string Http405EndpointDisplayName = "405 HTTP Method Not Supported";
+        internal const string Http405EndpointDisplayName = "405 HTTP Method Not Supported";
 
-        private const string AnyMethod = "*";
+        // Used in tests
+        internal const string AnyMethod = "*";
 
         public IComparer<Endpoint> Comparer => new HttpMethodMetadataEndpointComparer();
 
@@ -33,7 +34,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
             for (var i = 0; i < endpoints.Count; i++)
             {
-                if (endpoints[i].Metadata.GetMetadata<IHttpMethodMetadata>() != null)
+                if (endpoints[i].Metadata.GetMetadata<IHttpMethodMetadata>()?.HttpMethods.Any() == true)
                 {
                     return true;
                 }

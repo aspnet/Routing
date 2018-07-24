@@ -79,11 +79,14 @@ namespace Microsoft.AspNetCore.Routing.Matchers
         {
             private readonly EndpointSelector _selector;
             private readonly MatcherEndpoint[] _candidates;
+            private readonly int[] _scores;
 
             public SelectorRouter(EndpointSelector selector, MatcherEndpoint[] candidates)
             {
                 _selector = selector;
                 _candidates = candidates;
+
+                _scores = new int[_candidates.Length];
             }
 
             public VirtualPathData GetVirtualPath(VirtualPathContext context)
@@ -99,7 +102,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 // across requests.
                 feature.Endpoint = null;
 
-                await _selector.SelectAsync(context.HttpContext, feature, new CandidateSet(_candidates));
+                await _selector.SelectAsync(context.HttpContext, feature, new CandidateSet(_candidates, _scores));
                 if (feature.Endpoint != null)
                 {
                     context.Handler = (_) => Task.CompletedTask;

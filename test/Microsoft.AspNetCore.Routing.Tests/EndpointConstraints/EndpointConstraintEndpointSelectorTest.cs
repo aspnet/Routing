@@ -17,7 +17,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.EndpointConstraints
 {
-    public class EndpointSelectorTests
+    public class EndpointConstraintEndpointSelectorTest
     {
         [Fact]
         public async Task SelectBestCandidate_MultipleEndpoints_BestMatchSelected()
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             var feature = new EndpointFeature();
 
             // Act
-            await selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
+            await selector.SelectAsync(httpContext, feature, CreateCandidateSet(endpoints));
 
             // Assert
             Assert.Same(postEndpoint, feature.Endpoint);
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             // Act
             var ex = await Assert.ThrowsAnyAsync<AmbiguousMatchException>(() =>
             {
-                return selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
+                return selector.SelectAsync(httpContext, feature, CreateCandidateSet(endpoints));
             });
 
             // Assert
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             // Act
             await Assert.ThrowsAsync<AmbiguousMatchException>(() =>
             {
-                return selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
+                return selector.SelectAsync(httpContext, feature, CreateCandidateSet(endpoints));
             });
 
             // Assert
@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             var feature = new EndpointFeature();
 
             // Act
-            await selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
+            await selector.SelectAsync(httpContext, feature, CreateCandidateSet(endpoints));
 
             // Assert
             Assert.Same(endpointWithConstraint, endpointWithConstraint);
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             var feature = new EndpointFeature();
 
             // Act
-            await selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
+            await selector.SelectAsync(httpContext, feature, CreateCandidateSet(endpoints));
 
             // Assert
             Assert.Null(feature.Endpoint);
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             var feature = new EndpointFeature();
 
             // Act
-            await selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
+            await selector.SelectAsync(httpContext, feature, CreateCandidateSet(endpoints));
 
             // Assert
             Assert.Null(feature.Endpoint);
@@ -215,7 +215,7 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             var feature = new EndpointFeature();
 
             // Act
-            await selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
+            await selector.SelectAsync(httpContext, feature, CreateCandidateSet(endpoints));
 
             // Assert
             Assert.Same(endpointWithConstraints, feature.Endpoint);
@@ -234,10 +234,10 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             var feature = new EndpointFeature();
 
             // Act
-            await selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
+            await selector.SelectAsync(httpContext, feature, CreateCandidateSet(endpoints));
             var endpoint1 = feature.Endpoint;
 
-            await selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
+            await selector.SelectAsync(httpContext, feature, CreateCandidateSet(endpoints));
             var endpoint2 = feature.Endpoint;
 
             // Assert
@@ -258,10 +258,10 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             var feature = new EndpointFeature();
 
             // Act
-            await selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
+            await selector.SelectAsync(httpContext, feature, CreateCandidateSet(endpoints));
             var endpoint1 = feature.Endpoint;
 
-            await selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
+            await selector.SelectAsync(httpContext, feature, CreateCandidateSet(endpoints));
             var endpoint2 = feature.Endpoint;
 
             // Assert
@@ -282,10 +282,10 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             var feature = new EndpointFeature();
 
             // Act
-            await selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
+            await selector.SelectAsync(httpContext, feature, CreateCandidateSet(endpoints));
             var endpoint1 = feature.Endpoint;
 
-            await selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
+            await selector.SelectAsync(httpContext, feature, CreateCandidateSet(endpoints));
             var endpoint2 = feature.Endpoint;
 
             // Assert
@@ -311,7 +311,7 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             var feature = new EndpointFeature();
 
             // Act
-            await selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
+            await selector.SelectAsync(httpContext, feature, CreateCandidateSet(endpoints));
 
             // Assert
             Assert.Same(endpointWithConstraints, feature.Endpoint);
@@ -333,7 +333,7 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             var feature = new EndpointFeature();
 
             // Act
-            await selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
+            await selector.SelectAsync(httpContext, feature, CreateCandidateSet(endpoints));
 
             // Assert
             Assert.Same(best, feature.Endpoint);
@@ -363,7 +363,7 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             var feature = new EndpointFeature();
 
             // Act
-            await selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
+            await selector.SelectAsync(httpContext, feature, CreateCandidateSet(endpoints));
 
             // Assert
             Assert.Same(best, feature.Endpoint);
@@ -394,7 +394,7 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
             var feature = new EndpointFeature();
 
             // Act
-            await selector.SelectAsync(httpContext, feature, new CandidateSet(endpoints));
+            await selector.SelectAsync(httpContext, feature, CreateCandidateSet(endpoints));
 
             // Assert
             Assert.Same(best, feature.Endpoint);
@@ -409,6 +409,12 @@ namespace Microsoft.AspNetCore.Routing.EndpointConstraints
                 0,
                 new EndpointMetadataCollection(metadata),
                 displayName);
+        }
+
+        private static CandidateSet CreateCandidateSet(MatcherEndpoint[] endpoints)
+        {
+            var scores = new int[endpoints.Length];
+            return new CandidateSet(endpoints, scores);
         }
 
         private static EndpointSelector CreateSelector(IReadOnlyList<Endpoint> actions, ILoggerFactory loggerFactory = null)

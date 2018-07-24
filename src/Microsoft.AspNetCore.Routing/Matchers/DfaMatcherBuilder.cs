@@ -330,7 +330,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
         // Builds an array of candidates for a node, assigns a 'score' for each
         // endpoint.
-        internal Candidate[] CreateCandidates(List<MatcherEndpoint> endpoints)
+        internal Candidate[] CreateCandidates(IReadOnlyList<MatcherEndpoint> endpoints)
         {
             if (endpoints.Count == 0)
             {
