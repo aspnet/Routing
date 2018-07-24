@@ -13,9 +13,12 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 {
     public sealed class HttpMethodEndpointSelectorPolicy : MatcherPolicy, IEndpointComparerPolicy, INodeBuilderPolicy
     {
+        // Used in tests
+        internal static readonly string Http405EndpointDisplayName = "405 HTTP Method Not Supported";
+
         private const string AnyMethod = "*";
 
-        public IComparer<Endpoint> Comparer => EndpointMetadataComparer<IHttpMethodMetadata>.Default;
+        public IComparer<Endpoint> Comparer => new HttpMethodMetadataEndpointComparer();
 
         // The order value is chosen to be less than 0, so that it comes before naively
         // written policies.
@@ -45,7 +48,8 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             // while also being relatively simple. Preserving order is important.
             var allHttpMethods = endpoints
                     .SelectMany(e => GetHttpMethods(e))
-                    .Distinct();
+                    .Distinct()
+                    .OrderBy(m => m); // Sort for testability
 
             var dictionary = new Dictionary<string, List<Endpoint>>();
             foreach (var httpMethod in allHttpMethods)
@@ -142,7 +146,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 new RouteValueDictionary(),
                 0,
                 EndpointMetadataCollection.Empty,
-                "405 HTTP Method Not Supported");
+                Http405EndpointDisplayName);
         }
 
         private class DictionaryPolicyJumpTable : PolicyJumpTable
@@ -160,6 +164,17 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             {
                 var httpMethod = httpContext.Request.Method;
                 return _destinations.TryGetValue(httpMethod, out var destination) ? destination : _exitDestination;
+            }
+        }
+
+        private class HttpMethodMetadataEndpointComparer : EndpointMetadataComparer<IHttpMethodMetadata>
+        {
+            protected override int CompareMetadata(IHttpMethodMetadata x, IHttpMethodMetadata y)
+            {
+                // Ignore the metadata if it has an empty list of HTTP methods.
+                return base.CompareMetadata(
+                    x?.HttpMethods.Count > 0 ? x : null,
+                    y?.HttpMethods.Count > 0 ? y : null);
             }
         }
     }
