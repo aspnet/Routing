@@ -50,7 +50,9 @@ namespace Microsoft.AspNetCore.Builder
 
             if (configure != null)
             {
-                configure(builder.ApplicationServices.GetRequiredService<EndpointDataSourceBuilder>());
+                var dataSourceBuilder = (DefaultEndpointDataSourceBuilder)builder.ApplicationServices.GetRequiredService<EndpointDataSourceBuilder>();
+                dataSourceBuilder.ApplicationBuilder = builder;
+                configure(dataSourceBuilder);
             }
 
             return builder.UseMiddleware<EndpointMiddleware>();

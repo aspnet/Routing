@@ -7,9 +7,9 @@ namespace Microsoft.AspNetCore.Routing
 {
     public abstract class EndpointBuilder
     {
-        protected string DisplayName { get; set; }
+        public string DisplayName { get; set; }
 
-        protected IList<object> Metadata { get; } = new List<object>();
+        public IList<object> Metadata { get; } = new List<object>();
 
         public abstract Endpoint Build();
     }
