@@ -36,6 +36,26 @@ namespace Microsoft.AspNetCore.Builder
             return builder.UseMiddleware<EndpointMiddleware>();
         }
 
+        public static IApplicationBuilder UseEndpoint(this IApplicationBuilder builder, Action<EndpointDataSourceBuilder> configure)
+        {
+            VerifyRoutingIsRegistered(builder);
+
+            if (!builder.Properties.TryGetValue(GlobalRoutingRegisteredKey, out _))
+            {
+                var message = $"{nameof(GlobalRoutingMiddleware)} must be added to the request execution pipeline before {nameof(EndpointMiddleware)}. " +
+                    $"Please add {nameof(GlobalRoutingMiddleware)} by calling '{nameof(IApplicationBuilder)}.{nameof(UseGlobalRouting)}' inside the call to 'Configure(...)' in the application startup code.";
+
+                throw new InvalidOperationException(message);
+            }
+
+            if (configure != null)
+            {
+                configure(builder.ApplicationServices.GetRequiredService<EndpointDataSourceBuilder>());
+            }
+
+            return builder.UseMiddleware<EndpointMiddleware>();
+        }
+
         private static void VerifyRoutingIsRegistered(IApplicationBuilder app)
         {
             // Verify if AddRouting was done before calling UseGlobalRouting/UseEndpoint
