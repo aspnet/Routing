@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
     {
         public PolicyJumpTableEdge(object state, int destination)
         {
-            State = state;
+            State = state ?? throw new System.ArgumentNullException(nameof(state));
             Destination = destination;
         }
 

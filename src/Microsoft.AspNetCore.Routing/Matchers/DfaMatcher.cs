@@ -72,10 +72,10 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 // Reminder!
                 // candidate: readonly data about the endpoint and how to match
                 // state: mutable storarge for our processing
-                ref var candiate = ref candidates[i];
+                ref var candidate = ref candidates[i];
                 ref var state = ref candidateSet[i];
 
-                var flags = candiate.Flags;
+                var flags = candidate.Flags;
 
                 // First process all of the parameters and defaults.
                 RouteValueDictionary values;
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                     //
                     // We want to create a new array for the route values based on Slots
                     // as a prototype.
-                    var prototype = candiate.Slots;
+                    var prototype = candidate.Slots;
                     var slots = new KeyValuePair<string, object>[prototype.Length];
 
                     if ((flags & Candidate.CandidateFlags.HasDefaults) != 0)
@@ -99,12 +99,12 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 
                     if ((flags & Candidate.CandidateFlags.HasCaptures) != 0)
                     {
-                        ProcessCaptures(slots, candiate.Captures, path, segments);
+                        ProcessCaptures(slots, candidate.Captures, path, segments);
                     }
 
                     if ((flags & Candidate.CandidateFlags.HasCatchAll) != 0)
                     {
-                        ProcessCatchAll(slots, candiate.CatchAll, path, segments);
+                        ProcessCatchAll(slots, candidate.CatchAll, path, segments);
                     }
 
                     values = RouteValueDictionary.FromArray(slots);
@@ -118,12 +118,12 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                 var isMatch = true;
                 if ((flags & Candidate.CandidateFlags.HasComplexSegments) != 0)
                 {
-                    isMatch &= ProcessComplexSegments(candiate.ComplexSegments, path, segments, values);
+                    isMatch &= ProcessComplexSegments(candidate.ComplexSegments, path, segments, values);
                 }
 
                 if ((flags & Candidate.CandidateFlags.HasMatchProcessors) != 0)
                 {
-                    isMatch &= ProcessMatchProcessors(candiate.MatchProcessors, httpContext, values);
+                    isMatch &= ProcessMatchProcessors(candidate.MatchProcessors, httpContext, values);
                 }
 
                 state.IsValidCandidate = isMatch;

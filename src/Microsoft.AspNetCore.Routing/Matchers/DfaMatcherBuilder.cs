@@ -336,12 +336,12 @@ namespace Microsoft.AspNetCore.Routing.Matchers
             {
                 return Array.Empty<Candidate>();
             }
-            
-            var candiates = new List<Candidate>();
+
+            var candiates = new Candidate[endpoints.Count];
 
             var score = 0;
             var examplar = endpoints[0];
-            candiates.Add(CreateCandidate(examplar, score));
+            candiates[0] = CreateCandidate(examplar, score);
 
             for (var i = 1; i < endpoints.Count; i++)
             {
@@ -353,10 +353,10 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                     score++;
                 }
 
-                candiates.Add(CreateCandidate(endpoint, score));
+                candiates[i] = CreateCandidate(endpoint, score);
             }
 
-            return candiates.ToArray();
+            return candiates;
         }
 
         // internal for tests
@@ -535,6 +535,8 @@ namespace Microsoft.AspNetCore.Routing.Matchers
                         var edge = edges[k];
 
                         var next = new DfaNode();
+
+                        // TODO: https://github.com/aspnet/Routing/issues/648
                         next.Matches.AddRange(edge.Endpoints.Cast<MatcherEndpoint>().ToArray());
                         nextWork.Add(next);
 

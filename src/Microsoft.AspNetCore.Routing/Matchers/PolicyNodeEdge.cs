@@ -9,8 +9,8 @@ namespace Microsoft.AspNetCore.Routing.Matchers
     {
         public PolicyNodeEdge(object state, IReadOnlyList<Endpoint> endpoints)
         {
-            State = state;
-            Endpoints = endpoints;
+            State = state ?? throw new System.ArgumentNullException(nameof(state));
+            Endpoints = endpoints ?? throw new System.ArgumentNullException(nameof(endpoints));
         }
 
         public IReadOnlyList<Endpoint> Endpoints { get; }

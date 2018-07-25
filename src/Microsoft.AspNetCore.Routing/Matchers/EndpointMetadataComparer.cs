@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 {
     public abstract class EndpointMetadataComparer<TMetadata> : IComparer<Endpoint> where TMetadata : class
     {
-        public static EndpointMetadataComparer<TMetadata> Default = new DefaultComparer<TMetadata>();
+        public static readonly EndpointMetadataComparer<TMetadata> Default = new DefaultComparer<TMetadata>();
 
         public int Compare(Endpoint x, Endpoint y)
         {
