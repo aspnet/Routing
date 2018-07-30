@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Routing.Matchers
 {
     /// <summary>
     /// An interface for components that can select an <see cref="Endpoint"/> given the current request, as part
-    /// of the execution of <see cref="GlobalRoutingMiddleware"/>.
+    /// of the execution of <see cref="EndpointRoutingMiddleware"/>.
     /// </summary>
     internal abstract class Matcher
     {
