@@ -8,27 +8,33 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Builder
 {
-    public static class GlobalRoutingApplicationBuilderExtensions
+    public static class EndpointRoutingApplicationBuilderExtensions
     {
-        private const string GlobalRoutingRegisteredKey = "__GlobalRoutingMiddlewareRegistered";
+        private const string EndpointRoutingRegisteredKey = "__EndpointRoutingMiddlewareRegistered";
 
+        [Obsolete("Replaced with UseEndpointRouting.")]
         public static IApplicationBuilder UseGlobalRouting(this IApplicationBuilder builder)
+        {
+            return builder.UseEndpointRouting();
+        }
+
+        public static IApplicationBuilder UseEndpointRouting(this IApplicationBuilder builder)
         {
             VerifyRoutingIsRegistered(builder);
 
-            builder.Properties[GlobalRoutingRegisteredKey] = true;
+            builder.Properties[EndpointRoutingRegisteredKey] = true;
 
-            return builder.UseMiddleware<GlobalRoutingMiddleware>();
+            return builder.UseMiddleware<EndpointRoutingMiddleware>();
         }
 
         public static IApplicationBuilder UseEndpoint(this IApplicationBuilder builder)
         {
             VerifyRoutingIsRegistered(builder);
 
-            if (!builder.Properties.TryGetValue(GlobalRoutingRegisteredKey, out _))
+            if (!builder.Properties.TryGetValue(EndpointRoutingRegisteredKey, out _))
             {
-                var message = $"{nameof(GlobalRoutingMiddleware)} must be added to the request execution pipeline before {nameof(EndpointMiddleware)}. " +
-                    $"Please add {nameof(GlobalRoutingMiddleware)} by calling '{nameof(IApplicationBuilder)}.{nameof(UseGlobalRouting)}' inside the call to 'Configure(...)' in the application startup code.";
+                var message = $"{nameof(EndpointRoutingMiddleware)} must be added to the request execution pipeline before {nameof(EndpointMiddleware)}. " +
+                    $"Please add {nameof(EndpointRoutingMiddleware)} by calling '{nameof(IApplicationBuilder)}.{nameof(UseEndpointRouting)}' inside the call to 'Configure(...)' in the application startup code.";
 
                 throw new InvalidOperationException(message);
             }
@@ -38,7 +44,7 @@ namespace Microsoft.AspNetCore.Builder
 
         private static void VerifyRoutingIsRegistered(IApplicationBuilder app)
         {
-            // Verify if AddRouting was done before calling UseGlobalRouting/UseEndpoint
+            // Verify if AddRouting was done before calling UseEndpointRouting/UseEndpoint
             // We use the RoutingMarkerService to make sure if all the services were added.
             if (app.ApplicationServices.GetService(typeof(RoutingMarkerService)) == null)
             {

@@ -12,9 +12,9 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace RoutingSample.Web
 {
-    public class UseGlobalRoutingStartup
+    public class UseEndpointRoutingStartup
     {
-        private static readonly byte[] _homePayload = Encoding.UTF8.GetBytes("Global Routing sample endpoints:" + Environment.NewLine + "/plaintext");
+        private static readonly byte[] _homePayload = Encoding.UTF8.GetBytes("Endpoint Routing sample endpoints:" + Environment.NewLine + "/plaintext");
         private static readonly byte[] _helloWorldPayload = Encoding.UTF8.GetBytes("Hello, World!");
 
         public void ConfigureServices(IServiceCollection services)
@@ -88,7 +88,7 @@ namespace RoutingSample.Web
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseGlobalRouting();
+            app.UseEndpointRouting();
 
             // Imagine some more stuff here...
 

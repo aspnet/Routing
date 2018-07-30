@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Benchmarks
 {
-    public class StartupUsingGlobalRouting
+    public class StartupUsingEndpointRouting
     {
         private static readonly byte[] _helloWorldPayload = Encoding.UTF8.GetBytes("Hello, World!");
 
@@ -43,7 +43,7 @@ namespace Benchmarks
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseGlobalRouting();
+            app.UseEndpointRouting();
 
             app.UseEndpoint();
         }
