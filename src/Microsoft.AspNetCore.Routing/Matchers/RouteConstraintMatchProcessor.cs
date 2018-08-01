@@ -4,7 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Routing.Matchers
+namespace Microsoft.AspNetCore.Routing.Matching
 {
     internal class RouteConstraintMatchProcessor : MatchProcessor
     {

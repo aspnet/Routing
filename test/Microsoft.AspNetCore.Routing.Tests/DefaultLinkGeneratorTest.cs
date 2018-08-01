@@ -6,9 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Constraints;
-using Microsoft.AspNetCore.Routing.EndpointFinders;
 using Microsoft.AspNetCore.Routing.Internal;
-using Microsoft.AspNetCore.Routing.Matchers;
+using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
@@ -1553,11 +1552,11 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Null(link);
         }
 
-        private RouteValuesBasedEndpointFinderContext CreateRouteValuesContext(
+        private RouteValuesAddress CreateRouteValuesContext(
             object explicitValues,
             object ambientValues = null)
         {
-            var context = new RouteValuesBasedEndpointFinderContext();
+            var context = new RouteValuesAddress();
             context.ExplicitValues = new RouteValueDictionary(explicitValues);
             context.AmbientValues = new RouteValueDictionary(ambientValues);
             return context;

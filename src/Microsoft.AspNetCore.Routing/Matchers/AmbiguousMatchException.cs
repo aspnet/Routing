@@ -4,7 +4,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace Microsoft.AspNetCore.Routing.Matchers
+namespace Microsoft.AspNetCore.Routing.Matching
 {
     /// <summary>
     /// An exception which indicates multiple matches in endpoint selection.

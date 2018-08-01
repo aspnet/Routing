@@ -5,7 +5,7 @@ using System;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Routing.Patterns;
 
-namespace Microsoft.AspNetCore.Routing.Matchers
+namespace Microsoft.AspNetCore.Routing.Matching
 {
     internal abstract class MatchProcessorFactory
     {

@@ -1,17 +1,11 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Routing.Matchers
+namespace Microsoft.AspNetCore.Routing.Matching
 {
     public struct CandidateState
     {
-        // Provided for testability
-        public CandidateState(MatcherEndpoint endpoint)
-            : this(endpoint, score: 0)
-        {
-        }
-
-        public CandidateState(MatcherEndpoint endpoint, int score)
+        internal CandidateState(MatcherEndpoint endpoint, int score)
         {
             Endpoint = endpoint;
             Score = score;

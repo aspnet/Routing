@@ -5,7 +5,7 @@ using System;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 
-namespace Microsoft.AspNetCore.Routing.Matchers
+namespace Microsoft.AspNetCore.Routing.Matching
 {
     // Generated from https://github.com/APIs-guru/openapi-directory
     // Use https://editor2.swagger.io/ to convert from yaml to json-

@@ -5,7 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Routing.Matchers
+namespace Microsoft.AspNetCore.Routing.Matching
 {
     // A test-only matcher implementation - used as a baseline for more compilated
     // perf tests. The idea with this matcher is that we can cheat on the requirements

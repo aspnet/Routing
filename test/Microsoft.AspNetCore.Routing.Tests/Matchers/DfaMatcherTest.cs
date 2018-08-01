@@ -9,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Routing.Matchers
+namespace Microsoft.AspNetCore.Routing.Matching
 {
     // Many of these are integration tests that exercise the system end to end,
     // so we're reusing the services here.

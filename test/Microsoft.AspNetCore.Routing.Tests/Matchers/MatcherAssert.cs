@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.Routing.Matchers
+namespace Microsoft.AspNetCore.Routing.Matching
 {
     internal static class MatcherAssert
     {

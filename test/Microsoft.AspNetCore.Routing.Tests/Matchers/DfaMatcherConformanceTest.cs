@@ -4,7 +4,7 @@
 using System.Threading.Tasks;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Routing.Matchers
+namespace Microsoft.AspNetCore.Routing.Matching
 {
     public class DfaMatcherConformanceTest : FullFeaturedMatcherConformanceTest
     {

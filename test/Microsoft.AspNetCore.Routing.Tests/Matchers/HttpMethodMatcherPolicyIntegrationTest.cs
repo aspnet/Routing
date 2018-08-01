@@ -9,9 +9,9 @@ using Microsoft.AspNetCore.Routing.Metadata;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
-using static Microsoft.AspNetCore.Routing.Matchers.HttpMethodMatcherPolicy;
+using static Microsoft.AspNetCore.Routing.Matching.HttpMethodMatcherPolicy;
 
-namespace Microsoft.AspNetCore.Routing.Matchers
+namespace Microsoft.AspNetCore.Routing.Matching
 {
     // End-to-end tests for the HTTP method matching functionality
     public class HttpMethodMatcherPolicyIntegrationTest

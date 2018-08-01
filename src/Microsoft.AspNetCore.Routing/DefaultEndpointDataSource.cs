@@ -8,7 +8,7 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    public class DefaultEndpointDataSource : EndpointDataSource
+    public sealed class DefaultEndpointDataSource : EndpointDataSource
     {
         private readonly List<Endpoint> _endpoints; 
 
