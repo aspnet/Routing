@@ -7,9 +7,9 @@ using System.Linq;
 using Microsoft.AspNetCore.Routing.Metadata;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Xunit;
-using static Microsoft.AspNetCore.Routing.Matchers.HttpMethodMatcherPolicy;
+using static Microsoft.AspNetCore.Routing.Matching.HttpMethodMatcherPolicy;
 
-namespace Microsoft.AspNetCore.Routing.Matchers
+namespace Microsoft.AspNetCore.Routing.Matching
 {
     public class HttpMethodMatcherPolicyTest
     {

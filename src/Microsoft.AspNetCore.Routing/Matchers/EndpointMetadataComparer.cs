@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Routing.Matchers
+namespace Microsoft.AspNetCore.Routing.Matching
 {
     public abstract class EndpointMetadataComparer<TMetadata> : IComparer<Endpoint> where TMetadata : class
     {

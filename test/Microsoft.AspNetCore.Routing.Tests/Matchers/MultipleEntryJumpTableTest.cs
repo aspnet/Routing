@@ -3,7 +3,7 @@
 
 using Xunit;
 
-namespace Microsoft.AspNetCore.Routing.Matchers
+namespace Microsoft.AspNetCore.Routing.Matching
 {
     public abstract class MultipleEntryJumpTableTest
     {

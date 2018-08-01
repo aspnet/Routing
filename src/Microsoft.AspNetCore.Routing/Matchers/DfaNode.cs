@@ -7,7 +7,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
-namespace Microsoft.AspNetCore.Routing.Matchers
+namespace Microsoft.AspNetCore.Routing.Matching
 {
     // Intermediate data structure used to build the DFA. Not used at runtime.
     [DebuggerDisplay("{DebuggerToString(),nq}")]

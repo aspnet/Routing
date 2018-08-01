@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Routing.Matchers
+namespace Microsoft.AspNetCore.Routing.Matching
 {
     // Just like TechEmpower Plaintext
     public partial class MatcherSingleEntryBenchmark : MatcherBenchmarkBase

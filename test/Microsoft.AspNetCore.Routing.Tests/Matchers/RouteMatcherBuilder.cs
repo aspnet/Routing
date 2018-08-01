@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Routing.Matchers
+namespace Microsoft.AspNetCore.Routing.Matching
 {
     internal class RouteMatcherBuilder : MatcherBuilder
     {

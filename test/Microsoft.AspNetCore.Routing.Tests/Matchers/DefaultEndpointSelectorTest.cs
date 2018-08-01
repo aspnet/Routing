@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Routing.Patterns;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Routing.Matchers
+namespace Microsoft.AspNetCore.Routing.Matching
 {
     public class DefaultEndpointSelectorTest
     {

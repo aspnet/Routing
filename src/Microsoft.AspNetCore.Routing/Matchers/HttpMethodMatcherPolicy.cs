@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Routing.Matchers
+namespace Microsoft.AspNetCore.Routing.Matching
 {
     public sealed class HttpMethodMatcherPolicy : MatcherPolicy, IEndpointComparerPolicy, INodeBuilderPolicy
     {

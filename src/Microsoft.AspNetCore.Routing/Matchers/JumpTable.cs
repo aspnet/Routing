@@ -3,7 +3,7 @@
 
 using System.Diagnostics;
 
-namespace Microsoft.AspNetCore.Routing.Matchers
+namespace Microsoft.AspNetCore.Routing.Matching
 {
     [DebuggerDisplay("{DebuggerToString(),nq}")]
     internal abstract class JumpTable

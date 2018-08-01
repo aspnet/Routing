@@ -4,7 +4,7 @@
 using System;
 using BenchmarkDotNet.Attributes;
 
-namespace Microsoft.AspNetCore.Routing.Matchers
+namespace Microsoft.AspNetCore.Routing.Matching
 {
     public class FastPathTokenizerPlaintextBenchmark : FastPathTokenizerBenchmarkBase
     {
