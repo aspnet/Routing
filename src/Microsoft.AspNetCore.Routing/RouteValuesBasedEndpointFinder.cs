@@ -35,16 +35,16 @@ namespace Microsoft.AspNetCore.Routing
                 HandleChange);
         }
 
-        public IEnumerable<Endpoint> FindEndpoints(RouteValuesAddress context)
+        public IEnumerable<Endpoint> FindEndpoints(RouteValuesAddress address)
         {
             IEnumerable<OutboundMatchResult> matchResults = null;
-            if (string.IsNullOrEmpty(context.RouteName))
+            if (string.IsNullOrEmpty(address.RouteName))
             {
                 matchResults = _allMatchesLinkGenerationTree.GetMatches(
-                    context.ExplicitValues,
-                    context.AmbientValues);
+                    address.ExplicitValues,
+                    address.AmbientValues);
             }
-            else if (_namedMatchResults.TryGetValue(context.RouteName, out var namedMatchResults))
+            else if (_namedMatchResults.TryGetValue(address.RouteName, out var namedMatchResults))
             {
                 matchResults = namedMatchResults;
             }

@@ -25,15 +25,15 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var endpoint = EndpointFactory.CreateMatcherEndpoint("{controller}");
             var linkGenerator = CreateLinkGenerator();
-            var context = CreateRouteValuesContext(new { controller = "Home" });
+            var address = CreateRouteValuesAddress(new { controller = "Home" });
 
             // Act
             var link = linkGenerator.GetLink(
                 new LinkGeneratorContext
                 {
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 });
 
             // Assert
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Routing
             var expectedMessage = "Could not find a matching endpoint to generate a link.";
             var endpoint = EndpointFactory.CreateMatcherEndpoint("{controller}/{action}");
             var linkGenerator = CreateLinkGenerator();
-            var context = CreateRouteValuesContext(new { controller = "Home" });
+            var address = CreateRouteValuesAddress(new { controller = "Home" });
 
             // Act & Assert
             var exception = Assert.Throws<InvalidOperationException>(
@@ -55,8 +55,8 @@ namespace Microsoft.AspNetCore.Routing
                     new LinkGeneratorContext
                     {
                         Endpoints = new[] { endpoint },
-                        ExplicitValues = context.ExplicitValues,
-                        AmbientValues = context.AmbientValues
+                        ExplicitValues = address.ExplicitValues,
+                        AmbientValues = address.AmbientValues
                     }));
             Assert.Equal(expectedMessage, exception.Message);
         }
@@ -67,15 +67,15 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var endpoint = EndpointFactory.CreateMatcherEndpoint("{controller}/{action}");
             var linkGenerator = CreateLinkGenerator();
-            var context = CreateRouteValuesContext(new { controller = "Home" });
+            var address = CreateRouteValuesAddress(new { controller = "Home" });
 
             // Act
             var canGenerateLink = linkGenerator.TryGetLink(
                 new LinkGeneratorContext
                 {
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 },
                 out var link);
 
@@ -92,15 +92,15 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint2 = EndpointFactory.CreateMatcherEndpoint("{controller}/{action}");
             var endpoint3 = EndpointFactory.CreateMatcherEndpoint("{controller}");
             var linkGenerator = CreateLinkGenerator();
-            var context = CreateRouteValuesContext(new { controller = "Home", action = "Index", id = "10" });
+            var address = CreateRouteValuesAddress(new { controller = "Home", action = "Index", id = "10" });
 
             // Act
             var link = linkGenerator.GetLink(
                 new LinkGeneratorContext
                 {
                     Endpoints = new[] { endpoint1, endpoint2, endpoint3 },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 });
 
             // Assert
@@ -115,15 +115,15 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint2 = EndpointFactory.CreateMatcherEndpoint("{controller}/{action}");
             var endpoint3 = EndpointFactory.CreateMatcherEndpoint("{controller}");
             var linkGenerator = CreateLinkGenerator();
-            var context = CreateRouteValuesContext(new { controller = "Home", action = "Index" });
+            var address = CreateRouteValuesAddress(new { controller = "Home", action = "Index" });
 
             // Act
             var link = linkGenerator.GetLink(
                 new LinkGeneratorContext
                 {
                     Endpoints = new[] { endpoint1, endpoint2, endpoint3 },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 });
 
             // Assert
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var endpoint = EndpointFactory.CreateMatcherEndpoint("{controller}/{action}");
             var linkGenerator = CreateLinkGenerator();
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { name = "name with %special #characters" },
                 ambientValues: new { controller = "Home", action = "Index" });
 
@@ -145,8 +145,8 @@ namespace Microsoft.AspNetCore.Routing
                 new LinkGeneratorContext
                 {
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 });
 
             // Assert
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var endpoint = EndpointFactory.CreateMatcherEndpoint("{controller}/{action}");
             var linkGenerator = CreateLinkGenerator();
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 new { color = new List<string> { "red", "green", "blue" } },
                 new { controller = "Home", action = "Index" });
 
@@ -168,8 +168,8 @@ namespace Microsoft.AspNetCore.Routing
                 new LinkGeneratorContext
                 {
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 });
 
             // Assert
@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var endpoint = EndpointFactory.CreateMatcherEndpoint("{controller}/{action}");
             var linkGenerator = CreateLinkGenerator();
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 new { items = new List<int> { 10, 20, 30 } },
                 new { controller = "Home", action = "Index" });
 
@@ -191,8 +191,8 @@ namespace Microsoft.AspNetCore.Routing
                 new LinkGeneratorContext
                 {
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 });
 
             // Assert
@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var endpoint = EndpointFactory.CreateMatcherEndpoint("{controller}/{action}");
             var linkGenerator = CreateLinkGenerator();
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 new { color = new List<string> { } },
                 new { controller = "Home", action = "Index" });
 
@@ -214,8 +214,8 @@ namespace Microsoft.AspNetCore.Routing
                 new LinkGeneratorContext
                 {
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 });
 
             // Assert
@@ -228,7 +228,7 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var endpoint = EndpointFactory.CreateMatcherEndpoint("{controller}/{action}");
             var linkGenerator = CreateLinkGenerator();
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 new { page = 1, color = new List<string> { "red", "green", "blue" }, message = "textfortest" },
                 new { controller = "Home", action = "Index" });
 
@@ -237,8 +237,8 @@ namespace Microsoft.AspNetCore.Routing
                 new LinkGeneratorContext
                 {
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 });
 
             // Assert
@@ -251,7 +251,7 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var endpoint = EndpointFactory.CreateMatcherEndpoint("{controller}/{action}");
             var linkGenerator = CreateLinkGenerator();
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { action = "Index" },
                 ambientValues: new { controller = "Home" });
 
@@ -260,8 +260,8 @@ namespace Microsoft.AspNetCore.Routing
                 new LinkGeneratorContext
                 {
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 });
 
             // Assert
@@ -274,7 +274,7 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var endpoint = EndpointFactory.CreateMatcherEndpoint("{controller}/{action}");
             var linkGenerator = CreateLinkGenerator(new RouteOptions() { LowercaseUrls = true });
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { action = "Index" },
                 ambientValues: new { controller = "Home" });
 
@@ -283,8 +283,8 @@ namespace Microsoft.AspNetCore.Routing
                 new LinkGeneratorContext
                 {
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 });
 
             // Assert
@@ -298,7 +298,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint = EndpointFactory.CreateMatcherEndpoint("{controller}/{action}");
             var linkGenerator = CreateLinkGenerator(
                 new RouteOptions() { LowercaseUrls = true, LowercaseQueryStrings = true });
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { action = "Index", ShowStatus = "True", INFO = "DETAILED" },
                 ambientValues: new { controller = "Home" });
 
@@ -307,8 +307,8 @@ namespace Microsoft.AspNetCore.Routing
                 new LinkGeneratorContext
                 {
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 });
 
             // Assert
@@ -322,7 +322,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint = EndpointFactory.CreateMatcherEndpoint("{controller}/{action}");
             var linkGenerator = CreateLinkGenerator(
                 new RouteOptions() { LowercaseUrls = false, LowercaseQueryStrings = true });
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { action = "Index", ShowStatus = "True", INFO = "DETAILED" },
                 ambientValues: new { controller = "Home" });
 
@@ -331,8 +331,8 @@ namespace Microsoft.AspNetCore.Routing
                 new LinkGeneratorContext
                 {
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 });
 
             // Assert
@@ -345,7 +345,7 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var endpoint = EndpointFactory.CreateMatcherEndpoint("{controller}/{action}");
             var linkGenerator = CreateLinkGenerator(new RouteOptions() { AppendTrailingSlash = true });
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { action = "Index" },
                 ambientValues: new { controller = "Home" });
 
@@ -354,8 +354,8 @@ namespace Microsoft.AspNetCore.Routing
                 new LinkGeneratorContext
                 {
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 });
 
             // Assert
@@ -369,7 +369,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint = EndpointFactory.CreateMatcherEndpoint("{controller}/{action}");
             var linkGenerator = CreateLinkGenerator(
                 new RouteOptions() { LowercaseUrls = true, LowercaseQueryStrings = true, AppendTrailingSlash = true });
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { action = "Index", ShowStatus = "True", INFO = "DETAILED" },
                 ambientValues: new { controller = "Home" });
 
@@ -378,8 +378,8 @@ namespace Microsoft.AspNetCore.Routing
                 new LinkGeneratorContext
                 {
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 });
 
             // Assert
@@ -392,7 +392,7 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var endpoint = EndpointFactory.CreateMatcherEndpoint("{controller}/{action}");
             var linkGenerator = CreateLinkGenerator(new RouteOptions() { LowercaseUrls = true });
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { action = "InDex" },
                 ambientValues: new { controller = "HoMe" });
 
@@ -401,8 +401,8 @@ namespace Microsoft.AspNetCore.Routing
                 new LinkGeneratorContext
                 {
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues,
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues,
                     LowercaseUrls = false
                 });
 
@@ -416,7 +416,7 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var endpoint = EndpointFactory.CreateMatcherEndpoint("{controller}/{action}");
             var linkGenerator = CreateLinkGenerator(new RouteOptions() { LowercaseUrls = false });
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { action = "InDex" },
                 ambientValues: new { controller = "HoMe" });
 
@@ -425,8 +425,8 @@ namespace Microsoft.AspNetCore.Routing
                 new LinkGeneratorContext
                 {
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues,
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues,
                     LowercaseUrls = true
                 });
 
@@ -441,7 +441,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint = EndpointFactory.CreateMatcherEndpoint("{controller}/{action}");
             var linkGenerator = CreateLinkGenerator(
                 new RouteOptions() { LowercaseUrls = true, LowercaseQueryStrings = true });
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { action = "Index", ShowStatus = "True", INFO = "DETAILED" },
                 ambientValues: new { controller = "Home" });
 
@@ -450,8 +450,8 @@ namespace Microsoft.AspNetCore.Routing
                 new LinkGeneratorContext
                 {
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues,
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues,
                     LowercaseUrls = false,
                     LowercaseQueryStrings = false
                 });
@@ -467,7 +467,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint = EndpointFactory.CreateMatcherEndpoint("{controller}/{action}");
             var linkGenerator = CreateLinkGenerator(
                 new RouteOptions() { LowercaseUrls = false, LowercaseQueryStrings = false });
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { action = "Index", ShowStatus = "True", INFO = "DETAILED" },
                 ambientValues: new { controller = "Home" });
 
@@ -476,8 +476,8 @@ namespace Microsoft.AspNetCore.Routing
                 new LinkGeneratorContext
                 {
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues,
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues,
                     LowercaseUrls = true,
                     LowercaseQueryStrings = true
                 });
@@ -492,7 +492,7 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var endpoint = EndpointFactory.CreateMatcherEndpoint("{controller}/{action}");
             var linkGenerator = CreateLinkGenerator(new RouteOptions() { AppendTrailingSlash = false });
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { action = "Index" },
                 ambientValues: new { controller = "Home" });
 
@@ -501,8 +501,8 @@ namespace Microsoft.AspNetCore.Routing
                 new LinkGeneratorContext
                 {
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues,
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues,
                     AppendTrailingSlash = true
                 });
 
@@ -514,7 +514,7 @@ namespace Microsoft.AspNetCore.Routing
         public void RouteGenerationRejectsConstraints()
         {
             // Arrange
-            var context = CreateRouteValuesContext(new { p1 = "abcd" });
+            var address = CreateRouteValuesAddress(new { p1 = "abcd" });
             var linkGenerator = CreateLinkGenerator();
 
             var endpoint = EndpointFactory.CreateMatcherEndpoint(
@@ -528,8 +528,8 @@ namespace Microsoft.AspNetCore.Routing
                 {
                     HttpContext = new DefaultHttpContext(),
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 },
                 out var link);
 
@@ -541,7 +541,7 @@ namespace Microsoft.AspNetCore.Routing
         public void RouteGenerationAcceptsConstraints()
         {
             // Arrange
-            var context = CreateRouteValuesContext(new { p1 = "hello", p2 = "1234" });
+            var address = CreateRouteValuesAddress(new { p1 = "hello", p2 = "1234" });
             var linkGenerator = CreateLinkGenerator();
 
             var endpoint = EndpointFactory.CreateMatcherEndpoint(
@@ -555,8 +555,8 @@ namespace Microsoft.AspNetCore.Routing
                 {
                     HttpContext = new DefaultHttpContext(),
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 },
                 out var link);
 
@@ -569,7 +569,7 @@ namespace Microsoft.AspNetCore.Routing
         public void RouteWithCatchAllRejectsConstraints()
         {
             // Arrange
-            var context = CreateRouteValuesContext(new { p1 = "abcd" });
+            var address = CreateRouteValuesAddress(new { p1 = "abcd" });
             var linkGenerator = CreateLinkGenerator();
 
             var endpoint = EndpointFactory.CreateMatcherEndpoint(
@@ -583,8 +583,8 @@ namespace Microsoft.AspNetCore.Routing
                 {
                     HttpContext = new DefaultHttpContext(),
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 },
                 out var link);
 
@@ -596,7 +596,7 @@ namespace Microsoft.AspNetCore.Routing
         public void RouteWithCatchAllAcceptsConstraints()
         {
             // Arrange
-            var context = CreateRouteValuesContext(new { p1 = "hello", p2 = "1234" });
+            var address = CreateRouteValuesAddress(new { p1 = "hello", p2 = "1234" });
             var linkGenerator = CreateLinkGenerator();
 
             var endpoint = EndpointFactory.CreateMatcherEndpoint(
@@ -610,8 +610,8 @@ namespace Microsoft.AspNetCore.Routing
                 {
                     HttpContext = new DefaultHttpContext(),
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 },
                 out var link);
 
@@ -624,7 +624,7 @@ namespace Microsoft.AspNetCore.Routing
         public void GetLinkWithNonParameterConstraintReturnsUrlWithoutQueryString()
         {
             // Arrange
-            var context = CreateRouteValuesContext(new { p1 = "hello", p2 = "1234" });
+            var address = CreateRouteValuesAddress(new { p1 = "hello", p2 = "1234" });
             var linkGenerator = CreateLinkGenerator();
             var target = new Mock<IRouteConstraint>();
             target
@@ -649,8 +649,8 @@ namespace Microsoft.AspNetCore.Routing
                 {
                     HttpContext = new DefaultHttpContext(),
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 },
                 out var link);
 
@@ -673,7 +673,7 @@ namespace Microsoft.AspNetCore.Routing
                 defaults: new { controller = "Home", action = "Store" },
                 constraints: new { c = constraint });
 
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { action = "Store" },
                 ambientValues: new { controller = "Home", action = "Blog", extra = "42" });
 
@@ -686,8 +686,8 @@ namespace Microsoft.AspNetCore.Routing
                 {
                     HttpContext = new DefaultHttpContext(),
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 },
                 out var link);
 
@@ -710,7 +710,7 @@ namespace Microsoft.AspNetCore.Routing
                 defaults: new { controller = "Home", action = "Store", otherthing = "17" },
                 constraints: new { c = constraint });
 
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { action = "Store" },
                 ambientValues: new { controller = "Home", action = "Blog" });
 
@@ -723,8 +723,8 @@ namespace Microsoft.AspNetCore.Routing
                 {
                     HttpContext = new DefaultHttpContext(),
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 });
 
             // Assert
@@ -744,7 +744,7 @@ namespace Microsoft.AspNetCore.Routing
                 defaults: new { action = "Index" },
                 constraints: new { c = constraint, });
 
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { controller = "Shopping" },
                 ambientValues: new { controller = "Home", action = "Blog" });
 
@@ -757,8 +757,8 @@ namespace Microsoft.AspNetCore.Routing
                 {
                     HttpContext = new DefaultHttpContext(),
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 });
 
             // Assert
@@ -779,7 +779,7 @@ namespace Microsoft.AspNetCore.Routing
                 defaults: new { controller = "Home", action = "Store", otherthing = "17", thirdthing = "13" },
                 constraints: new { c = constraint, });
 
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { action = "Store", thirdthing = "13" },
                 ambientValues: new { controller = "Home", action = "Blog", otherthing = "17" });
 
@@ -792,8 +792,8 @@ namespace Microsoft.AspNetCore.Routing
                 {
                     HttpContext = new DefaultHttpContext(),
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 });
 
             // Assert
@@ -811,7 +811,7 @@ namespace Microsoft.AspNetCore.Routing
                 defaults: new { controller = "Home", action = "Index" },
                 constraints: new { });
 
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { action = "Index", controller = "Home", id = 4 });
 
             // Act
@@ -820,8 +820,8 @@ namespace Microsoft.AspNetCore.Routing
                 {
                     HttpContext = new DefaultHttpContext(),
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 });
 
             // Assert
@@ -838,7 +838,7 @@ namespace Microsoft.AspNetCore.Routing
                 defaults: new { controller = "Home", action = "Index" },
                 constraints: new { id = "int" });
 
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { action = "Index", controller = "Home", id = "not-an-integer" });
 
             // Act
@@ -847,8 +847,8 @@ namespace Microsoft.AspNetCore.Routing
                 {
                     HttpContext = new DefaultHttpContext(),
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 },
                 out var link);
 
@@ -865,7 +865,7 @@ namespace Microsoft.AspNetCore.Routing
                 template: "Home/Index/{id:int?}",
                 defaults: new { controller = "Home", action = "Index" },
                 constraints: new { });
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { action = "Index", controller = "Home", id = 98 });
 
             // Act
@@ -874,8 +874,8 @@ namespace Microsoft.AspNetCore.Routing
                 {
                     HttpContext = new DefaultHttpContext(),
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 });
 
             // Assert
@@ -892,7 +892,7 @@ namespace Microsoft.AspNetCore.Routing
                 defaults: new { controller = "Home", action = "Index" },
                 constraints: new { id = "int" });
 
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { action = "Index", controller = "Home" });
 
             // Act
@@ -901,8 +901,8 @@ namespace Microsoft.AspNetCore.Routing
                 {
                     HttpContext = new DefaultHttpContext(),
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 });
 
             // Assert
@@ -919,7 +919,7 @@ namespace Microsoft.AspNetCore.Routing
                 defaults: new { controller = "Home", action = "Index" },
                 constraints: new { id = "int" });
 
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { action = "Index", controller = "Home", id = "not-an-integer" });
 
             // Act
@@ -928,8 +928,8 @@ namespace Microsoft.AspNetCore.Routing
                 {
                     HttpContext = new DefaultHttpContext(),
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 },
                 out var link);
 
@@ -947,7 +947,7 @@ namespace Microsoft.AspNetCore.Routing
                 defaults: new { controller = "Home", action = "Index" },
                 constraints: new { });
 
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { action = "Index", controller = "Home", id = 14 });
 
             // Act
@@ -956,8 +956,8 @@ namespace Microsoft.AspNetCore.Routing
                 {
                     HttpContext = new DefaultHttpContext(),
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 });
 
             // Assert
@@ -974,7 +974,7 @@ namespace Microsoft.AspNetCore.Routing
                 defaults: new { controller = "Home", action = "Index" },
                 constraints: new { });
 
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { action = "Index", controller = "Home", id = 50 });
 
             // Act
@@ -983,8 +983,8 @@ namespace Microsoft.AspNetCore.Routing
                 {
                     HttpContext = new DefaultHttpContext(),
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 },
                 out var link);
 
@@ -1003,7 +1003,7 @@ namespace Microsoft.AspNetCore.Routing
                 defaults: new { controller = "Home", action = "Index" },
                 constraints: new { name = constraint });
 
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { action = "Index", controller = "Home", name = "products" });
 
             // Act
@@ -1012,8 +1012,8 @@ namespace Microsoft.AspNetCore.Routing
                 {
                     HttpContext = new DefaultHttpContext(),
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 });
 
             // Assert
@@ -1026,7 +1026,7 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var endpoint = EndpointFactory.CreateMatcherEndpoint("{controller}/{action}/{name?}");
             var linkGenerator = CreateLinkGenerator();
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { action = "Index", controller = "Home", name = "products" });
 
             // Act
@@ -1034,8 +1034,8 @@ namespace Microsoft.AspNetCore.Routing
                 new LinkGeneratorContext
                 {
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 });
 
             // Assert
@@ -1048,7 +1048,7 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var endpoint = EndpointFactory.CreateMatcherEndpoint("{controller}/{action}/{name?}");
             var linkGenerator = CreateLinkGenerator();
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { action = "Index", controller = "Home" });
 
             // Act
@@ -1056,8 +1056,8 @@ namespace Microsoft.AspNetCore.Routing
                 new LinkGeneratorContext
                 {
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 });
 
             // Assert
@@ -1072,7 +1072,7 @@ namespace Microsoft.AspNetCore.Routing
                 template: "{controller}/{action}/{name}",
                 defaults: new { name = "default-products" });
             var linkGenerator = CreateLinkGenerator();
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { action = "Index", controller = "Home", name = "products" });
 
             // Act
@@ -1080,8 +1080,8 @@ namespace Microsoft.AspNetCore.Routing
                 new LinkGeneratorContext
                 {
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 });
 
             // Assert
@@ -1096,7 +1096,7 @@ namespace Microsoft.AspNetCore.Routing
                 template: "{controller}/{action}/{name}",
                 defaults: new { name = "products" });
             var linkGenerator = CreateLinkGenerator();
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { action = "Index", controller = "Home" });
 
             // Act
@@ -1104,8 +1104,8 @@ namespace Microsoft.AspNetCore.Routing
                 new LinkGeneratorContext
                 {
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 });
 
             // Assert
@@ -1118,7 +1118,7 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var endpoint = EndpointFactory.CreateMatcherEndpoint("{controller}/{action}/{name}");
             var linkGenerator = CreateLinkGenerator();
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { action = "Index", controller = "Home", name = "products", format = "json" });
 
             // Act
@@ -1126,8 +1126,8 @@ namespace Microsoft.AspNetCore.Routing
                 new LinkGeneratorContext
                 {
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 });
 
             // Assert
@@ -1142,7 +1142,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint = EndpointFactory.CreateMatcherEndpoint(
                 template: "{controller}/{action}/.{name?}");
 
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { action = "Index", controller = "Home", name = "products" });
 
             // Act
@@ -1151,8 +1151,8 @@ namespace Microsoft.AspNetCore.Routing
                 {
                     HttpContext = new DefaultHttpContext(),
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 });
 
             // Assert
@@ -1166,7 +1166,7 @@ namespace Microsoft.AspNetCore.Routing
             var linkGenerator = CreateLinkGenerator();
             var endpoint = EndpointFactory.CreateMatcherEndpoint("{controller}/{action}/.{name?}");
 
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { action = "Index", controller = "Home" });
 
             // Act
@@ -1175,8 +1175,8 @@ namespace Microsoft.AspNetCore.Routing
                 {
                     HttpContext = new DefaultHttpContext(),
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 });
 
             // Assert
@@ -1189,7 +1189,7 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var endpoint = EndpointFactory.CreateMatcherEndpoint("{controller}/{action}/{name?}");
             var linkGenerator = CreateLinkGenerator();
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { action = "Index", controller = "Home" });
 
             // Act
@@ -1197,8 +1197,8 @@ namespace Microsoft.AspNetCore.Routing
                 new LinkGeneratorContext
                 {
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 });
 
             // Assert
@@ -1211,7 +1211,7 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var endpoint = EndpointFactory.CreateMatcherEndpoint("a/{b=15}/{c?}/{d?}");
             var linkGenerator = CreateLinkGenerator();
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { },
                 ambientValues: new { c = "17" });
 
@@ -1220,8 +1220,8 @@ namespace Microsoft.AspNetCore.Routing
                 new LinkGeneratorContext
                 {
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 });
 
             // Assert
@@ -1234,7 +1234,7 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var endpoint = EndpointFactory.CreateMatcherEndpoint("a/{b=15}/{c?}");
             var linkGenerator = CreateLinkGenerator();
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                explicitValues: new { },
                ambientValues: new { c = "17" });
 
@@ -1243,8 +1243,8 @@ namespace Microsoft.AspNetCore.Routing
                 new LinkGeneratorContext
                 {
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 });
 
             // Assert
@@ -1257,7 +1257,7 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var endpoint = EndpointFactory.CreateMatcherEndpoint("a/{b=15}/{c?}/{d?}");
             var linkGenerator = CreateLinkGenerator();
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                explicitValues: new { },
                ambientValues: new { d = "17" });
 
@@ -1266,8 +1266,8 @@ namespace Microsoft.AspNetCore.Routing
                 new LinkGeneratorContext
                 {
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 });
 
             // Assert
@@ -1361,7 +1361,7 @@ namespace Microsoft.AspNetCore.Routing
                 requiredValues: requiredValues,
                 defaults: defaults);
             var linkGenerator = CreateLinkGenerator();
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: explicitValues,
                 ambientValues: ambientValues);
 
@@ -1370,8 +1370,8 @@ namespace Microsoft.AspNetCore.Routing
                 new LinkGeneratorContext
                 {
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 },
                 out var link);
 
@@ -1391,7 +1391,7 @@ namespace Microsoft.AspNetCore.Routing
                 requiredValues: new { c = "Products", a = "Edit" },
                 defaults: new { c = "Products", a = "Edit" });
             var linkGenerator = CreateLinkGenerator();
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { c = "Products", a = "Edit" },
                 ambientValues: new { c = "Products", a = "Edit", id = 10 });
 
@@ -1400,8 +1400,8 @@ namespace Microsoft.AspNetCore.Routing
                 new LinkGeneratorContext
                 {
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 },
                 out var link);
 
@@ -1421,7 +1421,7 @@ namespace Microsoft.AspNetCore.Routing
                 requiredValues: new { c = "Products", a = "Edit" },
                 defaults: new { c = "Products", a = "Edit" });
             var linkGenerator = CreateLinkGenerator();
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: new { c = "Products", a = "List" },
                 ambientValues: new { c = "Products", a = "Edit", id = 10 });
 
@@ -1430,8 +1430,8 @@ namespace Microsoft.AspNetCore.Routing
                 new LinkGeneratorContext
                 {
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 },
                 out var link);
 
@@ -1533,7 +1533,7 @@ namespace Microsoft.AspNetCore.Routing
                 requiredValues: requiredValues,
                 defaults: defaults);
             var linkGenerator = CreateLinkGenerator();
-            var context = CreateRouteValuesContext(
+            var address = CreateRouteValuesAddress(
                 explicitValues: explicitValues,
                 ambientValues: ambientValues);
 
@@ -1542,8 +1542,8 @@ namespace Microsoft.AspNetCore.Routing
                 new LinkGeneratorContext
                 {
                     Endpoints = new[] { endpoint },
-                    ExplicitValues = context.ExplicitValues,
-                    AmbientValues = context.AmbientValues
+                    ExplicitValues = address.ExplicitValues,
+                    AmbientValues = address.AmbientValues
                 },
                 out var link);
 
@@ -1552,14 +1552,14 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Null(link);
         }
 
-        private RouteValuesAddress CreateRouteValuesContext(
+        private RouteValuesAddress CreateRouteValuesAddress(
             object explicitValues,
             object ambientValues = null)
         {
-            var context = new RouteValuesAddress();
-            context.ExplicitValues = new RouteValueDictionary(explicitValues);
-            context.AmbientValues = new RouteValueDictionary(ambientValues);
-            return context;
+            var address = new RouteValuesAddress();
+            address.ExplicitValues = new RouteValueDictionary(explicitValues);
+            address.AmbientValues = new RouteValueDictionary(ambientValues);
+            return address;
         }
 
         private LinkGenerator CreateLinkGenerator(RouteOptions routeOptions = null)
