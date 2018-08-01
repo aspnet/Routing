@@ -29,7 +29,7 @@ namespace Benchmarks
                     .UseKestrel();
 
             var scenario = config["scenarios"]?.ToLower();
-            if (scenario == "plaintextdispatcher" || scenario == "plaintextglobalrouting" || scenario == "plaintextendpointrouting")
+            if (scenario == "plaintextdispatcher" || scenario == "plaintextendpointrouting")
             {
                 webHostBuilder.UseStartup<StartupUsingEndpointRouting>();
                 // for testing

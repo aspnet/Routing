@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Text;
-using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matchers;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -41,7 +41,7 @@ namespace Benchmarks
             });
         }
 
-        public void Configure(IApplicationBuilder app)
+        public void Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder app)
         {
             app.UseEndpointRouting();
 
