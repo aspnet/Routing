@@ -11,14 +11,14 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.FunctionalTests
 {
-    public class GlobalRoutingSampleTest : IDisposable
+    public class EndpointRoutingSampleTest : IDisposable
     {
         private readonly HttpClient _client;
         private readonly TestServer _testServer;
 
-        public GlobalRoutingSampleTest()
+        public EndpointRoutingSampleTest()
         {
-            var webHostBuilder = Program.GetWebHostBuilder(new[] { Program.GlobalRoutingScenario, });
+            var webHostBuilder = Program.GetWebHostBuilder(new[] { Program.EndpointRoutingScenario, });
             _testServer = new TestServer(webHostBuilder);
             _client = _testServer.CreateClient();
             _client.BaseAddress = new Uri("http://localhost");
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Routing.FunctionalTests
         {
             // Arrange
             var expectedContentType = "text/plain";
-            var expectedContent = "Global Routing sample endpoints:" + Environment.NewLine + "/plaintext";
+            var expectedContent = "Endpoint Routing sample endpoints:" + Environment.NewLine + "/plaintext";
 
             // Act
             var response = await _client.GetAsync("/");

@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Text;
-using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matchers;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Benchmarks
 {
-    public class StartupUsingGlobalRouting
+    public class StartupUsingEndpointRouting
     {
         private static readonly byte[] _helloWorldPayload = Encoding.UTF8.GetBytes("Hello, World!");
 
@@ -41,9 +41,9 @@ namespace Benchmarks
             });
         }
 
-        public void Configure(IApplicationBuilder app)
+        public void Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder app)
         {
-            app.UseGlobalRouting();
+            app.UseEndpointRouting();
 
             app.UseEndpoint();
         }
