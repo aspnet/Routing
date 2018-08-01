@@ -3,8 +3,8 @@
 
 using System;
 using System.Text;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matchers;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -86,7 +86,7 @@ namespace RoutingSample.Web
          });
         }
 
-        public void Configure(IApplicationBuilder app)
+        public void Configure(Microsoft.AspNetCore.Builder.IApplicationBuilder app)
         {
             app.UseEndpointRouting();
 
