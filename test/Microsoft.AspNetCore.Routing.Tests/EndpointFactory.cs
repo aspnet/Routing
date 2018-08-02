@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Routing
             var d = new List<object>(metadata ?? Array.Empty<object>());
             if (requiredValues != null)
             {
-                d.Add(new RequiredValuesMetadata(new RouteValueDictionary(requiredValues)));
+                d.Add(new RouteValuesAddressMetadata(null, new RouteValueDictionary(requiredValues)));
             }
 
             return new MatcherEndpoint(
@@ -31,15 +31,6 @@ namespace Microsoft.AspNetCore.Routing
                 order,
                 new EndpointMetadataCollection(d),
                 displayName);
-        }
-
-        private class RequiredValuesMetadata : IRequiredValuesMetadata
-        {
-            public RequiredValuesMetadata(IReadOnlyDictionary<string, object> requiredValues)
-            {
-                RequiredValues = requiredValues;
-            }
-            public IReadOnlyDictionary<string, object> RequiredValues { get; }
         }
     }
 }

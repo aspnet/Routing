@@ -129,9 +129,15 @@ namespace Microsoft.AspNetCore.Routing
                         sb.Append(", Defaults: new { ");
                         sb.Append(string.Join(", ", FormatValues(matcherEndpoint.RoutePattern.Defaults)));
                         sb.Append(" }");
-                        var routeNameMetadata = matcherEndpoint.Metadata.GetMetadata<IRouteNameMetadata>();
+                        var routeValuesAddressMetadata = matcherEndpoint.Metadata.GetMetadata<IRouteValuesAddressMetadata>();
                         sb.Append(", Route Name: ");
-                        sb.Append(routeNameMetadata?.Name);
+                        sb.Append(routeValuesAddressMetadata?.Name);
+                        if (routeValuesAddressMetadata?.RequiredValues != null)
+                        {
+                            sb.Append(", Required Values: new { ");
+                            sb.Append(string.Join(", ", FormatValues(routeValuesAddressMetadata.RequiredValues)));
+                            sb.Append(" }");
+                        }
                         sb.Append(", Order: ");
                         sb.Append(matcherEndpoint.Order);
 

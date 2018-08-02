@@ -3,8 +3,7 @@
 
 namespace Microsoft.AspNetCore.Routing
 {
-    public interface IRouteNameMetadata
+    public sealed class SuppressLinkGenerationMetadata : ISuppressLinkGenerationMetadata
     {
-        string Name { get; }
     }
 }

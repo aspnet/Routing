@@ -264,13 +264,9 @@ namespace Microsoft.AspNetCore.Routing
             if (metadataCollection == null)
             {
                 var metadata = new List<object>();
-                if (!string.IsNullOrEmpty(routeName))
+                if (!string.IsNullOrEmpty(routeName) || requiredValues != null)
                 {
-                    metadata.Add(new RouteNameMetadata(routeName));
-                }
-                if (requiredValues != null)
-                {
-                    metadata.Add(new RequiredValuesMetadata(new RouteValueDictionary(requiredValues)));
+                    metadata.Add(new RouteValuesAddressMetadata(routeName, new RouteValueDictionary(requiredValues)));
                 }
                 metadataCollection = new EndpointMetadataCollection(metadata);
             }
@@ -283,31 +279,14 @@ namespace Microsoft.AspNetCore.Routing
                 null);
         }
 
-        private class RouteNameMetadata : IRouteNameMetadata
-        {
-            public RouteNameMetadata(string name)
-            {
-                Name = name;
-            }
-            public string Name { get; }
-        }
-
         private class NameMetadata : INameMetadata
         {
             public NameMetadata(string name)
             {
                 Name = name;
             }
-            public string Name { get; }
-        }
 
-        private class RequiredValuesMetadata : IRequiredValuesMetadata
-        {
-            public RequiredValuesMetadata(IReadOnlyDictionary<string, object> requiredValues)
-            {
-                RequiredValues = requiredValues;
-            }
-            public IReadOnlyDictionary<string, object> RequiredValues { get; }
+            public string Name { get; }
         }
 
         private class CustomRouteValuesBasedEndpointFinder : RouteValuesBasedEndpointFinder
@@ -331,7 +310,5 @@ namespace Microsoft.AspNetCore.Routing
                 return matches;
             }
         }
-
-        private class SuppressLinkGenerationMetadata : ISuppressLinkGenerationMetadata { }
     }
 }

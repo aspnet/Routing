@@ -5,8 +5,9 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    public interface IRequiredValuesMetadata
+    public interface IRouteValuesAddressMetadata
     {
+        string Name { get; }
         IReadOnlyDictionary<string, object> RequiredValues { get; }
     }
 }
