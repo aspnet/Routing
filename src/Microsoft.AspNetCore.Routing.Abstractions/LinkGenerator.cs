@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Http;
 namespace Microsoft.AspNetCore.Routing
 {
     /// <summary>
-    /// Defines a contract to generate urls to endpoints.
+    /// Defines a contract to generate URLs to endpoints.
     /// </summary>
     public abstract class LinkGenerator
     {
@@ -33,23 +33,23 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <summary>
-        /// Tries generating a url with an absolute path.
+        /// Tries generating a URL with an absolute path.
         /// </summary>
         /// <param name="values">An object that contains route values.</param>
         /// <param name="link">The generated absolute URL.</param>
-        /// <returns><c>true</c> if a url was able to be generated successfully, <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c> if a URL was generated successfully, <c>false</c> otherwise.</returns>
         public bool TryGetLink(object values, out string link)
         {
             return TryGetLink(httpContext: null, routeName: null, values, options: null, out link);
         }
 
         /// <summary>
-        /// Tries generating a url with an absolute path.
+        /// Tries generating a URL with an absolute path.
         /// </summary>
         /// <param name="values">An object that contains route values.</param>
         /// <param name="options">The <see cref="LinkOptions"/>.</param>
         /// <param name="link">The generated absolute URL.</param>
-        /// <returns><c>true</c> if a url was able to be generated successfully, <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c> if a URL was generated successfully, <c>false</c> otherwise.</returns>
         public bool TryGetLink(object values, LinkOptions options, out string link)
         {
             return TryGetLink(httpContext: null, routeName: null, values, options, out link);
@@ -67,12 +67,12 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <summary>
-        /// Tries generating a url with an absolute path.
+        /// Tries generating a URL with an absolute path.
         /// </summary>
         /// <param name="httpContext">The <see cref="HttpContext"/> associated with current request.</param>
         /// <param name="values">An object that contains route values.</param>
         /// <param name="link">The generated absolute URL.</param>
-        /// <returns><c>true</c> if a url was able to be generated successfully, <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c> if a URL was generated successfully, <c>false</c> otherwise.</returns>
         public bool TryGetLink(HttpContext httpContext, object values, out string link)
         {
             return TryGetLink(httpContext, routeName: null, values, options: null, out link);
@@ -91,13 +91,13 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <summary>
-        /// Tries generating a url with an absolute path.
+        /// Tries generating a URL with an absolute path.
         /// </summary>
         /// <param name="httpContext">The <see cref="HttpContext"/> associated with current request.</param>
         /// <param name="values">An object that contains route values.</param>
         /// <param name="options">The <see cref="LinkOptions"/>.</param>
         /// <param name="link">The generated absolute URL.</param>
-        /// <returns><c>true</c> if a url was able to be generated successfully, <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c> if a URL was generated successfully, <c>false</c> otherwise.</returns>
         public bool TryGetLink(HttpContext httpContext, object values, LinkOptions options, out string link)
         {
             return TryGetLink(httpContext, routeName: null, values, options, out link);
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Routing
         /// <summary>
         /// Generates a URL with an absolute path.
         /// </summary>
-        /// <param name="routeName">The name of the route to generate the url to.</param>
+        /// <param name="routeName">The name of the route to generate the URL to.</param>
         /// <param name="values">An object that contains route values.</param>
         /// <returns>The generated absolute URL.</returns>
         public string GetLink(string routeName, object values)
@@ -115,12 +115,12 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <summary>
-        /// Tries generating a url with an absolute path.
+        /// Tries generating a URL with an absolute path.
         /// </summary>
-        /// <param name="routeName">The name of the route to generate the url to.</param>
+        /// <param name="routeName">The name of the route to generate the URL to.</param>
         /// <param name="values">An object that contains route values.</param>
         /// <param name="link">The generated absolute URL.</param>
-        /// <returns><c>true</c> if a url was able to be generated successfully, <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c> if a URL was generated successfully, <c>false</c> otherwise.</returns>
         public bool TryGetLink(string routeName, object values, out string link)
         {
             return TryGetLink(httpContext: null, routeName, values, options: null, out link);
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Routing
         /// <summary>
         /// Generates a URL with an absolute path.
         /// </summary>
-        /// <param name="routeName">The name of the route to generate the url to.</param>
+        /// <param name="routeName">The name of the route to generate the URL to.</param>
         /// <param name="values">An object that contains route values.</param>
         /// <param name="options">The <see cref="LinkOptions"/>.</param>
         /// <returns>The generated absolute URL.</returns>
@@ -139,13 +139,13 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <summary>
-        /// Tries generating a url with an absolute path.
+        /// Tries generating a URL with an absolute path.
         /// </summary>
-        /// <param name="routeName">The name of the route to generate the url to.</param>
+        /// <param name="routeName">The name of the route to generate the URL to.</param>
         /// <param name="values">An object that contains route values.</param>
         /// <param name="options">The <see cref="LinkOptions"/>.</param>
         /// <param name="link">The generated absolute URL.</param>
-        /// <returns><c>true</c> if a url was able to be generated successfully, <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c> if a URL was generated successfully, <c>false</c> otherwise.</returns>
         public bool TryGetLink(string routeName, object values, LinkOptions options, out string link)
         {
             return TryGetLink(httpContext: null, routeName, values, options, out link);
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Routing
         /// <summary>
         /// Generates a URL with an absolute path.
         /// </summary>
-        /// <param name="routeName">The name of the route to generate the url to.</param>
+        /// <param name="routeName">The name of the route to generate the URL to.</param>
         /// <param name="httpContext">The <see cref="HttpContext"/> associated with current request.</param>
         /// <param name="values">An object that contains route values.</param>
         /// <returns>The generated absolute URL.</returns>
@@ -164,13 +164,13 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <summary>
-        /// Tries generating a url with an absolute path.
+        /// Tries generating a URL with an absolute path.
         /// </summary>
         /// <param name="httpContext">The <see cref="HttpContext"/> associated with current request.</param>
-        /// <param name="routeName">The name of the route to generate the url to.</param>
+        /// <param name="routeName">The name of the route to generate the URL to.</param>
         /// <param name="values">An object that contains route values.</param>
         /// <param name="link">The generated absolute URL.</param>
-        /// <returns><c>true</c> if a url was able to be generated successfully, <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c> if a URL was generated successfully, <c>false</c> otherwise.</returns>
         public bool TryGetLink(HttpContext httpContext, string routeName, object values, out string link)
         {
             return TryGetLink(httpContext, routeName, values, options: null, out link);
@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Routing
         /// <summary>
         /// Generates a URL with an absolute path.
         /// </summary>
-        /// <param name="routeName">The name of the route to generate the url to.</param>
+        /// <param name="routeName">The name of the route to generate the URL to.</param>
         /// <param name="httpContext">The <see cref="HttpContext"/> associated with current request.</param>
         /// <param name="values">An object that contains route values.</param>
         /// <param name="options">The <see cref="LinkOptions"/>.</param>
@@ -195,14 +195,14 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <summary>
-        /// Tries generating a url with an absolute path.
+        /// Tries generating a URL with an absolute path.
         /// </summary>
         /// <param name="httpContext">The <see cref="HttpContext"/> associated with current request.</param>
-        /// <param name="routeName">The name of the route to generate the url to.</param>
+        /// <param name="routeName">The name of the route to generate the URL to.</param>
         /// <param name="values">An object that contains route values.</param>
         /// <param name="options">The <see cref="LinkOptions"/>.</param>
         /// <param name="link">The generated absolute URL.</param>
-        /// <returns><c>true</c> if a url was able to be generated successfully, <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c> if a URL was generated successfully, <c>false</c> otherwise.</returns>
         public abstract bool TryGetLink(
             HttpContext httpContext,
             string routeName,
@@ -213,7 +213,7 @@ namespace Microsoft.AspNetCore.Routing
         /// <summary>
         /// Generates a URL with an absolute path.
         /// </summary>
-        /// <param name="address">The information used to look up for endpoints to generate a url.</param>
+        /// <param name="address">The information used to look up endpoints for generating a URL.</param>
         /// <param name="values">An object that contains route values.</param>
         /// <returns>The generated absolute URL.</returns>
         public string GetLinkByAddress<TAddress>(TAddress address, object values)
@@ -222,12 +222,12 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <summary>
-        /// Tries generating a url with an absolute path.
+        /// Tries generating a URL with an absolute path.
         /// </summary>
-        /// <param name="address">The information used to look up for endpoints to generate a url.</param>
+        /// <param name="address">The information used to look up endpoints for generating a URL.</param>
         /// <param name="values">An object that contains route values.</param>
         /// <param name="link">The generated absolute URL.</param>
-        /// <returns><c>true</c> if a url was able to be generated successfully, <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c> if a URL was generated successfully, <c>false</c> otherwise.</returns>
         public bool TryGetLinkByAddress<TAddress>(TAddress address, object values, out string link)
         {
             return TryGetLinkByAddress(address, values, options: null, out link);
@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.Routing
         /// <summary>
         /// Generates a URL with an absolute path.
         /// </summary>
-        /// <param name="address">The information used to look up for endpoints to generate a url.</param>
+        /// <param name="address">The information used to look up endpoints for generating a URL.</param>
         /// <param name="values">An object that contains route values.</param>
         /// <param name="options">The <see cref="LinkOptions"/>.</param>
         /// <returns>The generated absolute URL.</returns>
@@ -246,13 +246,13 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <summary>
-        /// Tries generating a url with an absolute path.
+        /// Tries generating a URL with an absolute path.
         /// </summary>
-        /// <param name="address">The information used to look up for endpoints to generate a url.</param>
+        /// <param name="address">The information used to look up endpoints for generating a URL.</param>
         /// <param name="values">An object that contains route values.</param>
         /// <param name="options">The <see cref="LinkOptions"/>.</param>
         /// <param name="link">The generated absolute URL.</param>
-        /// <returns><c>true</c> if a url was able to be generated successfully, <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c> if a URL was generated successfully, <c>false</c> otherwise.</returns>
         public bool TryGetLinkByAddress<TAddress>(
             TAddress address,
             object values,
@@ -265,7 +265,7 @@ namespace Microsoft.AspNetCore.Routing
         /// <summary>
         /// Generates a URL with an absolute path.
         /// </summary>
-        /// <param name="address">The information used to look up for endpoints to generate a url.</param>
+        /// <param name="address">The information used to look up endpoints for generating a URL.</param>
         /// <param name="httpContext">The <see cref="HttpContext"/> associated with current request.</param>
         /// <param name="values">An object that contains route values.</param>
         /// <returns>The generated absolute URL.</returns>
@@ -275,13 +275,13 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <summary>
-        /// Tries generating a url with an absolute path.
+        /// Tries generating a URL with an absolute path.
         /// </summary>
-        /// <param name="address">The information used to look up for endpoints to generate a url.</param>
+        /// <param name="address">The information used to look up endpoints for generating a URL.</param>
         /// <param name="httpContext">The <see cref="HttpContext"/> associated with current request.</param>
         /// <param name="values">An object that contains route values.</param>
         /// <param name="link">The generated absolute URL.</param>
-        /// <returns><c>true</c> if a url was able to be generated successfully, <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c> if a URL was generated successfully, <c>false</c> otherwise.</returns>
         public bool TryGetLinkByAddress<TAddress>(
             TAddress address,
             HttpContext httpContext,
@@ -294,7 +294,7 @@ namespace Microsoft.AspNetCore.Routing
         /// <summary>
         /// Generates a URL with an absolute path.
         /// </summary>
-        /// <param name="address">The information used to look up for endpoints to generate a url.</param>
+        /// <param name="address">The information used to look up endpoints for generating a URL.</param>
         /// <param name="httpContext">The <see cref="HttpContext"/> associated with current request.</param>
         /// <param name="values">An object that contains route values.</param>
         /// <param name="options">The <see cref="LinkOptions"/>.</param>
@@ -314,14 +314,14 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <summary>
-        /// Tries generating a url with an absolute path.
+        /// Tries generating a URL with an absolute path.
         /// </summary>
-        /// <param name="address">The information used to look up for endpoints to generate a url.</param>
+        /// <param name="address">The information used to look up endpoints for generating a URL.</param>
         /// <param name="httpContext">The <see cref="HttpContext"/> associated with current request.</param>
         /// <param name="values">An object that contains route values.</param>
         /// <param name="options">The <see cref="LinkOptions"/>.</param>
         /// <param name="link">The generated absolute URL.</param>
-        /// <returns><c>true</c> if a url was able to be generated successfully, <c>false</c> otherwise.</returns>
+        /// <returns><c>true</c> if a URL was generated successfully, <c>false</c> otherwise.</returns>
         public abstract bool TryGetLinkByAddress<TAddress>(
             TAddress address,
             HttpContext httpContext,
