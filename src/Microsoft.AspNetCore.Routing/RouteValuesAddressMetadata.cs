@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Routing
 
         public IReadOnlyDictionary<string, object> RequiredValues { get; }
 
-        private string DebuggerToString()
+        internal string DebuggerToString()
         {
             return $"Name: {Name} - Required values: {string.Join(", ", FormatValues(RequiredValues))}";
 
