@@ -26,8 +26,14 @@ namespace Microsoft.AspNetCore.Routing
             DisplayName = displayName;
         }
 
+        /// <summary>
+        /// Gets the informational display name of this endpoint.
+        /// </summary>
         public string DisplayName { get; }
 
+        /// <summary>
+        /// Gets the collection of metadata associated with this endpoint.
+        /// </summary>
         public EndpointMetadataCollection Metadata { get; }
 
         public override string ToString() => DisplayName ?? base.ToString();
