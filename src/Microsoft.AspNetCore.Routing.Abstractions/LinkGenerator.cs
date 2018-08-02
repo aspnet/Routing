@@ -153,5 +153,31 @@ namespace Microsoft.AspNetCore.Routing
             object values,
             LinkOptions options,
             out string link);
+
+        public LinkGenerationTemplate GetTemplate(object values)
+        {
+            return GetTemplate(httpContext: null, routeName: null, values);
+        }
+
+        public LinkGenerationTemplate GetTemplate(string routeName, object values)
+        {
+            return GetTemplate(httpContext: null, routeName, values);
+        }
+
+        public LinkGenerationTemplate GetTemplate(HttpContext httpContext, object values)
+        {
+            return GetTemplate(httpContext, routeName: null, values);
+        }
+
+        public abstract LinkGenerationTemplate GetTemplate(HttpContext httpContext, string routeName, object values);
+
+        public LinkGenerationTemplate GetTemplateByAddress<TAddress>(TAddress address)
+        {
+            return GetTemplateByAddress(address, httpContext: null);
+        }
+
+        public abstract LinkGenerationTemplate GetTemplateByAddress<TAddress>(
+            TAddress address,
+            HttpContext httpContext);
     }
 }
