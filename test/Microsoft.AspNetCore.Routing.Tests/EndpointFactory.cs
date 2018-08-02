@@ -3,6 +3,8 @@
 
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Patterns;
+using System;
+using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Routing
 {
@@ -17,19 +19,27 @@ namespace Microsoft.AspNetCore.Routing
             string displayName = null,
             params object[] metadata)
         {
-            var metadataCollection = EndpointMetadataCollection.Empty;
-            if (metadata != null)
+            var d = new List<object>(metadata ?? Array.Empty<object>());
+            if (requiredValues != null)
             {
-                metadataCollection = new EndpointMetadataCollection(metadata);
+                d.Add(new RequiredValuesMetadata(new RouteValueDictionary(requiredValues)));
             }
 
             return new MatcherEndpoint(
                 MatcherEndpoint.EmptyInvoker,
                 RoutePatternFactory.Parse(template, defaults, constraints),
-                new RouteValueDictionary(requiredValues),
                 order,
-                metadataCollection,
+                new EndpointMetadataCollection(d),
                 displayName);
+        }
+
+        private class RequiredValuesMetadata : IRequiredValuesMetadata
+        {
+            public RequiredValuesMetadata(IReadOnlyDictionary<string, object> requiredValues)
+            {
+                RequiredValues = requiredValues;
+            }
+            public IReadOnlyDictionary<string, object> RequiredValues { get; }
         }
     }
 }

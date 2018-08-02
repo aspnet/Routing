@@ -263,17 +263,21 @@ namespace Microsoft.AspNetCore.Routing
         {
             if (metadataCollection == null)
             {
-                metadataCollection = EndpointMetadataCollection.Empty;
+                var metadata = new List<object>();
                 if (!string.IsNullOrEmpty(routeName))
                 {
-                    metadataCollection = new EndpointMetadataCollection(new[] { new RouteNameMetadata(routeName) });
+                    metadata.Add(new RouteNameMetadata(routeName));
                 }
+                if (requiredValues != null)
+                {
+                    metadata.Add(new RequiredValuesMetadata(new RouteValueDictionary(requiredValues)));
+                }
+                metadataCollection = new EndpointMetadataCollection(metadata);
             }
 
             return new MatcherEndpoint(
                 MatcherEndpoint.EmptyInvoker,
                 RoutePatternFactory.Parse(template, defaults, constraints: null),
-                new RouteValueDictionary(requiredValues),
                 order,
                 metadataCollection,
                 null);
@@ -295,6 +299,15 @@ namespace Microsoft.AspNetCore.Routing
                 Name = name;
             }
             public string Name { get; }
+        }
+
+        private class RequiredValuesMetadata : IRequiredValuesMetadata
+        {
+            public RequiredValuesMetadata(IReadOnlyDictionary<string, object> requiredValues)
+            {
+                RequiredValues = requiredValues;
+            }
+            public IReadOnlyDictionary<string, object> RequiredValues { get; }
         }
 
         private class CustomRouteValuesBasedEndpointFinder : RouteValuesBasedEndpointFinder

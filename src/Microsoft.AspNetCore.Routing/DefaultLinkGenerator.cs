@@ -90,10 +90,11 @@ namespace Microsoft.AspNetCore.Routing
                 new RouteTemplate(endpoint.RoutePattern),
                 new RouteValueDictionary(endpoint.RoutePattern.Defaults));
 
+            var requiredValuesMetadata = endpoint.Metadata.GetMetadata<IRequiredValuesMetadata>();
             var templateValuesResult = templateBinder.GetValues(
                 ambientValues: context.AmbientValues,
                 explicitValues: context.ExplicitValues,
-                endpoint.RequiredValues.Keys);
+                requiredValuesMetadata?.RequiredValues.Keys);
 
             if (templateValuesResult == null)
             {

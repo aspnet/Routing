@@ -8,7 +8,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using Microsoft.AspNetCore.Routing.Matching;
-using Microsoft.AspNetCore.Routing.Metadata;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Routing
@@ -127,9 +126,6 @@ namespace Microsoft.AspNetCore.Routing
                         var template = matcherEndpoint.RoutePattern.RawText;
                         template = string.IsNullOrEmpty(template) ? "\"\"" : template;
                         sb.Append(template);
-                        sb.Append(", Required Values: new { ");
-                        sb.Append(string.Join(", ", FormatValues(matcherEndpoint.RequiredValues)));
-                        sb.Append(" }");
                         sb.Append(", Defaults: new { ");
                         sb.Append(string.Join(", ", FormatValues(matcherEndpoint.RoutePattern.Defaults)));
                         sb.Append(" }");

@@ -5,9 +5,8 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    // Internal for 2.2. Public API for configuring endpoints will be added in 3.0
-    internal class EndpointOptions
+    public interface IRequiredValuesMetadata
     {
-        public IList<EndpointDataSource> DataSources { get; } = new List<EndpointDataSource>();
+        IReadOnlyDictionary<string, object> RequiredValues { get; }
     }
 }
