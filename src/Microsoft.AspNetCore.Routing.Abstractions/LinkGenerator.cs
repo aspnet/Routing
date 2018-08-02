@@ -329,28 +329,89 @@ namespace Microsoft.AspNetCore.Routing
             LinkOptions options,
             out string link);
 
+        /// <summary>
+        /// Creates a template object to generate a URL.
+        /// </summary>
+        /// <param name="values">
+        /// An object that contains route values. These values are used to lookup endpoint(s).
+        /// </param>
+        /// <returns>
+        /// If an endpoint(s) was found succesffully, then this returns a template object representing that,
+        /// <c>null</c> otherwise.
+        /// </returns>
         public LinkGenerationTemplate GetTemplate(object values)
         {
             return GetTemplate(httpContext: null, routeName: null, values);
         }
 
+        /// <summary>
+        /// Creates a template object to generate a URL.
+        /// </summary>
+        /// <param name="routeName">The name of the route to generate the URL to.</param>
+        /// <param name="values">
+        /// An object that contains route values. These values are used to lookup for endpoint(s).
+        /// </param>
+        /// <returns>
+        /// If an endpoint(s) was found succesffully, then this returns a template object representing that,
+        /// <c>null</c> otherwise.
+        /// </returns>
         public LinkGenerationTemplate GetTemplate(string routeName, object values)
         {
             return GetTemplate(httpContext: null, routeName, values);
         }
 
+        /// <summary>
+        /// Creates a template object to generate a URL.
+        /// </summary>
+        /// <param name="httpContext">The <see cref="HttpContext"/> associated with current request.</param>
+        /// <param name="values">
+        /// An object that contains route values. These values are used to lookup for endpoint(s).
+        /// </param>
+        /// <returns>
+        /// If an endpoint(s) was found succesffully, then this returns a template object representing that,
+        /// <c>null</c> otherwise.
+        /// </returns>
         public LinkGenerationTemplate GetTemplate(HttpContext httpContext, object values)
         {
             return GetTemplate(httpContext, routeName: null, values);
         }
 
+        /// <summary>
+        /// Creates a template object to generate a URL.
+        /// </summary>
+        /// <param name="httpContext">The <see cref="HttpContext"/> associated with current request.</param>
+        /// <param name="routeName">The name of the route to generate the URL to.</param>
+        /// <param name="values">
+        /// An object that contains route values. These values are used to lookup for endpoint(s).
+        /// </param>
+        /// <returns>
+        /// If an endpoint(s) was found succesffully, then this returns a template object representing that,
+        /// <c>null</c> otherwise.
+        /// </returns>
         public abstract LinkGenerationTemplate GetTemplate(HttpContext httpContext, string routeName, object values);
 
+        /// <summary>
+        /// Creates a template object to generate a URL.
+        /// </summary>
+        /// <param name="address">The information used to look up endpoints for creating a template.</param>
+        /// <returns>
+        /// If an endpoint(s) was found succesffully, then this returns a template object representing that,
+        /// <c>null</c> otherwise.
+        /// </returns>
         public LinkGenerationTemplate GetTemplateByAddress<TAddress>(TAddress address)
         {
             return GetTemplateByAddress(address, httpContext: null);
         }
 
+        /// <summary>
+        /// Creates a template object to generate a URL.
+        /// </summary>
+        /// <param name="address">The information used to look up endpoints for creating a template.</param>
+        /// <param name="httpContext">The <see cref="HttpContext"/> associated with current request.</param>
+        /// <returns>
+        /// If an endpoint(s) was found succesffully, then this returns a template object representing that,
+        /// <c>null</c> otherwise.
+        /// </returns>
         public abstract LinkGenerationTemplate GetTemplateByAddress<TAddress>(
             TAddress address,
             HttpContext httpContext);
