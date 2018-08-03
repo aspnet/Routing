@@ -9,12 +9,6 @@ namespace Microsoft.AspNetCore.Routing
 {
     internal class DefaultLinkGenerationTemplate : LinkGenerationTemplate
     {
-        private readonly HttpContext _httpContext;
-        private readonly RouteValueDictionary _earlierExplicitValues;
-        private readonly RouteValueDictionary _ambientValues;
-        private readonly DefaultLinkGenerator _linkGenerator;
-        private readonly IEnumerable<MatcherEndpoint> _endpoints;
-
         public DefaultLinkGenerationTemplate(
             DefaultLinkGenerator linkGenerator,
             IEnumerable<MatcherEndpoint> endpoints,
@@ -22,29 +16,39 @@ namespace Microsoft.AspNetCore.Routing
             RouteValueDictionary explicitValues,
             RouteValueDictionary ambientValues)
         {
-            _linkGenerator = linkGenerator;
-            _endpoints = endpoints;
-            _httpContext = httpContext;
-            _earlierExplicitValues = explicitValues;
-            _ambientValues = ambientValues;
+            LinkGenerator = linkGenerator;
+            Endpoints = endpoints;
+            HttpContext = httpContext;
+            EarlierExplicitValues = explicitValues;
+            AmbientValues = ambientValues;
         }
+
+        internal DefaultLinkGenerator LinkGenerator { get; }
+
+        internal IEnumerable<MatcherEndpoint> Endpoints { get; }
+
+        internal HttpContext HttpContext { get; }
+
+        internal RouteValueDictionary EarlierExplicitValues { get; }
+
+        internal RouteValueDictionary AmbientValues { get; }
 
         public override string MakeUrl(object values, LinkOptions options)
         {
             var currentValues = new RouteValueDictionary(values);
-            var mergedValuesDictionary = new RouteValueDictionary(_earlierExplicitValues);
+            var mergedValuesDictionary = new RouteValueDictionary(EarlierExplicitValues);
 
             foreach (var kvp in currentValues)
             {
                 mergedValuesDictionary[kvp.Key] = kvp.Value;
             }
 
-            foreach (var endpoint in _endpoints)
+            foreach (var endpoint in Endpoints)
             {
-                var link = _linkGenerator.MakeLink(
-                    _httpContext,
+                var link = LinkGenerator.MakeLink(
+                    HttpContext,
                     endpoint,
-                    _ambientValues,
+                    AmbientValues,
                     mergedValuesDictionary,
                     options);
                 if (link != null)

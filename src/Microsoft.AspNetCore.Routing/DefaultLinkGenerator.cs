@@ -55,15 +55,15 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         public override bool TryGetLinkByAddress<TAddress>(
-            TAddress address,
             HttpContext httpContext,
+            TAddress address,
             object values,
             LinkOptions options,
             out string link)
         {
             return TryGetLinkByAddressInternal(
-                address,
                 httpContext,
+                address,
                 explicitValues: values,
                 ambientValues: GetAmbientValues(httpContext),
                 options,
@@ -76,23 +76,23 @@ namespace Microsoft.AspNetCore.Routing
             var explicitValues = new RouteValueDictionary(values);
 
             return GetTemplateInternal(
+                httpContext,
                 new RouteValuesAddress
                 {
                     RouteName = routeName,
                     ExplicitValues = explicitValues,
                     AmbientValues = ambientValues
                 },
-                httpContext,
                 ambientValues,
                 explicitValues,
                 values);
         }
 
         public override LinkGenerationTemplate GetTemplateByAddress<TAddress>(
-            TAddress address,
-            HttpContext httpContext)
+            HttpContext httpContext,
+            TAddress address)
         {
-            return GetTemplateInternal(address, httpContext, values: null);
+            return GetTemplateInternal(httpContext, address, values: null);
         }
 
         internal string MakeLink(
@@ -144,8 +144,8 @@ namespace Microsoft.AspNetCore.Routing
             };
 
             return TryGetLinkByAddressInternal(
-                address,
                 httpContext,
+                address,
                 explicitValues: values,
                 ambientValues: ambientValues,
                 options,
@@ -153,8 +153,8 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         private bool TryGetLinkByAddressInternal<TAddress>(
-            TAddress address,
             HttpContext httpContext,
+            TAddress address,
             object explicitValues,
             RouteValueDictionary ambientValues,
             LinkOptions options,
@@ -187,8 +187,8 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         private LinkGenerationTemplate GetTemplateInternal<TAddress>(
-            TAddress address,
             HttpContext httpContext,
+            TAddress address,
             object values)
         {
             var endpoints = FindEndpoints(address);
@@ -209,8 +209,8 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         private LinkGenerationTemplate GetTemplateInternal<TAddress>(
-            TAddress address,
             HttpContext httpContext,
+            TAddress address,
             RouteValueDictionary ambientValues,
             RouteValueDictionary explicitValues,
             object values)

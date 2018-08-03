@@ -9,21 +9,21 @@ namespace Microsoft.AspNetCore.Routing
     public abstract class LinkGenerationTemplate
     {
         /// <summary>
-        /// Generates a URL with an absolute path.
+        /// Generates a URL with an absolute path from the specified route values.
         /// </summary>
         /// <param name="values">An object that contains route values.</param>
-        /// <returns>The generated absolute URL.</returns>
+        /// <returns>The generated URL.</returns>
         public string MakeUrl(object values)
         {
             return MakeUrl(values, options: null);
         }
 
         /// <summary>
-        /// Generates a URL with an absolute path.
+        /// Generates a URL with an absolute path from the specified route values and link options.
         /// </summary>
         /// <param name="values">An object that contains route values.</param>
         /// <param name="options">The <see cref="LinkOptions"/>.</param>
-        /// <returns>The generated absolute URL.</returns>
+        /// <returns>The generated URL.</returns>
         public abstract string MakeUrl(object values, LinkOptions options);
     }
 }

@@ -1217,7 +1217,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Fact]
-        public void TryGetLink_WithCustomAddress_CanGenerateLink()
+        public void TryGetLinkByAddress_WithCustomAddress_CanGenerateLink()
         {
             // Arrange
             var services = GetBasicServices();
@@ -1237,8 +1237,8 @@ namespace Microsoft.AspNetCore.Routing
 
             // Act
             var canGenerateLink = linkGenerator.TryGetLinkByAddress<INameMetadata>(
-                address: new NameMetadata("CustomerDetails"),
                 httpContext,
+                address: new NameMetadata("CustomerDetails"),
                 values: new { id = 10 },
                 out var link);
 
@@ -1248,7 +1248,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Fact]
-        public void TryGetLink_WithCustomAddress_CanGenerateLink_RespectsLinkOptions_SuppliedAtCallSite()
+        public void TryGetLinkByAddress_WithCustomAddress_CanGenerateLink_RespectsLinkOptions_SuppliedAtCallSite()
         {
             // Arrange
             var services = GetBasicServices();
@@ -1268,8 +1268,8 @@ namespace Microsoft.AspNetCore.Routing
 
             // Act
             var canGenerateLink = linkGenerator.TryGetLinkByAddress<INameMetadata>(
-                address: new NameMetadata("CustomerDetails"),
                 httpContext,
+                address: new NameMetadata("CustomerDetails"),
                 values: new { id = 10 },
                 new LinkOptions
                 {
@@ -1291,24 +1291,18 @@ namespace Microsoft.AspNetCore.Routing
                 requiredValues: new { controller = "Product", action = "Edit", area = (string)null, page = (string)null },
                 defaults: new { controller = "Product", action = "Edit", area = (string)null, page = (string)null });
             var linkGenerator = CreateLinkGenerator(endpoint1);
+            var values = new RouteValueDictionary(new { controller = "Product", action = "Edit" });
 
-            // Act1
-            var template = linkGenerator.GetTemplate(values: new { controller = "Product", action = "Edit" });
+            // Act
+            var template = linkGenerator.GetTemplate(values);
 
-            // Assert1
-            Assert.NotNull(template);
-
-            // Act2
-            var link = template.MakeUrl(new { id = 10 });
-
-            // Assert2
-            Assert.Equal("/Product/Edit/10", link);
-
-            // Act3
-            link = template.MakeUrl(new { id = 25 });
-
-            // Assert3
-            Assert.Equal("/Product/Edit/25", link);
+            // Assert
+            var defaultTemplate = Assert.IsType<DefaultLinkGenerationTemplate>(template);
+            Assert.Same(linkGenerator, defaultTemplate.LinkGenerator);
+            Assert.Equal(new[] { endpoint1 }, defaultTemplate.Endpoints);
+            Assert.Equal(values, defaultTemplate.EarlierExplicitValues);
+            Assert.Null(defaultTemplate.HttpContext);
+            Assert.Empty(defaultTemplate.AmbientValues);
         }
 
         [Fact]
@@ -1322,27 +1316,48 @@ namespace Microsoft.AspNetCore.Routing
                 metadata: new RouteNameMetadata("EditProduct"));
             var linkGenerator = CreateLinkGenerator(endpoint1);
 
-            // Act1
+            // Act
             var template = linkGenerator.GetTemplate("EditProduct", values: new { });
 
-            // Assert1
-            Assert.NotNull(template);
-
-            // Act2
-            var link = template.MakeUrl(new { id = 10 });
-
-            // Assert2
-            Assert.Equal("/Product/Edit/10", link);
-
-            // Act3
-            link = template.MakeUrl(new { id = 25 });
-
-            // Assert3
-            Assert.Equal("/Product/Edit/25", link);
+            // Assert
+            var defaultTemplate = Assert.IsType<DefaultLinkGenerationTemplate>(template);
+            Assert.Same(linkGenerator, defaultTemplate.LinkGenerator);
+            Assert.Equal(new[] { endpoint1 }, defaultTemplate.Endpoints);
+            Assert.Empty(defaultTemplate.EarlierExplicitValues);
+            Assert.Null(defaultTemplate.HttpContext);
+            Assert.Empty(defaultTemplate.AmbientValues);
         }
 
         [Fact]
-        public void GetTemplate_ByCustomAddress_ReturnsTemplate()
+        public void GetTemplate_ByRouteName_ReturnsTemplate_WithMultipleEndpoints()
+        {
+            // Arrange
+            var endpoint1 = EndpointFactory.CreateMatcherEndpoint(
+                "Product/Edit/{id}",
+                requiredValues: new { controller = "Product", action = "Edit", area = (string)null, page = (string)null },
+                defaults: new { controller = "Product", action = "Edit", area = (string)null, page = (string)null },
+                metadata: new RouteNameMetadata("default"));
+            var endpoint2 = EndpointFactory.CreateMatcherEndpoint(
+                "Product/Details/{id}",
+                requiredValues: new { controller = "Product", action = "Edit", area = (string)null, page = (string)null },
+                defaults: new { controller = "Product", action = "Edit", area = (string)null, page = (string)null },
+                metadata: new RouteNameMetadata("default"));
+            var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
+
+            // Act
+            var template = linkGenerator.GetTemplate("default", values: new { });
+
+            // Assert
+            var defaultTemplate = Assert.IsType<DefaultLinkGenerationTemplate>(template);
+            Assert.Same(linkGenerator, defaultTemplate.LinkGenerator);
+            Assert.Equal(new[] { endpoint1, endpoint2 }, defaultTemplate.Endpoints);
+            Assert.Empty(defaultTemplate.EarlierExplicitValues);
+            Assert.Null(defaultTemplate.HttpContext);
+            Assert.Empty(defaultTemplate.AmbientValues);
+        }
+
+        [Fact]
+        public void GetTemplateByAddress_ByCustomAddress_ReturnsTemplate()
         {
             // Arrange
             var services = GetBasicServices();
@@ -1359,23 +1374,16 @@ namespace Microsoft.AspNetCore.Routing
                 metadata: new NameMetadata("CustomerDetails"));
             var linkGenerator = CreateLinkGenerator(new[] { endpoint1, endpoint2 }, new RouteOptions(), services);
 
-            // Act1
+            // Act
             var template = linkGenerator.GetTemplateByAddress<INameMetadata>(new NameMetadata("CustomerDetails"));
 
-            // Assert1
-            Assert.NotNull(template);
-
-            // Act2
-            var link = template.MakeUrl(new { id = 10 });
-
-            // Assert2
-            Assert.Equal("/Customers/Details/10", link);
-
-            // Act3
-            link = template.MakeUrl(new { id = 25 });
-
-            // Assert3
-            Assert.Equal("/Customers/Details/25", link);
+            // Assert
+            var defaultTemplate = Assert.IsType<DefaultLinkGenerationTemplate>(template);
+            Assert.Same(linkGenerator, defaultTemplate.LinkGenerator);
+            Assert.Equal(new[] { endpoint2 }, defaultTemplate.Endpoints);
+            Assert.Empty(defaultTemplate.EarlierExplicitValues);
+            Assert.Null(defaultTemplate.HttpContext);
+            Assert.Empty(defaultTemplate.AmbientValues);
         }
 
         [Fact]
@@ -1416,7 +1424,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Fact]
-        public void GetLink_Template_Success_ExtraValues()
+        public void MakeUrl_GeneratesLink_WithExtraRouteValues()
         {
             // Arrange
             var endpoint1 = EndpointFactory.CreateMatcherEndpoint(

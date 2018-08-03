@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Routing
     /// <summary>
     /// Defines a contract to find endpoints based on the supplied lookup information.
     /// </summary>
-    /// <typeparam name="TAddress"></typeparam>
+    /// <typeparam name="TAddress">The address type to look up endpoints.</typeparam>
     public interface IEndpointFinder<TAddress>
     {
         /// <summary>
