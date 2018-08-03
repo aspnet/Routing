@@ -19,5 +19,6 @@
     <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <LangVersion>7.2</LangVersion>
+    <DebugType>full</DebugType>
   </PropertyGroup>
 </Project>
