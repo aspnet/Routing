@@ -17,10 +17,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
         private JumpTable _dictionary;
         private JumpTable _ascii;
         private JumpTable _dictionaryLookup;
+        private JumpTable _dictionaryLookup_Span;
+        private JumpTable _dictionaryLookup_Substring;
         private JumpTable _customHashTable;
+        private JumpTable _customHashTable_Span;
+        private JumpTable _customHashTable_Substring;
 
         // All factors of 100 to support sampling
-        [Params(2, 4, 5, 10, 25)]
+        [Params(4, 25)]
         public int Count;
 
         [GlobalSetup]
@@ -48,9 +52,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             _linearSearch = new LinearSearchJumpTable(0, -1, entries.ToArray());
             _dictionary = new DictionaryJumpTable(0, -1, entries.ToArray());
-            Debug.Assert(AsciiKeyedJumpTable.TryCreate(0, -1, entries, out _ascii));
+            AsciiKeyedJumpTable.TryCreate(0, -1, entries, out _ascii);
             _dictionaryLookup = new DictionaryLookupJumpTable(0, -1, entries.ToArray());
+            _dictionaryLookup_Span = new DictionaryLookupJumpTable_Span(0, -1, entries.ToArray());
+            _dictionaryLookup_Substring = new DictionaryLookupJumpTable_Substring(0, -1, entries.ToArray());
             _customHashTable = new CustomHashTableJumpTable(0, -1, entries.ToArray());
+            _customHashTable_Span = new CustomHashTableJumpTable_Span(0, -1, entries.ToArray());
+            _customHashTable_Substring = new CustomHashTableJumpTable_Substring(0, -1, entries.ToArray());
         }
 
         // This baseline is similar to SingleEntryJumpTable. We just want
@@ -142,6 +150,36 @@ namespace Microsoft.AspNetCore.Routing.Matching
         }
 
         [Benchmark(OperationsPerInvoke = 100)]
+        public int DictionaryLookup_Span()
+        {
+            var strings = _strings;
+            var segments = _segments;
+
+            var destination = 0;
+            for (var i = 0; i < strings.Length; i++)
+            {
+                destination = _dictionaryLookup_Span.GetDestination(strings[i], segments[i]);
+            }
+
+            return destination;
+        }
+
+        [Benchmark(OperationsPerInvoke = 100)]
+        public int DictionaryLookup_Substring()
+        {
+            var strings = _strings;
+            var segments = _segments;
+
+            var destination = 0;
+            for (var i = 0; i < strings.Length; i++)
+            {
+                destination = _dictionaryLookup_Substring.GetDestination(strings[i], segments[i]);
+            }
+
+            return destination;
+        }
+
+        [Benchmark(OperationsPerInvoke = 100)]
         public int CustomHashTable()
         {
             var strings = _strings;
@@ -151,6 +189,36 @@ namespace Microsoft.AspNetCore.Routing.Matching
             for (var i = 0; i < strings.Length; i++)
             {
                 destination = _customHashTable.GetDestination(strings[i], segments[i]);
+            }
+
+            return destination;
+        }
+
+        [Benchmark(OperationsPerInvoke = 100)]
+        public int CustomHashTable_Span()
+        {
+            var strings = _strings;
+            var segments = _segments;
+
+            var destination = 0;
+            for (var i = 0; i < strings.Length; i++)
+            {
+                destination = _customHashTable_Span.GetDestination(strings[i], segments[i]);
+            }
+
+            return destination;
+        }
+
+        [Benchmark(OperationsPerInvoke = 100)]
+        public int CustomHashTable_Substring()
+        {
+            var strings = _strings;
+            var segments = _segments;
+
+            var destination = 0;
+            for (var i = 0; i < strings.Length; i++)
+            {
+                destination = _customHashTable_Substring.GetDestination(strings[i], segments[i]);
             }
 
             return destination;
