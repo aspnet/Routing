@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         /// <summary>
-        /// Returns a value indicating whether routing accepts CORS preflight requests.
+        /// Returns a value indicating whether the associated endpoint should accept CORS preflight requests.
         /// </summary>
         public bool AcceptCorsPreflight { get; }
 

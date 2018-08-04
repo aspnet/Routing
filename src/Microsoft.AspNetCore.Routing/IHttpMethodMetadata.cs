@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Routing
     public interface IHttpMethodMetadata
     {
         /// <summary>
-        /// Returns a value indicating whether routing accepts a CORS preflight request.
+        /// Returns a value indicating whether the associated endpoint should accept CORS preflight requests.
         /// </summary>
         bool AcceptCorsPreflight { get; }
 
