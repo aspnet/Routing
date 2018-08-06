@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Routing
         public string RouteName { get; set; }
 
         /// <summary>
-        /// Gets or sets the route values that were explicitly specified.
+        /// Gets or sets the route values that are explicitly specified.
         /// </summary>
         public RouteValueDictionary ExplicitValues { get; set; }
 
