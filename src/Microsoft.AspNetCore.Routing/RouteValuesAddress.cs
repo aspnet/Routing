@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Routing
         public RouteValueDictionary ExplicitValues { get; set; }
 
         /// <summary>
-        /// Gets or sets ambient routes values from the current HTTP request.
+        /// Gets or sets ambient route values from the current HTTP request.
         /// </summary>
         public RouteValueDictionary AmbientValues { get; set; }
     }
