@@ -10,6 +10,6 @@ namespace Microsoft.AspNetCore.Routing
     {
         public abstract ICollection<EndpointBuilder> Endpoints { get; }
 
-        public abstract IApplicationBuilder New();
+        public abstract IApplicationBuilder CreateApplicationBuilder();
     }
 }

@@ -20,14 +20,14 @@ namespace Microsoft.AspNetCore.Builder
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            var pipeline = builder.New()
+            var pipeline = builder.CreateApplicationBuilder()
                .UseHello(greeter)
                .Build();
 
             return builder.MapEndpoint(
                 (next) => pipeline,
-                "Hello",
-                template);
+                template,
+                "Hello");
         }
     }
 }

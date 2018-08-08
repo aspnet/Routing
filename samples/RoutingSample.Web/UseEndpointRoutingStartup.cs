@@ -40,8 +40,8 @@ namespace RoutingSample.Web
                         response.ContentLength = payloadLength;
                         return response.Body.WriteAsync(_homePayload, 0, payloadLength);
                     },
-                    "Home",
-                    "/");
+                    "/",
+                    "Home");
                 builder.MapEndpoint(
                     (next) => (httpContext) =>
                     {
@@ -52,8 +52,8 @@ namespace RoutingSample.Web
                         response.ContentLength = payloadLength;
                         return response.Body.WriteAsync(_plainTextPayload, 0, payloadLength);
                     },
-                    "Plaintext",
-                    "/plaintext");
+                    "/plaintext",
+                    "Plaintext");
                 builder.MapEndpoint(
                     (next) => (httpContext) =>
                     {
@@ -62,8 +62,8 @@ namespace RoutingSample.Web
                         response.ContentType = "text/plain";
                         return response.WriteAsync("WithConstraints");
                     },
-                    "withconstraints",
-                    "/withconstraints/{id:endsWith(_001)}");
+                    "/withconstraints/{id:endsWith(_001)}",
+                    "withconstraints");
                 builder.MapEndpoint(
                     (next) => (httpContext) =>
                     {
@@ -72,8 +72,8 @@ namespace RoutingSample.Web
                         response.ContentType = "text/plain";
                         return response.WriteAsync("withoptionalconstraints");
                     },
-                    "withoptionalconstraints",
-                    "/withoptionalconstraints/{id:endsWith(_001)?}");
+                    "/withoptionalconstraints/{id:endsWith(_001)?}",
+                    "withoptionalconstraints");
             });
 
             // Imagine some more stuff here...

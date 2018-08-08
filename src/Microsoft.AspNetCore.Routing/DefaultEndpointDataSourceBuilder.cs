@@ -12,6 +12,6 @@ namespace Microsoft.AspNetCore.Routing
 
         public override ICollection<EndpointBuilder> Endpoints { get; } = new List<EndpointBuilder>();
 
-        public override IApplicationBuilder New() => ApplicationBuilder.New();
+        public override IApplicationBuilder CreateApplicationBuilder() => ApplicationBuilder.New();
     }
 }

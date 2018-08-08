@@ -8,35 +8,31 @@ using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Routing.Matching
 {
-    public class MatcherEndpointBuilder : EndpointBuilder
+    public sealed class MatcherEndpointBuilder : EndpointBuilder
     {
-        private readonly Func<RequestDelegate, RequestDelegate> _invoker;
-        private readonly RoutePattern _routePattern;
-        private readonly RouteValueDictionary _requiredValues;
-        private readonly int _order;
+        public Func<RequestDelegate, RequestDelegate> Invoker { get; set; }
+
+        public RoutePattern RoutePattern { get; set; }
+
+        public int Order { get; set; }
 
         public MatcherEndpointBuilder(
            Func<RequestDelegate, RequestDelegate> invoker,
            RoutePattern routePattern,
-           RouteValueDictionary requiredValues,
            int order)
         {
-            _invoker = invoker;
-            _routePattern = routePattern;
-            _requiredValues = requiredValues;
-            _order = order;
+            Invoker = invoker;
+            RoutePattern = routePattern;
+            Order = order;
         }
 
         public override Endpoint Build()
         {
-            var resolvedMetadata = new List<object>(Metadata);
-            resolvedMetadata.Add(new RouteValuesAddressMetadata(null, _requiredValues));
-
             var matcherEndpoint = new MatcherEndpoint(
-                _invoker,
-                _routePattern,
-                _order,
-                new EndpointMetadataCollection(resolvedMetadata),
+                Invoker,
+                RoutePattern,
+                Order,
+                new EndpointMetadataCollection(Metadata),
                 DisplayName);
 
             return matcherEndpoint;

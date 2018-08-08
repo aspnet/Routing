@@ -15,36 +15,36 @@ namespace Microsoft.AspNetCore.Builder
         public static EndpointBuilder MapEndpoint(
             this EndpointDataSourceBuilder builder,
             Func<RequestDelegate, RequestDelegate> invoker,
-            string name,
-            string pattern)
+            string pattern,
+            string name)
         {
-            return MapEndpoint(builder, invoker, name, pattern, null);
+            return MapEndpoint(builder, invoker, pattern, name, metadata: null);
         }
 
         public static EndpointBuilder MapEndpoint(
             this EndpointDataSourceBuilder builder,
             Func<RequestDelegate, RequestDelegate> invoker,
-            string name,
-            RoutePattern pattern)
+            RoutePattern pattern,
+            string name)
         {
-            return MapEndpoint(builder, invoker, name, pattern, null);
+            return MapEndpoint(builder, invoker, pattern, name, metadata: null);
         }
 
         public static EndpointBuilder MapEndpoint(
             this EndpointDataSourceBuilder builder,
             Func<RequestDelegate, RequestDelegate> invoker,
+            string pattern,
             string name,
-            string template,
             IList<object> metadata)
         {
-            return MapEndpoint(builder, invoker, name, RoutePatternFactory.Parse(template), metadata);
+            return MapEndpoint(builder, invoker, RoutePatternFactory.Parse(pattern), name, metadata);
         }
 
         public static EndpointBuilder MapEndpoint(
             this EndpointDataSourceBuilder builder,
             Func<RequestDelegate, RequestDelegate> invoker,
-            string name,
             RoutePattern pattern,
+            string name,
             IList<object> metadata)
         {
             const int defaultOrder = 0;
@@ -52,7 +52,6 @@ namespace Microsoft.AspNetCore.Builder
             var endpointBuilder = new MatcherEndpointBuilder(
                invoker,
                pattern,
-               new RouteValueDictionary(),
                defaultOrder);
             endpointBuilder.DisplayName = name;
             if (metadata != null)
