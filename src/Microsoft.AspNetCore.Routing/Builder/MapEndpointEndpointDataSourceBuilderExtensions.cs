@@ -16,35 +16,35 @@ namespace Microsoft.AspNetCore.Builder
             this EndpointDataSourceBuilder builder,
             Func<RequestDelegate, RequestDelegate> invoker,
             string pattern,
-            string name)
+            string displayName)
         {
-            return MapEndpoint(builder, invoker, pattern, name, metadata: null);
+            return MapEndpoint(builder, invoker, pattern, displayName, metadata: null);
         }
 
         public static EndpointBuilder MapEndpoint(
             this EndpointDataSourceBuilder builder,
             Func<RequestDelegate, RequestDelegate> invoker,
             RoutePattern pattern,
-            string name)
+            string displayName)
         {
-            return MapEndpoint(builder, invoker, pattern, name, metadata: null);
+            return MapEndpoint(builder, invoker, pattern, displayName, metadata: null);
         }
 
         public static EndpointBuilder MapEndpoint(
             this EndpointDataSourceBuilder builder,
             Func<RequestDelegate, RequestDelegate> invoker,
             string pattern,
-            string name,
+            string displayName,
             IList<object> metadata)
         {
-            return MapEndpoint(builder, invoker, RoutePatternFactory.Parse(pattern), name, metadata);
+            return MapEndpoint(builder, invoker, RoutePatternFactory.Parse(pattern), displayName, metadata);
         }
 
         public static EndpointBuilder MapEndpoint(
             this EndpointDataSourceBuilder builder,
             Func<RequestDelegate, RequestDelegate> invoker,
             RoutePattern pattern,
-            string name,
+            string displayName,
             IList<object> metadata)
         {
             const int defaultOrder = 0;
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Builder
                invoker,
                pattern,
                defaultOrder);
-            endpointBuilder.DisplayName = name;
+            endpointBuilder.DisplayName = displayName;
             if (metadata != null)
             {
                 foreach (var item in metadata)
