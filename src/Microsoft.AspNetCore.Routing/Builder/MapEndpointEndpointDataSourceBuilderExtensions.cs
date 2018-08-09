@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Builder
 {
     public static class MapEndpointEndpointDataSourceBuilderExtensions
     {
-        public static EndpointBuilder MapEndpoint(
+        public static MatcherEndpointBuilder MapEndpoint(
             this EndpointDataSourceBuilder builder,
             Func<RequestDelegate, RequestDelegate> invoker,
             string pattern,
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Builder
             return MapEndpoint(builder, invoker, pattern, displayName, metadata: null);
         }
 
-        public static EndpointBuilder MapEndpoint(
+        public static MatcherEndpointBuilder MapEndpoint(
             this EndpointDataSourceBuilder builder,
             Func<RequestDelegate, RequestDelegate> invoker,
             RoutePattern pattern,
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Builder
             return MapEndpoint(builder, invoker, pattern, displayName, metadata: null);
         }
 
-        public static EndpointBuilder MapEndpoint(
+        public static MatcherEndpointBuilder MapEndpoint(
             this EndpointDataSourceBuilder builder,
             Func<RequestDelegate, RequestDelegate> invoker,
             string pattern,
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Builder
             return MapEndpoint(builder, invoker, RoutePatternFactory.Parse(pattern), displayName, metadata);
         }
 
-        public static EndpointBuilder MapEndpoint(
+        public static MatcherEndpointBuilder MapEndpoint(
             this EndpointDataSourceBuilder builder,
             Func<RequestDelegate, RequestDelegate> invoker,
             RoutePattern pattern,

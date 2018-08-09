@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Builder
 {
-    public class EndpointRoutingBuilderExtensionsTest
+    public class EndpointRoutingApplicationBuilderExtensionsTest
     {
         [Fact]
         public void UseEndpointRouting_ServicesNotRegistered_Throws()
@@ -106,6 +106,26 @@ namespace Microsoft.AspNetCore.Builder
 
             // Assert
             Assert.NotNull(httpContext.Features.Get<IEndpointFeature>());
+        }
+
+        [Fact]
+        public void UseEndpointRouting_CallWithBuilder_SetsEndpointBuilder()
+        {
+            // Arrange
+            var services = CreateServices();
+
+            var app = new ApplicationBuilder(services);
+
+            // Act
+            app.UseEndpointRouting(builder =>
+            {
+                builder.MapEndpoint(d => null, "/", "Test endpoint");
+            });
+
+            // Assert
+            var dataSourceBuilder = (DefaultEndpointDataSourceBuilder)services.GetRequiredService<EndpointDataSourceBuilder>();
+            var endpointBuilder = Assert.Single(dataSourceBuilder.Endpoints);
+            Assert.Equal("Test endpoint", endpointBuilder.DisplayName);
         }
 
         private IServiceProvider CreateServices()
