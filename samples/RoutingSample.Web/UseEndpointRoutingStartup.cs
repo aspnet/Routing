@@ -2,7 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Text;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Internal;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Internal;
+using Microsoft.AspNetCore.Routing.Matching;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -74,6 +82,22 @@ namespace RoutingSample.Web
                     },
                     "/withoptionalconstraints/{id:endsWith(_001)?}",
                     "withoptionalconstraints");
+              builder.MapEndpoint(
+                  (next) => (httpContext) =>
+                  {
+                      using (var writer = new StreamWriter(httpContext.Response.Body, Encoding.UTF8, 1024, leaveOpen: true))
+                      {
+                          var graphWriter = httpContext.RequestServices.GetRequiredService<DfaGraphWriter>();
+                          var dataSource = httpContext.RequestServices.GetRequiredService<CompositeEndpointDataSource>();
+                          graphWriter.Write(dataSource, writer);
+                      }
+
+                      return Task.CompletedTask;
+                  },
+                  "/graph",
+                  0,
+                  new EndpointMetadataCollection(new HttpMethodMetadata(new[]{ "GET", })),
+                  "DFA Graph");
             });
 
             // Imagine some more stuff here...
