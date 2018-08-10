@@ -246,12 +246,6 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             IDictionary<string, object> constraints,
             IEnumerable<RoutePatternPathSegment> segments)
         {
-            if ((defaults == null || defaults.Count == 0)
-                && (constraints == null || constraints.Count == 0))
-            {
-
-            }
-
             // We want to merge the segment data with the 'out of line' defaults and constraints.
             //
             // This means that for parameters that have 'out of line' defaults we will modify
