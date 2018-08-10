@@ -303,11 +303,27 @@ namespace Microsoft.AspNetCore.Routing.Patterns
 
             RoutePatternPathSegment VisitSegment(RoutePatternPathSegment segment)
             {
-                var updatedParts = new RoutePatternPart[segment.Parts.Count];
+                RoutePatternPart[] updatedParts = null;
                 for (var i = 0; i < segment.Parts.Count; i++)
                 {
                     var part = segment.Parts[i];
-                    updatedParts[i] = VisitPart(part);
+                    var updatedPart = VisitPart(part);
+
+                    if (part != updatedPart)
+                    {
+                        if (updatedParts == null)
+                        {
+                            updatedParts = segment.Parts.ToArray();
+                        }
+
+                        updatedParts[i] = updatedPart;
+                    }
+                }
+
+                if (updatedParts == null)
+                {
+                    // Segment has not changed
+                    return segment;
                 }
 
                 return new RoutePatternPathSegment(updatedParts);
@@ -355,6 +371,14 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 if (parameter.Constraints.Count > 0)
                 {
                     parameterConstraints.AddRange(parameter.Constraints);
+                }
+
+                if (parameter.Default == @default
+                    && parameter.Constraints.Count == 0
+                    && (parameterConstraints?.Count ?? 0) == 0)
+                {
+                    // Part has not changed
+                    return part;
                 }
 
                 return ParameterPartCore(
