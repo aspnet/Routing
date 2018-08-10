@@ -7,10 +7,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
 {
     internal readonly struct PathSegment : IEquatable<PathSegment>
     {
-        public readonly int Start;
-        public readonly int Length;
+        public readonly short Start;
+        public readonly short Length;
 
-        public PathSegment(int start, int length)
+        public PathSegment(short start, short length)
         {
             Start = start;
             Length = length;

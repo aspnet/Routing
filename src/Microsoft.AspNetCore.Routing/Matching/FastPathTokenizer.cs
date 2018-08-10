@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var span = path.AsSpan(start);
             while ((end = span.IndexOf('/')) >= 0 && count < segments.Length)
             {
-                segments[count++] = new PathSegment(start, end);
+                segments[count++] = new PathSegment((short)start, (short)end);
                 start += end + 1; // resume search after the current character
                 span = path.AsSpan(start);
             }
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var length = span.Length;
             if (length > 0 && count < segments.Length)
             {
-                segments[count++] = new PathSegment(start, length);
+                segments[count++] = new PathSegment((short)start, (short)length);
             }
 
             return count;
