@@ -373,7 +373,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                     parameterConstraints.AddRange(parameter.Constraints);
                 }
 
-                if (parameter.Default == @default
+                if (Equals(parameter.Default, @default)
                     && parameter.Constraints.Count == 0
                     && (parameterConstraints?.Count ?? 0) == 0)
                 {
