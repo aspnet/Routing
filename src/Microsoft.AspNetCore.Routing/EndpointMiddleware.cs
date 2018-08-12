@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Routing
 
                 try
                 {
-                    await feature.Invoker(_next)(httpContext);
+                    await feature.Invoker(httpContext);
                 }
                 finally
                 {

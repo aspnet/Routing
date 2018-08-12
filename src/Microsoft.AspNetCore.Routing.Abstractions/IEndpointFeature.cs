@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Routing
         /// Gets or sets a delegate that can be used to invoke the current
         /// <see cref="Routing.Endpoint"/>.
         /// </summary>
-        Func<RequestDelegate, RequestDelegate> Invoker { get; set; }
+        RequestDelegate Invoker { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="RouteValueDictionary"/> associated with the currrent

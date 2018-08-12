@@ -14,15 +14,12 @@ namespace Microsoft.AspNetCore.Routing.Matching
     /// </summary>
     public sealed class MatcherEndpoint : Endpoint
     {
-        internal static readonly Func<RequestDelegate, RequestDelegate> EmptyInvoker = (next) =>
-        {
-            return (context) => Task.CompletedTask;
-        };
+        internal static readonly RequestDelegate EmptyInvoker = (context) => Task.CompletedTask;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="MatcherEndpoint"/> class.
         /// </summary>
-        /// <param name="invoker">The delegate to invoke to create a <see cref="RequestDelegate"/>.</param>
+        /// <param name="invoker">The function that processes the request for the endpoint.</param>
         /// <param name="routePattern">The <see cref="RoutePattern"/> to use in URL matching.</param>
         /// <param name="order">The order assigned to the endpoint.</param>
         /// <param name="metadata">
@@ -30,7 +27,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         /// </param>
         /// <param name="displayName">The informational display name of the endpoint.</param>
         public MatcherEndpoint(
-            Func<RequestDelegate, RequestDelegate> invoker,
+            RequestDelegate invoker,
             RoutePattern routePattern,
             int order,
             EndpointMetadataCollection metadata,
@@ -53,9 +50,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
         }
 
         /// <summary>
-        /// Gets the invoker. The invoker is a delegate used to create a <see cref="RequestDelegate"/>.
+        /// Gets the invoker. The invoke is the function that processes the request for the endpoint.
         /// </summary>
-        public Func<RequestDelegate, RequestDelegate> Invoker { get; }
+        public RequestDelegate Invoker { get; }
 
         /// <summary>
         /// Gets the order value of endpoint.
