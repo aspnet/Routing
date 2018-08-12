@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             for (var i = 0; i < entries.Length; i++)
             {
-                var key = GetKey(entries[i].text, new PathSegment(0, entries[i].text.Length));
+                var key = GetKey(entries[i].text, new PathSegment((short)0, (short)entries[i].text.Length));
                 if (!map.TryGetValue(key, out var matches))
                 {
                     matches = new List<(string text, int destination)>();

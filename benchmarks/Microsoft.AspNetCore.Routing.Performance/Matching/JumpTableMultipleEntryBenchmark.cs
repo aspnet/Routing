@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             for (var i = 0; i < _strings.Length; i++)
             {
-                _segments[i] = new PathSegment(0, _strings[i].Length);
+                _segments[i] = new PathSegment((short)0, (short)_strings[i].Length);
             }
 
             var samples = new int[Count];

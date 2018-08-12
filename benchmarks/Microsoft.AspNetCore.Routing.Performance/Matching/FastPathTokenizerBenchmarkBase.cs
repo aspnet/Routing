@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             int end;
             while ((end = path.IndexOf('/', start)) >= 0 && count < maxCount)
             {
-                segments[count++] = new PathSegment(start, end - start);
+                segments[count++] = new PathSegment((short)start, (short)(end - start));
                 start = end + 1; // resume search after the current character
             }
 
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var length = path.Length - start;
             if (length > 0 && count < maxCount)
             {
-                segments[count++] = new PathSegment(start, length);
+                segments[count++] = new PathSegment((short)start, (short)length);
             }
         }
 
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             var start = 1;
             var length = path.Length - start;
-            segments[0] = new PathSegment(start, length);
+            segments[0] = new PathSegment((short)start, (short)length);
         }
     }
 }
