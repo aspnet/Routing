@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         /// <summary>
         /// Initializes a new instance of the <see cref="MatcherEndpoint"/> class.
         /// </summary>
-        /// <param name="invoker">The function that processes the request for the endpoint.</param>
+        /// <param name="invoker">The delegate used to processes requests for the endpoint.</param>
         /// <param name="routePattern">The <see cref="RoutePattern"/> to use in URL matching.</param>
         /// <param name="order">The order assigned to the endpoint.</param>
         /// <param name="metadata">
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         }
 
         /// <summary>
-        /// Gets the invoker. The invoke is the function that processes the request for the endpoint.
+        /// Gets the delegate used to processes requests for the endpoint.
         /// </summary>
         public RequestDelegate Invoker { get; }
 
