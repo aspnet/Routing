@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             Assert.Same(HttpMethodMatcherPolicy.Http405EndpointDisplayName, feature.Endpoint.DisplayName);
 
             // Invoke the endpoint
-            await feature.Invoker((c) => Task.CompletedTask)(httpContext);
+            await feature.Invoker(httpContext);
             Assert.Equal(405, httpContext.Response.StatusCode);
             Assert.Equal("DELETE, GET, PUT", httpContext.Response.Headers["Allow"]);
         }

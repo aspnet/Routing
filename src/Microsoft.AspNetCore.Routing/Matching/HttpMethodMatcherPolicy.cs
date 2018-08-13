@@ -251,7 +251,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             var allow = string.Join(", ", httpMethods);
             return new MatcherEndpoint(
-                (next) => (context) =>
+                (context) =>
                 {
                     context.Response.StatusCode = 405;
                     context.Response.Headers.Add("Allow", allow);
