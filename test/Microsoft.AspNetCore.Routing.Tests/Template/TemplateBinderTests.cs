@@ -668,6 +668,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         [Theory]
         [InlineData("a", "/a")]
         [InlineData("a/b", "/a/b")]
+        [InlineData("a//b", "/a//b")]
         [InlineData("a/b/c/d", "/a/b/c/d")]
         [InlineData("/a/b", "/a/b")]
         public void GetUrlWithCatchAll_DoesNotEncodeSlashes(string catchAllParameterValue, string expectedUrl)
