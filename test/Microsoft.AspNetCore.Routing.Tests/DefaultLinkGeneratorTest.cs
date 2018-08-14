@@ -1485,7 +1485,8 @@ namespace Microsoft.AspNetCore.Routing
 
             return new DefaultLinkGenerator(
                 new DefaultMatchProcessorFactory(options, serviceProvider),
-                new DefaultObjectPool<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy()),
+                new DefaultObjectPool<UriBuildingContext>(
+                    new UriBuilderContextPooledObjectPolicy(Options.Create(new RouteOptions()))),
                 options,
                 NullLogger<DefaultLinkGenerator>.Instance,
                 serviceProvider);

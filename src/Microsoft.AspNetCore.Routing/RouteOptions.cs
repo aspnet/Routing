@@ -26,6 +26,12 @@ namespace Microsoft.AspNetCore.Routing
         /// </summary>
         public bool AppendTrailingSlash { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether forward slashes appearing within a catch-all segment should be
+        /// encoded. Default is <c>false</c>.
+        /// </summary>
+        public bool EncodeSlashesInCatchAllParameter { get; set; }
+
         private IDictionary<string, Type> _constraintTypeMap = GetDefaultConstraintMap();
 
         public IDictionary<string, Type> ConstraintMap

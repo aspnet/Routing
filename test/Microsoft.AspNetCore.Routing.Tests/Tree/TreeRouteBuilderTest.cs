@@ -244,7 +244,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
         private static TreeRouteBuilder CreateBuilder()
         {
             var objectPoolProvider = new DefaultObjectPoolProvider();
-            var objectPolicy = new UriBuilderContextPooledObjectPolicy();
+            var objectPolicy = new UriBuilderContextPooledObjectPolicy(Options.Create(new RouteOptions()));
             var objectPool = objectPoolProvider.Create(objectPolicy);
 
             var constraintResolver = GetInlineConstraintResolver();

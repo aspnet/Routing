@@ -34,7 +34,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<ObjectPool<UriBuildingContext>>(s =>
             {
                 var provider = s.GetRequiredService<ObjectPoolProvider>();
-                return provider.Create<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy());
+                var routeOptions = s.GetRequiredService<IOptions<RouteOptions>>();
+                return provider.Create<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy(routeOptions));
             });
 
             // The TreeRouteBuilder is a builder for creating routes, it should stay transient because it's

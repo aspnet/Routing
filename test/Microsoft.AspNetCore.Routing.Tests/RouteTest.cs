@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
@@ -659,6 +660,8 @@ namespace Microsoft.AspNetCore.Routing
             var services = new ServiceCollection();
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
             services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IOptions<RouteOptions>>(
+                Options.Create(new RouteOptions())));
             services.AddRouting();
             // This test encoder should not be used by Routing and should always use the default one.
             services.AddSingleton<UrlEncoder>(new UrlTestEncoder());
@@ -1522,6 +1525,8 @@ namespace Microsoft.AspNetCore.Routing
             var services = new ServiceCollection();
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
             services.AddSingleton<ObjectPoolProvider, DefaultObjectPoolProvider>();
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IOptions<RouteOptions>>(
+                Options.Create(new RouteOptions())));
             services.AddRouting();
 
             var context = new DefaultHttpContext

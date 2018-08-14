@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
         private static readonly RequestDelegate NullHandler = (c) => Task.CompletedTask;
 
         private static ObjectPool<UriBuildingContext> Pool = new DefaultObjectPoolProvider().Create(
-            new UriBuilderContextPooledObjectPolicy());
+            new UriBuilderContextPooledObjectPolicy(Options.Create(new RouteOptions())));
 
         [Fact]
         public async Task TreeRouter_RouteAsync_MatchesCatchAllRoutesWithDefaults_UsingObsoleteConstructo()
@@ -2139,7 +2139,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
         private static TreeRouteBuilder CreateBuilder()
         {
             var objectPoolProvider = new DefaultObjectPoolProvider();
-            var objectPolicy = new UriBuilderContextPooledObjectPolicy();
+            var objectPolicy = new UriBuilderContextPooledObjectPolicy(Options.Create(new RouteOptions()));
             var objectPool = objectPoolProvider.Create<UriBuildingContext>(objectPolicy);
 
             var constraintResolver = CreateConstraintResolver();
@@ -2153,7 +2153,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
         private static TreeRouteBuilder CreateBuilderUsingObsoleteConstructor()
         {
             var objectPoolProvider = new DefaultObjectPoolProvider();
-            var objectPolicy = new UriBuilderContextPooledObjectPolicy();
+            var objectPolicy = new UriBuilderContextPooledObjectPolicy(Options.Create(new RouteOptions()));
             var objectPool = objectPoolProvider.Create<UriBuildingContext>(objectPolicy);
 
             var constraintResolver = CreateConstraintResolver();

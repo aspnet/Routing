@@ -117,7 +117,8 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             // Arrange
             var binder = new TemplateBinder(
                 UrlEncoder.Default,
-                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy()),
+                new DefaultObjectPoolProvider().Create(
+                    new UriBuilderContextPooledObjectPolicy(Options.Create(new RouteOptions()))),
                 TemplateParser.Parse(template),
                 defaults);
 
@@ -266,7 +267,8 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             // Arrange
             var binder = new TemplateBinder(
                 UrlEncoder.Default,
-                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy()),
+                new DefaultObjectPoolProvider().Create(
+                    new UriBuilderContextPooledObjectPolicy(Options.Create(new RouteOptions()))),
                 TemplateParser.Parse(template),
                 defaults);
 
@@ -660,7 +662,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 new RouteValueDictionary(new { id = "defaultid" }),
                 new RouteValueDictionary(new { p1 = "v1" }),
                 new RouteValueDictionary(new { p2 = "v2a/v2b" }),
-                "/v1/v2a/v2b");
+                "/v1/v2a%2Fv2b");
         }
 
         [Theory]
@@ -675,7 +677,8 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 defaults: new RouteValueDictionary(),
                 ambientValues: new RouteValueDictionary(),
                 values: new RouteValueDictionary(new { p1 = catchAllParameterValue }),
-                expectedUrl);
+                expectedUrl,
+                new RouteOptions() { EncodeSlashesInCatchAllParameter = true });
         }
 
         [Fact]
@@ -686,7 +689,8 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 defaults: new RouteValueDictionary(),
                 ambientValues: new RouteValueDictionary(),
                 values: new RouteValueDictionary(new { p1 = "a a1/b/c c1/d" }),
-                "/a%20a1/b/c%20c1/d");
+                "/a%20a1/b/c%20c1/d",
+                new RouteOptions() { EncodeSlashesInCatchAllParameter = true });
         }
 
         [Fact]
@@ -740,7 +744,8 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             var template = "{area?}/{controller=Home}/{action=Index}/{id?}";
             var binder = new TemplateBinder(
                 UrlEncoder.Default,
-                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy()),
+                new DefaultObjectPoolProvider().Create(
+                    new UriBuilderContextPooledObjectPolicy(Options.Create(new RouteOptions()))),
                 TemplateParser.Parse(template),
                 defaults: null);
             var ambientValues = new RouteValueDictionary();
@@ -1164,12 +1169,16 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             RouteValueDictionary defaults,
             RouteValueDictionary ambientValues,
             RouteValueDictionary values,
-            string expected)
+            string expected,
+            RouteOptions routeOptions = null)
         {
+            routeOptions = routeOptions ?? new RouteOptions();
+
             // Arrange
             var binder = new TemplateBinder(
                 UrlEncoder.Default,
-                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy()),
+                new DefaultObjectPoolProvider().Create(
+                    new UriBuilderContextPooledObjectPolicy(Options.Create(routeOptions))),
                 TemplateParser.Parse(template),
                 defaults);
 
@@ -1267,7 +1276,8 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             var explicitValues = new RouteValueDictionary(new { controller = "Home", action = "Index", area = "" });
             var binder = new TemplateBinder(
                 UrlEncoder.Default,
-                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy()),
+                new DefaultObjectPoolProvider().Create(
+                    new UriBuilderContextPooledObjectPolicy(Options.Create(new RouteOptions()))),
                 TemplateParser.Parse(template),
                 defaults);
 
@@ -1296,7 +1306,8 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             var explicitValues = new RouteValueDictionary(new { controller = "Home", action = "Index", area = (string)null });
             var binder = new TemplateBinder(
                 UrlEncoder.Default,
-                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy()),
+                new DefaultObjectPoolProvider().Create(
+                    new UriBuilderContextPooledObjectPolicy(Options.Create(new RouteOptions()))),
                 TemplateParser.Parse(template),
                 defaults);
 

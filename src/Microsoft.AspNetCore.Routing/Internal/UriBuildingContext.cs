@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Routing.Internal
 {
@@ -20,12 +21,14 @@ namespace Microsoft.AspNetCore.Routing.Internal
         // followed by other optional segments than we will just throw it away.
         private readonly List<BufferValue> _buffer;
         private readonly UrlEncoder _urlEncoder;
+        private readonly RouteOptions _options;
         private bool _hasEmptySegment;
         private int _lastValueOffset;
 
-        public UriBuildingContext(UrlEncoder urlEncoder)
+        public UriBuildingContext(UrlEncoder urlEncoder, RouteOptions routeOptions)
         {
             _urlEncoder = urlEncoder;
+            _options = routeOptions;
             _uri = new StringBuilder();
             _buffer = new List<BufferValue>();
             Writer = new StringWriter(_uri);
@@ -203,7 +206,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         private void EncodeValue(string value, int startIndex, int characterCount)
         {
-            if (value.IndexOf('/', startIndex, characterCount) > 0)
+            if (_options.EncodeSlashesInCatchAllParameter && value.IndexOf('/', startIndex, characterCount) > 0)
             {
                 var subValue = value.Substring(startIndex, characterCount);
                 var parts = subValue.Split('/');
