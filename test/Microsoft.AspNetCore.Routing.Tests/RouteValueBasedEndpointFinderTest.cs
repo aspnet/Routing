@@ -87,7 +87,8 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint1 = CreateEndpoint("/a");
             var dynamicDataSource = new DynamicEndpointDataSource(new[] { endpoint1 });
             var objectPoolProvider = new DefaultObjectPoolProvider();
-            var objectPool = objectPoolProvider.Create(new UriBuilderContextPooledObjectPolicy());
+            var objectPool = objectPoolProvider.Create(
+                new UriBuilderContextPooledObjectPolicy(Options.Create(new RouteOptions())));
 
             // Act 1
             var finder = new CustomRouteValuesBasedEndpointFinder(
@@ -224,7 +225,8 @@ namespace Microsoft.AspNetCore.Routing
         private CustomRouteValuesBasedEndpointFinder CreateEndpointFinder(params EndpointDataSource[] endpointDataSources)
         {
             var objectPoolProvider = new DefaultObjectPoolProvider();
-            var objectPool = objectPoolProvider.Create(new UriBuilderContextPooledObjectPolicy());
+            var objectPool = objectPoolProvider.Create(
+                new UriBuilderContextPooledObjectPolicy(Options.Create(new RouteOptions())));
 
             return new CustomRouteValuesBasedEndpointFinder(
                 new CompositeEndpointDataSource(endpointDataSources),

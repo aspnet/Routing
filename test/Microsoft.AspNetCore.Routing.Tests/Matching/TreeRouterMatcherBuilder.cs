@@ -32,7 +32,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             var builder = new TreeRouteBuilder(
                 NullLoggerFactory.Instance,
-                new DefaultObjectPool<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy()),
+                new DefaultObjectPool<UriBuildingContext>(
+                    new UriBuilderContextPooledObjectPolicy(Options.Create(new RouteOptions()))),
                 new DefaultInlineConstraintResolver(Options.Create(new RouteOptions())));
 
             var selector = new DefaultEndpointSelector(Array.Empty<MatcherPolicy>());

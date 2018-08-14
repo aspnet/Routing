@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Routing.Internal
 {
@@ -20,13 +21,14 @@ namespace Microsoft.AspNetCore.Routing.Internal
         // followed by other optional segments than we will just throw it away.
         private readonly List<BufferValue> _buffer;
         private readonly UrlEncoder _urlEncoder;
-
+        private readonly RouteOptions _options;
         private bool _hasEmptySegment;
         private int _lastValueOffset;
 
-        public UriBuildingContext(UrlEncoder urlEncoder)
+        public UriBuildingContext(UrlEncoder urlEncoder, RouteOptions routeOptions)
         {
             _urlEncoder = urlEncoder;
+            _options = routeOptions;
             _uri = new StringBuilder();
             _buffer = new List<BufferValue>();
             Writer = new StringWriter(_uri);
@@ -67,7 +69,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             {
                 if (_buffer[i].RequiresEncoding)
                 {
-                    _urlEncoder.Encode(Writer, _buffer[i].Value);
+                    EncodeValue(_buffer[i].Value);
                 }
                 else
                 {
@@ -93,11 +95,11 @@ namespace Microsoft.AspNetCore.Routing.Internal
             if (_uri.Length == 0 && value.Length > 0 && value[0] == '/')
             {
                 _uri.Append("/");
-                _urlEncoder.Encode(Writer, value, 1, value.Length - 1);
+                EncodeValue(value, 1, value.Length - 1);
             }
             else
             {
-                _urlEncoder.Encode(Writer, value);
+                EncodeValue(value);
             }
 
             return true;
@@ -195,6 +197,32 @@ namespace Microsoft.AspNetCore.Routing.Internal
             }
 
             return _uri.ToString();
+        }
+
+        private void EncodeValue(string value)
+        {
+            EncodeValue(value, startIndex: 0, characterCount: value.Length);
+        }
+
+        private void EncodeValue(string value, int startIndex, int characterCount)
+        {
+            if (_options.EncodeSlashesInCatchAllParameter && value.IndexOf('/', startIndex, characterCount) > 0)
+            {
+                var subValue = value.Substring(startIndex, characterCount);
+                var parts = subValue.Split('/');
+                for (var i = 0; i < parts.Length; i++)
+                {
+                    _urlEncoder.Encode(Writer, parts[i]);
+                    if (i != parts.Length - 1)
+                    {
+                        _uri.Append("/");
+                    }
+                }
+            }
+            else
+            {
+                _urlEncoder.Encode(Writer, value, startIndex, characterCount);
+            }
         }
 
         private string DebuggerToString()
