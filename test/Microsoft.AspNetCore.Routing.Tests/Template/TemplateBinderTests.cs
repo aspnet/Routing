@@ -660,7 +660,33 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 new RouteValueDictionary(new { id = "defaultid" }),
                 new RouteValueDictionary(new { p1 = "v1" }),
                 new RouteValueDictionary(new { p2 = "v2a/v2b" }),
-                "/v1/v2a%2Fv2b");
+                "/v1/v2a/v2b");
+        }
+
+        [Theory]
+        [InlineData("a", "/a")]
+        [InlineData("a/b", "/a/b")]
+        [InlineData("a/b/c/d", "/a/b/c/d")]
+        [InlineData("/a/b", "/a/b")]
+        public void GetUrlWithCatchAll_DoesNotEncodeSlashes(string catchAllParameterValue, string expectedUrl)
+        {
+            RunTest(
+                "{*p1}",
+                defaults: new RouteValueDictionary(),
+                ambientValues: new RouteValueDictionary(),
+                values: new RouteValueDictionary(new { p1 = catchAllParameterValue }),
+                expectedUrl);
+        }
+
+        [Fact]
+        public void GetUrlWithCatchAll_DoesNotEncodeSlashes_ButEncodesOtherCharacters()
+        {
+            RunTest(
+                "{*p1}",
+                defaults: new RouteValueDictionary(),
+                ambientValues: new RouteValueDictionary(),
+                values: new RouteValueDictionary(new { p1 = "a a1/b/c c1/d" }),
+                "/a%20a1/b/c%20c1/d");
         }
 
         [Fact]
