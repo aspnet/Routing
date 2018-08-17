@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
     /// by the routing system. Used by implementations of <see cref="EndpointSelector"/>
     /// and <see cref="IEndpointSelectorPolicy"/>.
     /// </summary>
-    public sealed class CandidateSet
+    public abstract class CandidateSet
     {
         // We inline storage for 4 candidates here to avoid allocations in common
         // cases. There's no real reason why 4 is important, it just seemed like 

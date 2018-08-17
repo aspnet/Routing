@@ -26,29 +26,30 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public override Task SelectAsync(
             HttpContext httpContext,
             IEndpointFeature feature,
-            CandidateSet candidateSet)
+            ReadOnlyMemory<CandidateState> candidateSet)
         {
-            for (var i = 0; i < _selectorPolicies.Length; i++)
+            var selectorPolicies = _selectorPolicies;
+            for (var i = 0; i < selectorPolicies.Length; i++)
             {
-                _selectorPolicies[i].Apply(httpContext, candidateSet);
+                selectorPolicies[i].Apply(httpContext, candidateSet);
             }
 
             MatcherEndpoint endpoint = null;
             RouteValueDictionary values = null;
             int? foundScore = null;
-            for (var i = 0; i < candidateSet.Count; i++)
-            {
-                ref var state = ref candidateSet[i];
 
-                var isValid = state.IsValidCandidate;
+            var span = candidateSet.Span;
+            for (var i = 0; i < span.Length; i++)
+            {
+                var isValid = span[i].IsValidCandidate;
                 if (isValid && foundScore == null)
                 {
                     // This is the first match we've seen - speculatively assign it.
-                    endpoint = state.Endpoint;
-                    values = state.Values;
-                    foundScore = state.Score;
+                    endpoint = span[i].Endpoint;
+                    values = span[i].Values;
+                    foundScore = span[i].Score;
                 }
-                else if (isValid && foundScore < state.Score)
+                else if (isValid && foundScore < span[i].Score)
                 {
                     // This candidate is lower priority than the one we've seen
                     // so far, we can stop.
@@ -56,14 +57,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     // Don't worry about the 'null < state.Score' case, it returns false.
                     break;
                 }
-                else if (isValid && foundScore == state.Score)
+                else if (isValid && foundScore == span[i].Score)
                 {
                     // This is the second match we've found of the same score, so there 
                     // must be an ambiguity.
                     //
                     // Don't worry about the 'null == state.Score' case, it returns false.
 
-                    ReportAmbiguity(candidateSet);
+                    ReportAmbiguity(span);
 
                     // Unreachable, ReportAmbiguity always throws.
                     throw new NotSupportedException();
@@ -80,17 +81,16 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return Task.CompletedTask;
         }
 
-        private static void ReportAmbiguity(CandidateSet candidates)
+        private static void ReportAmbiguity(ReadOnlySpan<CandidateState> candidates)
         {
             // If we get here it's the result of an ambiguity - we're OK with this
             // being a littler slower and more allocatey.
             var matches = new List<MatcherEndpoint>();
-            for (var i = 0; i < candidates.Count; i++)
+            for (var i = 0; i < candidates.Length; i++)
             {
-                ref var state = ref candidates[i];
-                if (state.IsValidCandidate)
+                if (candidates[i].IsValidCandidate)
                 {
-                    matches.Add(state.Endpoint);
+                    matches.Add(candidates[i].Endpoint);
                 }
             }
 

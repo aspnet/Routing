@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // set of endpoints before we call the EndpointSelector.
             //
             // `candidateSet` is the mutable state that we pass to the EndpointSelector.
-            var candidateSet = new CandidateSet(candidates);
+            var candidateState = new CandidateState[candidates.Length];
 
             for (var i = 0; i < candidates.Length; i++)
             {
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 // candidate: readonly data about the endpoint and how to match
                 // state: mutable storarge for our processing
                 ref var candidate = ref candidates[i];
-                ref var state = ref candidateSet[i];
+                candidateState[i] = new CandidateState(candidate.Endpoint, candidate.Score);
 
                 var flags = candidate.Flags;
 
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     values = RouteValueDictionary.FromArray(slots);
                 }
 
-                state.Values = values;
+                candidateState[i].Values = values;
 
                 // Now that we have the route values, we need to process complex segments.
                 // Complex segments go through an old API that requires a fully-materialized
@@ -128,10 +128,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     isMatch &= ProcessMatchProcessors(candidate.MatchProcessors, httpContext, values);
                 }
 
-                state.IsValidCandidate = isMatch;
+                candidateState[i].IsValidCandidate = isMatch;
             }
 
-            return _selector.SelectAsync(httpContext, feature, candidateSet);
+            return _selector.SelectAsync(httpContext, feature, candidateState);
         }
 
         internal Candidate[] FindCandidateSet(

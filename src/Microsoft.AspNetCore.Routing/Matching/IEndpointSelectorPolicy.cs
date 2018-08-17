@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Routing.Matching
@@ -25,6 +26,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
         /// and filter the set of candidates in the <paramref name="candidates"/> by setting
         /// <see cref="CandidateState.IsValidCandidate"/> to <c>false</c> where desired.
         /// </remarks>
-        void Apply(HttpContext httpContext, CandidateSet candidates);
+        void Apply(HttpContext httpContext, ReadOnlyMemory<CandidateState> candidates);
     }
 }

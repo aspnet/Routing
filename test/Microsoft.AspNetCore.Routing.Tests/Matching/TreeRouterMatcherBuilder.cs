@@ -97,12 +97,23 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
                 // This is needed due to a quirk of our tests - they reuse the endpoint feature.
                 feature.Endpoint = null;
-                
-                await _selector.SelectAsync(context.HttpContext, feature, new CandidateSet(_candidates, _scores));
+
+                await _selector.SelectAsync(context.HttpContext, feature, CreateCandidateSet(_candidates, _scores));
                 if (feature.Endpoint != null)
                 {
                     context.Handler = (_) => Task.CompletedTask;
                 }
+            }
+
+            private static ReadOnlyMemory<CandidateState> CreateCandidateSet(MatcherEndpoint[] endpoints, int[] scores)
+            {
+                var candidates = new CandidateState[endpoints.Length];
+                for (var i = 0; i <endpoints.Length; i++)
+                {
+                    candidates[i] = new CandidateState(endpoints[i], scores[i]);
+                }
+
+                return candidates;
             }
         }
     }
