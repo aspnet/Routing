@@ -363,21 +363,21 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                     updatedDefaults.Add(parameter.Name, parameter.Default);
                 }
 
-                if (!updatedParameterPolicies.TryGetValue(parameter.Name, out var parameterPolicies) &&
+                if (!updatedParameterPolicies.TryGetValue(parameter.Name, out var parameterConstraints) &&
                     parameter.ParameterPolicies.Count > 0)
                 {
                     parameterConstraints = new List<RoutePatternParameterPolicyReference>();
-                    updatedParameterPolicies.Add(parameter.Name, parameterPolicies);
+                    updatedParameterPolicies.Add(parameter.Name, parameterConstraints);
                 }
 
                 if (parameter.ParameterPolicies.Count > 0)
                 {
-                    parameterPolicies.AddRange(parameter.ParameterPolicies);
+                    parameterConstraints.AddRange(parameter.ParameterPolicies);
                 }
 
                 if (Equals(parameter.Default, @default)
                     && parameter.ParameterPolicies.Count == 0
-                    && (parameterPolicies?.Count ?? 0) == 0)
+                    && (parameterConstraints?.Count ?? 0) == 0)
                 {
                     // Part has not changed
                     return part;
@@ -391,7 +391,6 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                     parameter.EncodeSlashes);
             }
         }
-
         /// <summary>
         /// Creates a <see cref="RoutePatternPathSegment"/> from the provided collection
         /// of parts.
