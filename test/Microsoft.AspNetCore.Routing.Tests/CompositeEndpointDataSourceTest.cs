@@ -153,8 +153,8 @@ namespace Microsoft.AspNetCore.Routing
             int order = 0,
             string routeName = null)
         {
-            return new MatcherEndpoint(
-                MatcherEndpoint.EmptyInvoker,
+            return new RouteEndpoint(
+                TestConstants.EmptyRequestDelegate,
                 RoutePatternFactory.Parse(template, defaults, parameterPolicies: null),
                 order,
                 EndpointMetadataCollection.Empty,
