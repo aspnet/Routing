@@ -554,7 +554,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
                             Label = parent.Label + " " + edge.State.ToString(),
                         };
 
-                        // TODO: https://github.com/aspnet/Routing/issues/648
                         next.Matches.AddRange(edge.Endpoints);
                         nextWork.Add(next);
 
