@@ -43,13 +43,12 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var factory = GetParameterPolicyFactory(options, services);
 
             // Act
-            var exception = Assert.Throws<InvalidOperationException>(
+            var exception = Assert.Throws<RouteCreationException>(
                 () => factory.Create(RoutePatternFactory.ParameterPart("id"), @"bad"));
 
             // Assert
             Assert.Equal(
-                $"Invalid constraint type '{typeof(string)}' registered as 'bad'. " +
-                $"A constraint  type must either implement '{typeof(IRouteConstraint)}', or inherit from '{typeof(IParameterPolicy)}'.",
+                $"The constraint type '{typeof(string)}' which is mapped to constraint key 'bad' must implement the '{nameof(IParameterPolicy)}' interface.",
                 exception.Message);
         }
 
@@ -154,6 +153,37 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
         }
 
+        private class CustomParameterPolicyWithArguments : IParameterPolicy
+        {
+            public CustomParameterPolicyWithArguments(ITestService testService, int count)
+            {
+                Count = count;
+            }
+
+            public int Count { get; }
+        }
+
+        private class CustomParameterPolicyWithMultipleArguments : IParameterPolicy
+        {
+            public CustomParameterPolicyWithMultipleArguments(int first, ITestService testService1, int second, ITestService testService2)
+            {
+                First = first;
+                Second = second;
+            }
+
+            public int First { get; }
+            public int Second { get; }
+        }
+
+        public interface ITestService
+        {
+        }
+
+        public class TestService : ITestService
+        {
+
+        }
+
         [Fact]
         public void Create_CreatesParameterPolicy_FromConstraintText_AndRouteConstraint()
         {
@@ -165,6 +195,21 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             // Assert
             Assert.IsType<IntRouteConstraint>(parameterPolicy);
+        }
+
+        [Fact]
+        public void Create_CreatesParameterPolicy_FromConstraintText_AndRouteConstraintWithArgument()
+        {
+            // Arrange
+            var factory = GetParameterPolicyFactory();
+
+            // Act
+            var parameterPolicy = factory.Create(RoutePatternFactory.ParameterPart("id"), "range(1,20)");
+
+            // Assert
+            var constraint = Assert.IsType<RangeRouteConstraint>(parameterPolicy);
+            Assert.Equal(1, constraint.Min);
+            Assert.Equal(20, constraint.Max);
         }
 
         [Fact]
@@ -198,6 +243,47 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             // Assert
             Assert.IsType<CustomParameterPolicy>(parameterPolicy);
+        }
+
+        [Fact]
+        public void Create_CreatesParameterPolicy_FromConstraintText_AndParameterPolicyWithArgumentAndServices()
+        {
+            // Arrange
+            var options = new RouteOptions();
+            options.ConstraintMap.Add("customConstraintPolicy", typeof(CustomParameterPolicyWithArguments));
+
+            var services = new ServiceCollection();
+            services.AddTransient<ITestService, TestService>();
+
+            var factory = GetParameterPolicyFactory(options, services);
+
+            // Act
+            var parameterPolicy = factory.Create(RoutePatternFactory.ParameterPart("id"), "customConstraintPolicy(20)");
+
+            // Assert
+            var constraint = Assert.IsType<CustomParameterPolicyWithArguments>(parameterPolicy);
+            Assert.Equal(20, constraint.Count);
+        }
+
+        [Fact]
+        public void Create_CreatesParameterPolicy_FromConstraintText_AndParameterPolicyWithArgumentAndMultipleServices()
+        {
+            // Arrange
+            var options = new RouteOptions();
+            options.ConstraintMap.Add("customConstraintPolicy", typeof(CustomParameterPolicyWithMultipleArguments));
+
+            var services = new ServiceCollection();
+            services.AddTransient<ITestService, TestService>();
+
+            var factory = GetParameterPolicyFactory(options, services);
+
+            // Act
+            var parameterPolicy = factory.Create(RoutePatternFactory.ParameterPart("id"), "customConstraintPolicy(20,-1)");
+
+            // Assert
+            var constraint = Assert.IsType<CustomParameterPolicyWithMultipleArguments>(parameterPolicy);
+            Assert.Equal(20, constraint.First);
+            Assert.Equal(-1, constraint.Second);
         }
 
         [Fact]
