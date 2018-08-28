@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Routing.Internal
 {
@@ -143,7 +144,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
                 if (serviceProvider != null && !typeof(IConvertible).IsAssignableFrom(parameterType))
                 {
-                    parameters[i] = serviceProvider.GetService(parameterType);
+                    parameters[i] = serviceProvider.GetRequiredService(parameterType);
                 }
                 else
                 {

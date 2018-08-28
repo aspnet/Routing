@@ -149,41 +149,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
             Assert.IsType<CustomParameterPolicy>(parameterPolicy);
         }
 
-        private class CustomParameterPolicy : IParameterPolicy
-        {
-        }
-
-        private class CustomParameterPolicyWithArguments : IParameterPolicy
-        {
-            public CustomParameterPolicyWithArguments(ITestService testService, int count)
-            {
-                Count = count;
-            }
-
-            public int Count { get; }
-        }
-
-        private class CustomParameterPolicyWithMultipleArguments : IParameterPolicy
-        {
-            public CustomParameterPolicyWithMultipleArguments(int first, ITestService testService1, int second, ITestService testService2)
-            {
-                First = first;
-                Second = second;
-            }
-
-            public int First { get; }
-            public int Second { get; }
-        }
-
-        public interface ITestService
-        {
-        }
-
-        public class TestService : ITestService
-        {
-
-        }
-
         [Fact]
         public void Create_CreatesParameterPolicy_FromConstraintText_AndRouteConstraint()
         {
@@ -263,6 +228,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // Assert
             var constraint = Assert.IsType<CustomParameterPolicyWithArguments>(parameterPolicy);
             Assert.Equal(20, constraint.Count);
+            Assert.NotNull(constraint.TestService);
         }
 
         [Fact]
@@ -284,6 +250,28 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var constraint = Assert.IsType<CustomParameterPolicyWithMultipleArguments>(parameterPolicy);
             Assert.Equal(20, constraint.First);
             Assert.Equal(-1, constraint.Second);
+            Assert.NotNull(constraint.TestService1);
+            Assert.NotNull(constraint.TestService2);
+        }
+
+        [Fact]
+        public void Create_CreatesParameterPolicy_FromConstraintText_AndParameterPolicyWithArgumentAndUnresolvedServices_Throw()
+        {
+            // Arrange
+            var options = new RouteOptions();
+            options.ConstraintMap.Add("customConstraintPolicy", typeof(CustomParameterPolicyWithArguments));
+
+            var services = new ServiceCollection();
+
+            var factory = GetParameterPolicyFactory(options, services);
+
+            // Act
+            var exception = Assert.Throws<RouteCreationException>(
+                () => factory.Create(RoutePatternFactory.ParameterPart("id"), "customConstraintPolicy(20)"));
+
+            // Assert
+            var inner = Assert.IsType<InvalidOperationException>(exception.InnerException);
+            Assert.Equal($"No service for type '{typeof(ITestService).FullName}' has been registered.", inner.Message);
         }
 
         [Fact]
@@ -354,5 +342,46 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 return false;
             }
         }
+    }
+
+    public class CustomParameterPolicy : IParameterPolicy
+    {
+    }
+
+    public class CustomParameterPolicyWithArguments : IParameterPolicy
+    {
+        public CustomParameterPolicyWithArguments(ITestService testService, int count)
+        {
+            TestService = testService;
+            Count = count;
+        }
+
+        public ITestService TestService { get; }
+        public int Count { get; }
+    }
+
+    public class CustomParameterPolicyWithMultipleArguments : IParameterPolicy
+    {
+        public CustomParameterPolicyWithMultipleArguments(int first, ITestService testService1, int second, ITestService testService2)
+        {
+            First = first;
+            TestService1 = testService1;
+            Second = second;
+            TestService2 = testService2;
+        }
+
+        public int First { get; }
+        public ITestService TestService1 { get; }
+        public int Second { get; }
+        public ITestService TestService2 { get; }
+    }
+
+    public interface ITestService
+    {
+    }
+
+    public class TestService : ITestService
+    {
+
     }
 }
