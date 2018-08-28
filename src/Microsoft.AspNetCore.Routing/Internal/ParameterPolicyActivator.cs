@@ -10,14 +10,19 @@ namespace Microsoft.AspNetCore.Routing.Internal
 {
     internal static class ParameterPolicyActivator
     {
-        public static IParameterPolicy ResolveParameterPolicy(IDictionary<string, Type> inlineParameterPolicyMap, IServiceProvider serviceProvider, string inlineParameterPolicy)
+        public static T ResolveParameterPolicy<T>(IDictionary<string, Type> inlineParameterPolicyMap, IServiceProvider serviceProvider, string inlineParameterPolicy, out string parameterPolicyKey)
+            where T : IParameterPolicy
         {
+            if (inlineParameterPolicyMap == null)
+            {
+                throw new ArgumentNullException(nameof(inlineParameterPolicyMap));
+            }
+
             if (inlineParameterPolicy == null)
             {
                 throw new ArgumentNullException(nameof(inlineParameterPolicy));
             }
 
-            string parameterPolicyKey;
             string argumentString;
             var indexOfFirstOpenParens = inlineParameterPolicy.IndexOf('(');
             if (indexOfFirstOpenParens >= 0 && inlineParameterPolicy.EndsWith(")", StringComparison.Ordinal))
@@ -35,22 +40,19 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
             if (!inlineParameterPolicyMap.TryGetValue(parameterPolicyKey, out var parameterPolicyType))
             {
-                throw new InvalidOperationException(Resources.FormatRoutePattern_ConstraintReferenceNotFound(
-                    parameterPolicyKey,
-                    typeof(RouteOptions),
-                    nameof(RouteOptions.ConstraintMap)));
+                return default;
             }
 
-            if (!typeof(IParameterPolicy).IsAssignableFrom(parameterPolicyType))
+            if (!typeof(T).IsAssignableFrom(parameterPolicyType))
             {
                 throw new RouteCreationException(
                             Resources.FormatDefaultInlineConstraintResolver_TypeNotConstraint(
-                                                        parameterPolicyType, parameterPolicyKey, typeof(IParameterPolicy).Name));
+                                                        parameterPolicyType, parameterPolicyKey, typeof(T).Name));
             }
 
             try
             {
-                return CreateParameterPolicy(serviceProvider, parameterPolicyType, argumentString);
+                return (T)CreateParameterPolicy(serviceProvider, parameterPolicyType, argumentString);
             }
             catch (RouteCreationException)
             {
@@ -64,7 +66,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             }
         }
 
-        internal static IParameterPolicy CreateParameterPolicy(IServiceProvider serviceProvider, Type constraintType, string argumentString)
+        private static IParameterPolicy CreateParameterPolicy(IServiceProvider serviceProvider, Type constraintType, string argumentString)
         {
             // No arguments - call the default constructor
             if (argumentString == null)
@@ -122,7 +124,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             }
 
             var count = 0;
-            for (int i = 0; i < parameters.Length; i++)
+            for (var i = 0; i < parameters.Length; i++)
             {
                 if (typeof(IConvertible).IsAssignableFrom(parameters[i].ParameterType))
                 {

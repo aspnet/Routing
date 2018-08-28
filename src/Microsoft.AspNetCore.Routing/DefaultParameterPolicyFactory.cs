@@ -44,7 +44,14 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(inlineText));
             }
 
-            var parameterPolicy = ParameterPolicyActivator.ResolveParameterPolicy(_options.ConstraintMap, _serviceProvider, inlineText);
+            var parameterPolicy = ParameterPolicyActivator.ResolveParameterPolicy<IParameterPolicy>(_options.ConstraintMap, _serviceProvider, inlineText, out var parameterPolicyKey);
+            if (parameterPolicy == null)
+            {
+                throw new InvalidOperationException(Resources.FormatRoutePattern_ConstraintReferenceNotFound(
+                        parameterPolicyKey,
+                        typeof(RouteOptions),
+                        nameof(RouteOptions.ConstraintMap)));
+            }
 
             if (parameterPolicy is IRouteConstraint constraint)
             {
