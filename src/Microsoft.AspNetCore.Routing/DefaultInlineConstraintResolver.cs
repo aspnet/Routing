@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Routing
     public class DefaultInlineConstraintResolver : IInlineConstraintResolver
     {
         private readonly IDictionary<string, Type> _inlineConstraintMap;
+        private readonly IServiceProvider _serviceProvider;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultInlineConstraintResolver"/> class.
@@ -26,8 +27,14 @@ namespace Microsoft.AspNetCore.Routing
         /// Accessor for <see cref="RouteOptions"/> containing the constraints of interest.
         /// </param>
         public DefaultInlineConstraintResolver(IOptions<RouteOptions> routeOptions)
+            : this(routeOptions, null)
+        {
+        }
+
+        public DefaultInlineConstraintResolver(IOptions<RouteOptions> routeOptions, IServiceProvider serviceProvider)
         {
             _inlineConstraintMap = routeOptions.Value.ConstraintMap;
+            _serviceProvider = serviceProvider;
         }
 
         /// <inheritdoc />
@@ -90,7 +97,7 @@ namespace Microsoft.AspNetCore.Routing
             }
         }
 
-        internal static IRouteConstraint CreateConstraint(Type constraintType, string argumentString)
+        internal IRouteConstraint CreateConstraint(Type constraintType, string argumentString)
         {
             // No arguments - call the default constructor
             if (argumentString == null)
@@ -105,7 +112,7 @@ namespace Microsoft.AspNetCore.Routing
 
             // If there is only one constructor and it has a single parameter, pass the argument string directly
             // This is necessary for the Regex RouteConstraint to ensure that patterns are not split on commas.
-            if (constructors.Length == 1 && constructors[0].GetParameters().Length == 1)
+            if (constructors.Length == 1 && GetNonConvertableParameterTypeCount(constructors[0].GetParameters()) == 1)
             {
                 activationConstructor = constructors[0];
                 parameters = ConvertArguments(activationConstructor.GetParameters(), new string[] { argumentString });
@@ -114,7 +121,7 @@ namespace Microsoft.AspNetCore.Routing
             {
                 var arguments = argumentString.Split(',').Select(argument => argument.Trim()).ToArray();
 
-                var matchingConstructors = constructors.Where(ci => ci.GetParameters().Length == arguments.Length)
+                var matchingConstructors = constructors.Where(ci => GetNonConvertableParameterTypeCount(ci.GetParameters()) == arguments.Length)
                                                        .ToArray();
                 var constructorMatches = matchingConstructors.Length;
 
@@ -140,14 +147,41 @@ namespace Microsoft.AspNetCore.Routing
             return (IRouteConstraint)activationConstructor.Invoke(parameters);
         }
 
-        private static object[] ConvertArguments(ParameterInfo[] parameterInfos, string[] arguments)
+        private int GetNonConvertableParameterTypeCount(ParameterInfo[] parameters)
+        {
+            if (_serviceProvider == null)
+            {
+                return parameters.Length;
+            }
+
+            var count = 0;
+            for (int i = 0; i < parameters.Length; i++)
+            {
+                if (parameters[i].ParameterType.IsAssignableFrom(typeof(IConvertible)))
+                {
+                    count++;
+                }
+            }
+
+            return count;
+        }
+
+        private object[] ConvertArguments(ParameterInfo[] parameterInfos, string[] arguments)
         {
             var parameters = new object[parameterInfos.Length];
             for (var i = 0; i < parameterInfos.Length; i++)
             {
                 var parameter = parameterInfos[i];
                 var parameterType = parameter.ParameterType;
-                parameters[i] = Convert.ChangeType(arguments[i], parameterType, CultureInfo.InvariantCulture);
+
+                if (_serviceProvider != null && !parameterType.IsAssignableFrom(typeof(IConvertible)))
+                {
+                    parameters[i] = _serviceProvider.GetService(parameterType);
+                }
+                else
+                {
+                    parameters[i] = Convert.ChangeType(arguments[i], parameterType, CultureInfo.InvariantCulture);
+                }
             }
 
             return parameters;
