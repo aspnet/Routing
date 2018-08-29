@@ -103,7 +103,7 @@ namespace RoutingSample.Web
                             response.StatusCode = 200;
                             response.ContentType = "text/plain";
                             return response.WriteAsync(
-                                "Link: " + linkGenerator.GetLink(httpContext, "WithSingleAsteriskCatchAll", new { }));
+                                "Link: " + linkGenerator.GetPathByRouteValues(httpContext, "WithSingleAsteriskCatchAll", new { }));
                         },
                         RoutePatternFactory.Parse("/WithSingleAsteriskCatchAll/{*path}"),
                         0,
@@ -120,7 +120,7 @@ namespace RoutingSample.Web
                             response.StatusCode = 200;
                             response.ContentType = "text/plain";
                             return response.WriteAsync(
-                                "Link: " + linkGenerator.GetLink(httpContext, "WithDoubleAsteriskCatchAll", new { }));
+                                "Link: " + linkGenerator.GetPathByRouteValues(httpContext, "WithDoubleAsteriskCatchAll", new { }));
                         },
                         RoutePatternFactory.Parse("/WithDoubleAsteriskCatchAll/{**path}"),
                         0,

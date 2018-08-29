@@ -37,20 +37,6 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Fact]
-        public void GetLink_Fail_ThrowsException()
-        {
-            // Arrange
-            var expectedMessage = "Could not find a matching endpoint to generate a link.";
-            var endpoint = EndpointFactory.CreateRouteEndpoint("{controller}/{action}");
-            var linkGenerator = CreateLinkGenerator(endpoint);
-
-            // Act & Assert
-            var exception = Assert.Throws<InvalidOperationException>(
-                () => linkGenerator.GetLink(new { controller = "Home" }));
-            Assert.Equal(expectedMessage, exception.Message);
-        }
-
-        [Fact]
         public void TryGetLink_Fail()
         {
             // Arrange
@@ -1493,7 +1479,7 @@ namespace Microsoft.AspNetCore.Routing
             Assert.NotNull(template);
 
             // Act2
-            var link = template.MakeUrl(new { id = 10 }, new LinkOptions { LowercaseUrls = true });
+            var link = template.GetPath(new { id = 10 }, new LinkOptions { LowercaseUrls = true });
 
             // Assert2
             Assert.Equal("/customers/details/10", link);

@@ -1,6 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Microsoft.AspNetCore.Http;
+
 namespace Microsoft.AspNetCore.Routing
 {
     /// <summary>
@@ -8,22 +10,30 @@ namespace Microsoft.AspNetCore.Routing
     /// </summary>
     public abstract class LinkGenerationTemplate
     {
-        /// <summary>
-        /// Generates a URL with an absolute path from the specified route values.
-        /// </summary>
-        /// <param name="values">An object that contains route values.</param>
-        /// <returns>The generated URL.</returns>
-        public string MakeUrl(object values)
-        {
-            return MakeUrl(values, options: null);
-        }
+        public abstract string GetPath(
+            HttpContext httpContext,
+            object values,
+            FragmentString fragment = default,
+            LinkOptions options = default);
 
-        /// <summary>
-        /// Generates a URL with an absolute path from the specified route values and link options.
-        /// </summary>
-        /// <param name="values">An object that contains route values.</param>
-        /// <param name="options">The <see cref="LinkOptions"/>.</param>
-        /// <returns>The generated URL.</returns>
-        public abstract string MakeUrl(object values, LinkOptions options);
+        public abstract string GetPath(
+            object values,
+            PathString pathBase = default,
+            FragmentString fragment = default,
+            LinkOptions options = default);
+
+        public abstract string GetUri(
+            HttpContext httpContext,
+            object values,
+            FragmentString fragment = default,
+            LinkOptions options = default);
+
+        public abstract string GetUri(
+            object values,
+            string scheme,
+            HostString host,
+            PathString pathBase = default,
+            FragmentString fragment = default,
+            LinkOptions options = default);
     }
 }
