@@ -24,13 +24,19 @@ namespace Microsoft.AspNetCore.Routing
         /// <param name="routeOptions">
         /// Accessor for <see cref="RouteOptions"/> containing the constraints of interest.
         /// </param>
+        [Obsolete("This constructor is obsolete. Use DefaultInlineConstraintResolver.ctor(IOptions<RouteOptions>, IServiceProvider) instead.")]
         public DefaultInlineConstraintResolver(IOptions<RouteOptions> routeOptions)
-            : this(routeOptions, null)
         {
+            _inlineConstraintMap = routeOptions.Value.ConstraintMap;
         }
 
         public DefaultInlineConstraintResolver(IOptions<RouteOptions> routeOptions, IServiceProvider serviceProvider)
         {
+            if (serviceProvider == null)
+            {
+                throw new ArgumentNullException(nameof(serviceProvider));
+            }
+
             _inlineConstraintMap = routeOptions.Value.ConstraintMap;
             _serviceProvider = serviceProvider;
         }

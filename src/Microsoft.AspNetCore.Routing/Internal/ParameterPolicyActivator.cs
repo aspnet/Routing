@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -13,6 +16,9 @@ namespace Microsoft.AspNetCore.Routing.Internal
         public static T ResolveParameterPolicy<T>(IDictionary<string, Type> inlineParameterPolicyMap, IServiceProvider serviceProvider, string inlineParameterPolicy, out string parameterPolicyKey)
             where T : IParameterPolicy
         {
+            // IServiceProvider could be null
+            // DefaultInlineConstraintResolver can be created without an IServiceProvider and then call this method
+
             if (inlineParameterPolicyMap == null)
             {
                 throw new ArgumentNullException(nameof(inlineParameterPolicyMap));
@@ -66,12 +72,11 @@ namespace Microsoft.AspNetCore.Routing.Internal
             }
         }
 
-        private static IParameterPolicy CreateParameterPolicy(IServiceProvider serviceProvider, Type constraintType, string argumentString)
+        private static IParameterPolicy CreateParameterPolicy(IServiceProvider serviceProvider, Type parameterPolicyType, string argumentString)
         {
-            var constraintTypeInfo = constraintType.GetTypeInfo();
             ConstructorInfo activationConstructor = null;
             object[] parameters = null;
-            var constructors = constraintTypeInfo.DeclaredConstructors.ToArray();
+            var constructors = parameterPolicyType.GetConstructors();
 
             // If there is only one constructor and it has a single parameter, pass the argument string directly
             // This is necessary for the Regex RouteConstraint to ensure that patterns are not split on commas.
@@ -86,6 +91,11 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     ? argumentString.Split(',').Select(argument => argument.Trim()).ToArray()
                     : Array.Empty<string>();
 
+                // We want to find the constructors that match the number of passed in arguments
+                // We either want a single match, or a single best match. The best match is the one with the most
+                // arguments that can be resolved from DI
+                //
+                // For example, ctor(string, IService) will beat ctor(string)
                 var matchingConstructors = constructors
                     .Where(ci => GetNonConvertableParameterTypeCount(serviceProvider, ci.GetParameters()) == arguments.Length)
                     .OrderByDescending(ci => ci.GetParameters().Length)
@@ -95,7 +105,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 {
                     throw new RouteCreationException(
                                 Resources.FormatDefaultInlineConstraintResolver_CouldNotFindCtor(
-                                                       constraintTypeInfo.Name, arguments.Length));
+                                                       parameterPolicyType.Name, arguments.Length));
                 }
                 else
                 {
@@ -109,7 +119,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                     {
                         throw new RouteCreationException(
                                     Resources.FormatDefaultInlineConstraintResolver_AmbiguousCtors(
-                                                           constraintTypeInfo.Name, matchingConstructors[0].GetParameters().Length));
+                                                           parameterPolicyType.Name, matchingConstructors[0].GetParameters().Length));
                     }
 
                     parameters = ConvertArguments(serviceProvider, activationConstructor.GetParameters(), arguments);
