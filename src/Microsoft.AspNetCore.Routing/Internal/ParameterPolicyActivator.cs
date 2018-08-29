@@ -68,12 +68,6 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         private static IParameterPolicy CreateParameterPolicy(IServiceProvider serviceProvider, Type constraintType, string argumentString)
         {
-            // No arguments - call the default constructor
-            if (argumentString == null)
-            {
-                return (IParameterPolicy)Activator.CreateInstance(constraintType);
-            }
-
             var constraintTypeInfo = constraintType.GetTypeInfo();
             ConstructorInfo activationConstructor = null;
             object[] parameters = null;
@@ -88,28 +82,37 @@ namespace Microsoft.AspNetCore.Routing.Internal
             }
             else
             {
-                var arguments = argumentString.Split(',').Select(argument => argument.Trim()).ToArray();
+                var arguments = !string.IsNullOrEmpty(argumentString)
+                    ? argumentString.Split(',').Select(argument => argument.Trim()).ToArray()
+                    : Array.Empty<string>();
 
-                var matchingConstructors = constructors.Where(ci => GetNonConvertableParameterTypeCount(serviceProvider, ci.GetParameters()) == arguments.Length)
-                                                       .ToArray();
-                var constructorMatches = matchingConstructors.Length;
+                var matchingConstructors = constructors
+                    .Where(ci => GetNonConvertableParameterTypeCount(serviceProvider, ci.GetParameters()) == arguments.Length)
+                    .OrderByDescending(ci => ci.GetParameters().Length)
+                    .ToArray();
 
-                if (constructorMatches == 0)
+                if (matchingConstructors.Length == 0)
                 {
                     throw new RouteCreationException(
                                 Resources.FormatDefaultInlineConstraintResolver_CouldNotFindCtor(
                                                        constraintTypeInfo.Name, arguments.Length));
                 }
-                else if (constructorMatches == 1)
-                {
-                    activationConstructor = matchingConstructors[0];
-                    parameters = ConvertArguments(serviceProvider, activationConstructor.GetParameters(), arguments);
-                }
                 else
                 {
-                    throw new RouteCreationException(
-                                Resources.FormatDefaultInlineConstraintResolver_AmbiguousCtors(
-                                                       constraintTypeInfo.Name, arguments.Length));
+                    // When there are multiple matching constructors, choose the one with the most service arguments
+                    if (matchingConstructors.Length == 1
+                        || matchingConstructors[0].GetParameters().Length > matchingConstructors[1].GetParameters().Length)
+                    {
+                        activationConstructor = matchingConstructors[0];
+                    }
+                    else
+                    {
+                        throw new RouteCreationException(
+                                    Resources.FormatDefaultInlineConstraintResolver_AmbiguousCtors(
+                                                           constraintTypeInfo.Name, matchingConstructors[0].GetParameters().Length));
+                    }
+
+                    parameters = ConvertArguments(serviceProvider, activationConstructor.GetParameters(), arguments);
                 }
             }
 

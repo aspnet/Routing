@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Routing.Matching
+namespace Microsoft.AspNetCore.Routing
 {
     public class DefaultParameterPolicyFactoryTest
     {
@@ -255,6 +255,90 @@ namespace Microsoft.AspNetCore.Routing.Matching
         }
 
         [Fact]
+        public void Create_CreatesParameterPolicy_FromConstraintText_AndParameterPolicyWithOnlyServiceArguments()
+        {
+            // Arrange
+            var options = new RouteOptions();
+            options.ConstraintMap.Add("customConstraintPolicy", typeof(CustomParameterPolicyWithOnlyServiceArguments));
+
+            var services = new ServiceCollection();
+            services.AddTransient<ITestService, TestService>();
+
+            var factory = GetParameterPolicyFactory(options, services);
+
+            // Act
+            var parameterPolicy = factory.Create(RoutePatternFactory.ParameterPart("id"), "customConstraintPolicy");
+
+            // Assert
+            var constraint = Assert.IsType<CustomParameterPolicyWithOnlyServiceArguments>(parameterPolicy);
+            Assert.NotNull(constraint.TestService1);
+            Assert.NotNull(constraint.TestService2);
+        }
+
+        [Fact]
+        public void Create_CreatesParameterPolicy_FromConstraintText_AndParameterPolicyWithMultipleMatchingCtors()
+        {
+            // Arrange
+            var options = new RouteOptions();
+            options.ConstraintMap.Add("customConstraintPolicy", typeof(CustomParameterPolicyWithMultpleCtors));
+
+            var services = new ServiceCollection();
+            services.AddTransient<ITestService, TestService>();
+
+            var factory = GetParameterPolicyFactory(options, services);
+
+            // Act
+            var parameterPolicy = factory.Create(RoutePatternFactory.ParameterPart("id"), "customConstraintPolicy(1)");
+
+            // Assert
+            var constraint = Assert.IsType<CustomParameterPolicyWithMultpleCtors>(parameterPolicy);
+            Assert.NotNull(constraint.TestService);
+            Assert.Equal(1, constraint.Count);
+        }
+
+        [Fact]
+        public void Create_CreatesParameterPolicy_FromConstraintText_AndParameterPolicyWithAmbigiousMatchingCtors()
+        {
+            // Arrange
+            var options = new RouteOptions();
+            options.ConstraintMap.Add("customConstraintPolicy", typeof(CustomParameterPolicyWithAmbigiousMultpleCtors));
+
+            var services = new ServiceCollection();
+            services.AddTransient<ITestService, TestService>();
+
+            var factory = GetParameterPolicyFactory(options, services);
+
+            // Act
+            var exception = Assert.Throws<RouteCreationException>(
+                () => factory.Create(RoutePatternFactory.ParameterPart("id"), "customConstraintPolicy(1)"));
+
+            // Assert
+            Assert.Equal($"The constructor to use for activating the constraint type '{nameof(CustomParameterPolicyWithAmbigiousMultpleCtors)}' is ambiguous. "
+                + $"Multiple constructors were found with the following number of parameters: 2.", exception.Message);
+        }
+
+        [Fact]
+        public void Create_CreatesParameterPolicy_FromConstraintText_AndParameterPolicyWithSingleArgumentAndServiceArgument()
+        {
+            // Arrange
+            var options = new RouteOptions();
+            options.ConstraintMap.Add("regex-service", typeof(RegexInlineRouteConstraintWithService));
+
+            var services = new ServiceCollection();
+            services.AddTransient<ITestService, TestService>();
+
+            var factory = GetParameterPolicyFactory(options, services);
+
+            // Act
+            var parameterPolicy = factory.Create(RoutePatternFactory.ParameterPart("id"), @"regex-service(\\d{1,2})");
+
+            // Assert
+            var constraint = Assert.IsType<RegexInlineRouteConstraintWithService>(parameterPolicy);
+            Assert.NotNull(constraint.TestService);
+            Assert.Equal("\\\\d{1,2}", constraint.Constraint.ToString());
+        }
+
+        [Fact]
         public void Create_CreatesParameterPolicy_FromConstraintText_AndParameterPolicyWithArgumentAndUnresolvedServices_Throw()
         {
             // Arrange
@@ -360,6 +444,45 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public int Count { get; }
     }
 
+    public class CustomParameterPolicyWithMultpleCtors : IParameterPolicy
+    {
+        public CustomParameterPolicyWithMultpleCtors(ITestService testService, int count)
+        {
+            TestService = testService;
+            Count = count;
+        }
+
+        public CustomParameterPolicyWithMultpleCtors(int count)
+            : this(testService: null, count)
+        {
+        }
+
+        public ITestService TestService { get; }
+        public int Count { get; }
+    }
+
+    public class CustomParameterPolicyWithAmbigiousMultpleCtors : IParameterPolicy
+    {
+        public CustomParameterPolicyWithAmbigiousMultpleCtors(ITestService testService, int count)
+        {
+            TestService = testService;
+            Count = count;
+        }
+
+        public CustomParameterPolicyWithAmbigiousMultpleCtors(object testService, int count)
+            : this(testService: null, count)
+        {
+        }
+
+        public CustomParameterPolicyWithAmbigiousMultpleCtors(int count)
+            : this(testService: null, count)
+        {
+        }
+
+        public ITestService TestService { get; }
+        public int Count { get; }
+    }
+
     public class CustomParameterPolicyWithMultipleArguments : IParameterPolicy
     {
         public CustomParameterPolicyWithMultipleArguments(int first, ITestService testService1, int second, ITestService testService2)
@@ -376,6 +499,18 @@ namespace Microsoft.AspNetCore.Routing.Matching
         public ITestService TestService2 { get; }
     }
 
+    public class CustomParameterPolicyWithOnlyServiceArguments : IParameterPolicy
+    {
+        public CustomParameterPolicyWithOnlyServiceArguments(ITestService testService1, ITestService testService2)
+        {
+            TestService1 = testService1;
+            TestService2 = testService2;
+        }
+
+        public ITestService TestService1 { get; }
+        public ITestService TestService2 { get; }
+    }
+
     public interface ITestService
     {
     }
@@ -383,5 +518,16 @@ namespace Microsoft.AspNetCore.Routing.Matching
     public class TestService : ITestService
     {
 
+    }
+
+    public class RegexInlineRouteConstraintWithService : RegexRouteConstraint
+    {
+        public RegexInlineRouteConstraintWithService(string regexPattern, ITestService testService)
+            : base(regexPattern)
+        {
+            TestService = testService;
+        }
+
+        public ITestService TestService { get; }
     }
 }
