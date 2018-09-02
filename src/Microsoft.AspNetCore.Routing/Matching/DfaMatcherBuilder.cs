@@ -9,6 +9,33 @@ using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Routing.Matching
 {
+    internal ref struct CandidateBuilderState
+    {
+        public Dictionary<string, int> assignments;
+        public List<KeyValuePair<string, object>> slots;
+        public List<(string parameterName, int segmentIndex, int slotIndex)> captures;
+        public List<(RoutePatternPathSegment pathSegment, int segmentIndex)> complexSegments;
+        public List<KeyValuePair<string, IRouteConstraint>> constraints;
+
+        public void Initialize()
+        {
+            assignments = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+            slots = new List<KeyValuePair<string, object>>();
+            captures = new List<(string parameterName, int segmentIndex, int slotIndex)>();
+            complexSegments = new List<(RoutePatternPathSegment pathSegment, int segmentIndex)>();
+            constraints = new List<KeyValuePair<string, IRouteConstraint>>();
+        }
+
+        internal void Reset()
+        {
+            assignments.Clear();
+            slots.Clear();
+            captures.Clear();
+            complexSegments.Clear();
+            constraints.Clear();
+        }
+    }
+
     internal class DfaMatcherBuilder : MatcherBuilder
     {
         private readonly List<RouteEndpoint> _endpoints = new List<RouteEndpoint>();
@@ -50,6 +77,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // this list will hold the set of items we need to process at the current
             // stage.
             var work = new List<(RouteEndpoint endpoint, List<DfaNode> parents)>();
+            List<(RouteEndpoint endpoint, List<DfaNode> parents)> previousWork = null;
 
             var root = new DfaNode() { PathDepth = 0, Label = "/" };
 
@@ -63,14 +91,26 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
                 work.Add((endpoint, new List<DfaNode>() { root, }));
             }
+            var workCount = work.Count;
 
             // Now we process the entries a level at a time.
             for (var depth = 0; depth <= maxDepth; depth++)
             {
                 // As we process items, collect the next set of items.
-                var nextWork = new List<(RouteEndpoint endpoint, List<DfaNode> parents)>();
+                List<(RouteEndpoint endpoint, List<DfaNode> parents)> nextWork;
+                var nextWorkCount = 0;
+                if (previousWork == null)
+                {
+                    nextWork = new List<(RouteEndpoint endpoint, List<DfaNode> parents)>();
+                }
+                else
+                {
+                    // Reuse previous collection
+                    // Already allocated lists node lists can be reused
+                    nextWork = previousWork;
+                }
 
-                for (var i = 0; i < work.Count; i++)
+                for (var i = 0; i < workCount; i++)
                 {
                     var (endpoint, parents) = work[i];
 
@@ -84,7 +124,23 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     }
 
                     // Find the parents of this edge at the current depth
-                    var nextParents = new List<DfaNode>();
+                    List<DfaNode> nextParents;
+                    if (nextWorkCount < nextWork.Count)
+                    {
+                        nextParents = nextWork[nextWorkCount].parents;
+                        nextParents.Clear();
+
+                        nextWork[nextWorkCount] = (endpoint, nextParents);
+                    }
+                    else
+                    {
+                        nextParents = new List<DfaNode>();
+
+                        // Add to the next set of work now so the list will be reused
+                        // even if there are no parents
+                        nextWork.Add((endpoint, nextParents));
+                    }
+
                     var segment = GetCurrentSegment(endpoint, depth);
                     if (segment == null)
                     {
@@ -178,12 +234,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
                     if (nextParents.Count > 0)
                     {
-                        nextWork.Add((endpoint, nextParents));
+                        nextWorkCount++;
                     }
                 }
 
                 // Prepare the process the next stage.
+                previousWork = work;
                 work = nextWork;
+                workCount = nextWorkCount;
             }
 
             // Build the trees of policy nodes (like HTTP methods). Post-order traversal
@@ -227,7 +285,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var states = new List<DfaState>();
             var tableBuilders = new List<(JumpTableBuilder pathBuilder, PolicyJumpTableBuilder policyBuilder)>();
-            AddNode(root, states, tableBuilders);
+            var candidateState = new CandidateBuilderState();
+            candidateState.Initialize();
+            AddNode(root, states, tableBuilders, ref candidateState);
 
             var exit = states.Count;
             states.Add(new DfaState(Array.Empty<Candidate>(), null, null));
@@ -265,13 +325,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
         private int AddNode(
             DfaNode node,
             List<DfaState> states,
-            List<(JumpTableBuilder pathBuilder, PolicyJumpTableBuilder policyBuilder)> tableBuilders)
+            List<(JumpTableBuilder pathBuilder, PolicyJumpTableBuilder policyBuilder)> tableBuilders,
+            ref CandidateBuilderState candidateState)
         {
             node.Matches.Sort(_comparer);
 
             var stateIndex = states.Count;
 
-            var candidates = CreateCandidates(node.Matches);
+            var candidates = CreateCandidates(node.Matches, ref candidateState);
             states.Add(new DfaState(candidates, null, null));
 
             var pathBuilder = new JumpTableBuilder();
@@ -284,7 +345,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     continue;
                 }
 
-                var transition = Transition(kvp.Value);
+                var transition = Transition(kvp.Value, ref candidateState);
                 pathBuilder.AddEntry(kvp.Key, transition);
             }
 
@@ -294,25 +355,25 @@ namespace Microsoft.AspNetCore.Routing.Matching
             {
                 // This node has a single transition to but it should accept zero-width segments
                 // this can happen when a node only has catchall parameters.
-                pathBuilder.DefaultDestination = Transition(node.Parameters);
+                pathBuilder.DefaultDestination = Transition(node.Parameters, ref candidateState);
                 pathBuilder.ExitDestination = pathBuilder.DefaultDestination;
             }
             else if (node.Parameters != null && node.CatchAll != null)
             {
                 // This node has a separate transition for zero-width segments
                 // this can happen when a node has both parameters and catchall parameters.
-                pathBuilder.DefaultDestination = Transition(node.Parameters);
-                pathBuilder.ExitDestination = Transition(node.CatchAll);
+                pathBuilder.DefaultDestination = Transition(node.Parameters, ref candidateState);
+                pathBuilder.ExitDestination = Transition(node.CatchAll, ref candidateState);
             }
             else if (node.Parameters != null)
             {
                 // This node has paramters but no catchall.
-                pathBuilder.DefaultDestination = Transition(node.Parameters);
+                pathBuilder.DefaultDestination = Transition(node.Parameters, ref candidateState);
             }
             else if (node.CatchAll != null)
             {
                 // This node has a catchall but no parameters
-                pathBuilder.DefaultDestination = Transition(node.CatchAll);
+                pathBuilder.DefaultDestination = Transition(node.CatchAll, ref candidateState);
                 pathBuilder.ExitDestination = pathBuilder.DefaultDestination;
             }
 
@@ -323,22 +384,22 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
                 foreach (var kvp in node.PolicyEdges)
                 {
-                    policyBuilder.AddEntry(kvp.Key, Transition(kvp.Value));
+                    policyBuilder.AddEntry(kvp.Key, Transition(kvp.Value, ref candidateState));
                 }
             }
 
             return stateIndex;
 
-            int Transition(DfaNode next)
+            int Transition(DfaNode next, ref CandidateBuilderState s)
             {
                 // Break cycles
-                return ReferenceEquals(node, next) ? stateIndex : AddNode(next, states, tableBuilders);
+                return ReferenceEquals(node, next) ? stateIndex : AddNode(next, states, tableBuilders, ref s);
             }
         }
 
         // Builds an array of candidates for a node, assigns a 'score' for each
         // endpoint.
-        internal Candidate[] CreateCandidates(IReadOnlyList<Endpoint> endpoints)
+        internal Candidate[] CreateCandidates(IReadOnlyList<Endpoint> endpoints, ref CandidateBuilderState candidateState)
         {
             if (endpoints.Count == 0)
             {
@@ -349,7 +410,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var score = 0;
             var examplar = endpoints[0];
-            candiates[0] = CreateCandidate(examplar, score);
+            candiates[0] = CreateCandidate(
+                examplar,
+                score,
+                ref candidateState);
 
             for (var i = 1; i < endpoints.Count; i++)
             {
@@ -361,29 +425,31 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     score++;
                 }
 
-                candiates[i] = CreateCandidate(endpoint, score);
+                candiates[i] = CreateCandidate(
+                    endpoint,
+                    score,
+                    ref candidateState);
             }
 
             return candiates;
         }
 
         // internal for tests
-        internal Candidate CreateCandidate(Endpoint endpoint, int score)
+        internal Candidate CreateCandidate(
+            Endpoint endpoint,
+            int score,
+            ref CandidateBuilderState candidateState)
         {
-            var assignments = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
-            var slots = new List<KeyValuePair<string, object>>();
-            var captures = new List<(string parameterName, int segmentIndex, int slotIndex)>();
-            (string parameterName, int segmentIndex, int slotIndex) catchAll = default;
+            candidateState.Reset();
 
-            var complexSegments = new List<(RoutePatternPathSegment pathSegment, int segmentIndex)>();
-            var constraints = new List<KeyValuePair<string, IRouteConstraint>>();
+            (string parameterName, int segmentIndex, int slotIndex) catchAll = default;
 
             if (endpoint is RouteEndpoint routeEndpoint)
             {
                 foreach (var kvp in routeEndpoint.RoutePattern.Defaults)
                 {
-                    assignments.Add(kvp.Key, assignments.Count);
-                    slots.Add(kvp);
+                    candidateState.assignments.Add(kvp.Key, candidateState.assignments.Count);
+                    candidateState.slots.Add(kvp);
                 }
 
                 for (var i = 0; i < routeEndpoint.RoutePattern.PathSegments.Count; i++)
@@ -400,13 +466,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
                         continue;
                     }
 
-                    if (!assignments.TryGetValue(parameterPart.Name, out var slotIndex))
+                    if (!candidateState.assignments.TryGetValue(parameterPart.Name, out var slotIndex))
                     {
-                        slotIndex = assignments.Count;
-                        assignments.Add(parameterPart.Name, slotIndex);
+                        slotIndex = candidateState.assignments.Count;
+                        candidateState.assignments.Add(parameterPart.Name, slotIndex);
 
                         var hasDefaultValue = parameterPart.Default != null || parameterPart.IsCatchAll;
-                        slots.Add(hasDefaultValue ? new KeyValuePair<string, object>(parameterPart.Name, parameterPart.Default) : default);
+                        candidateState.slots.Add(hasDefaultValue ? new KeyValuePair<string, object>(parameterPart.Name, parameterPart.Default) : default);
                     }
 
                     if (parameterPart.IsCatchAll)
@@ -415,7 +481,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     }
                     else
                     {
-                        captures.Add((parameterPart.Name, i, slotIndex));
+                        candidateState.captures.Add((parameterPart.Name, i, slotIndex));
                     }
                 }
 
@@ -427,7 +493,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                         continue;
                     }
 
-                    complexSegments.Add((segment, i));
+                    candidateState.complexSegments.Add((segment, i));
                 }
 
                 foreach (var kvp in routeEndpoint.RoutePattern.ParameterPolicies)
@@ -440,7 +506,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                         var parameterPolicy = _parameterPolicyFactory.Create(parameter, reference);
                         if (parameterPolicy is IRouteConstraint routeConstraint)
                         {
-                            constraints.Add(new KeyValuePair<string, IRouteConstraint>(kvp.Key, routeConstraint));
+                            candidateState.constraints.Add(new KeyValuePair<string, IRouteConstraint>(kvp.Key, routeConstraint));
                         }
                     }
                 }
@@ -449,11 +515,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
             return new Candidate(
                 endpoint,
                 score,
-                slots.ToArray(),
-                captures.ToArray(),
+                candidateState.slots.ToArray(),
+                candidateState.captures.ToArray(),
                 catchAll,
-                complexSegments.ToArray(),
-                constraints.ToArray());
+                candidateState.complexSegments.ToArray(),
+                candidateState.constraints.ToArray());
         }
 
         private int[] GetGroupLengths(DfaNode node)

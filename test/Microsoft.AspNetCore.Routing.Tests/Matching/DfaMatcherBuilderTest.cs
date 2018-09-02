@@ -902,8 +902,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var builder = CreateDfaMatcherBuilder(new TestMetadata1MatcherPolicy(), new TestMetadata2MatcherPolicy());
 
+            var candidateBuilderState = new CandidateBuilderState();
+            candidateBuilderState.Initialize();
+
             // Act
-            var candidates = builder.CreateCandidates(endpoints);
+            var candidates = builder.CreateCandidates(endpoints, ref candidateBuilderState);
 
             // Assert
             Assert.Collection(
@@ -1045,6 +1048,20 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
                 return edges;
             }
+        }
+    }
+
+    internal static class DfaMatcherBuilderExtensions
+    {
+        internal static Candidate CreateCandidate(this DfaMatcherBuilder matcherBuilder, Endpoint endpoint, int score)
+        {
+            var candidateBuilderState = new CandidateBuilderState();
+            candidateBuilderState.Initialize();
+
+            return matcherBuilder.CreateCandidate(
+                endpoint,
+                score,
+                ref candidateBuilderState);
         }
     }
 }
