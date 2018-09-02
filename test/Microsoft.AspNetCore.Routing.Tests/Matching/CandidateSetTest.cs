@@ -32,9 +32,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
 
             var builder = CreateDfaMatcherBuilder();
-            var candidateBuilderState = new CandidateBuilderState();
-            candidateBuilderState.Initialize();
-            var candidates = builder.CreateCandidates(endpoints, ref candidateBuilderState);
+            var candidates = builder.CreateCandidates(endpoints);
 
             // Act
             var candidateSet = new CandidateSet(candidates);
