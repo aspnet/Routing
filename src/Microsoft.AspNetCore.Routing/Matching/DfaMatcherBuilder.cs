@@ -393,9 +393,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             var score = 0;
             var examplar = endpoints[0];
-            candiates[0] = CreateCandidate(
-                examplar,
-                score);
+            candiates[0] = CreateCandidate(examplar, score);
 
             for (var i = 1; i < endpoints.Count; i++)
             {
@@ -407,18 +405,14 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     score++;
                 }
 
-                candiates[i] = CreateCandidate(
-                    endpoint,
-                    score);
+                candiates[i] = CreateCandidate(endpoint, score);
             }
 
             return candiates;
         }
 
         // internal for tests
-        internal Candidate CreateCandidate(
-            Endpoint endpoint,
-            int score)
+        internal Candidate CreateCandidate(Endpoint endpoint, int score)
         {
             _assignments.Clear();
             _slots.Clear();
