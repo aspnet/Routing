@@ -91,8 +91,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 }
                 else
                 {
-                    // Reuse previous collection
-                    // Already allocated lists node lists can be reused
+                    // Reuse previous collection for the next collection
+                    // Don't clear the list so nested lists can be reused
                     nextWork = previousWork;
                 }
 
