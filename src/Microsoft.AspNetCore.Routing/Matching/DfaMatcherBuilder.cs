@@ -273,22 +273,29 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             var root = BuildDfaTree();
 
+            // State count is the number of nodes plus an exit state
+            var stateCount = 1;
             var maxSegmentCount = 0;
-            root.Visit((node) => maxSegmentCount = Math.Max(maxSegmentCount, node.PathDepth));
+            root.Visit((node) =>
+            {
+                stateCount++;
+                maxSegmentCount = Math.Max(maxSegmentCount, node.PathDepth);
+            });
 
             // The max segment count is the maximum path-node-depth +1. We need
             // the +1 to capture any additional content after the 'last' segment.
             maxSegmentCount++;
 
-            var states = new List<DfaState>();
-            var tableBuilders = new List<(JumpTableBuilder pathBuilder, PolicyJumpTableBuilder policyBuilder)>();
-            AddNode(root, states, tableBuilders);
+            var states = new DfaState[stateCount];
+            var stateIndex = 0;
+            var tableBuilders = new (JumpTableBuilder pathBuilder, PolicyJumpTableBuilder policyBuilder)[stateCount];
+            AddNode(root, states, ref stateIndex, tableBuilders);
 
-            var exit = states.Count;
-            states.Add(new DfaState(Array.Empty<Candidate>(), null, null));
-            tableBuilders.Add((new JumpTableBuilder() { DefaultDestination = exit, ExitDestination = exit, }, null));
+            var exit = stateCount - 1;
+            states[exit] = new DfaState(Array.Empty<Candidate>(), null, null);
+            tableBuilders[exit] = (new JumpTableBuilder() { DefaultDestination = exit, ExitDestination = exit, }, null);
 
-            for (var i = 0; i < tableBuilders.Count; i++)
+            for (var i = 0; i < tableBuilders.Length; i++)
             {
                 if (tableBuilders[i].pathBuilder?.DefaultDestination == JumpTableBuilder.InvalidDestination)
                 {
@@ -306,31 +313,32 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 }
             }
 
-            for (var i = 0; i < states.Count; i++)
+            for (var i = 0; i < states.Length; i++)
             {
                 states[i] = new DfaState(
-                    states[i].Candidates, 
+                    states[i].Candidates,
                     tableBuilders[i].pathBuilder?.Build(),
                     tableBuilders[i].policyBuilder?.Build());
             }
 
-            return new DfaMatcher(_selector, states.ToArray(), maxSegmentCount);
+            return new DfaMatcher(_selector, states, maxSegmentCount);
         }
 
         private int AddNode(
             DfaNode node,
-            List<DfaState> states,
-            List<(JumpTableBuilder pathBuilder, PolicyJumpTableBuilder policyBuilder)> tableBuilders)
+            DfaState[] states,
+            ref int stateIndex,
+            (JumpTableBuilder pathBuilder, PolicyJumpTableBuilder policyBuilder)[] tableBuilders)
         {
             node.Matches?.Sort(_comparer);
 
-            var stateIndex = states.Count;
+            int currentStateIndex = stateIndex;
 
             var candidates = CreateCandidates(node.Matches);
-            states.Add(new DfaState(candidates, null, null));
+            states[currentStateIndex] = new DfaState(candidates, null, null);
 
             var pathBuilder = new JumpTableBuilder();
-            tableBuilders.Add((pathBuilder, null));
+            tableBuilders[currentStateIndex] = (pathBuilder, null);
 
             if (node.Literals != null)
             {
@@ -341,7 +349,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                         continue;
                     }
 
-                    var transition = Transition(kvp.Value);
+                    var transition = Transition(kvp.Value, ref stateIndex);
                     pathBuilder.AddEntry(kvp.Key, transition);
                 }
             }
@@ -352,45 +360,53 @@ namespace Microsoft.AspNetCore.Routing.Matching
             {
                 // This node has a single transition to but it should accept zero-width segments
                 // this can happen when a node only has catchall parameters.
-                pathBuilder.DefaultDestination = Transition(node.Parameters);
+                pathBuilder.DefaultDestination = Transition(node.Parameters, ref stateIndex);
                 pathBuilder.ExitDestination = pathBuilder.DefaultDestination;
             }
             else if (node.Parameters != null && node.CatchAll != null)
             {
                 // This node has a separate transition for zero-width segments
                 // this can happen when a node has both parameters and catchall parameters.
-                pathBuilder.DefaultDestination = Transition(node.Parameters);
-                pathBuilder.ExitDestination = Transition(node.CatchAll);
+                pathBuilder.DefaultDestination = Transition(node.Parameters, ref stateIndex);
+                pathBuilder.ExitDestination = Transition(node.CatchAll, ref stateIndex);
             }
             else if (node.Parameters != null)
             {
                 // This node has paramters but no catchall.
-                pathBuilder.DefaultDestination = Transition(node.Parameters);
+                pathBuilder.DefaultDestination = Transition(node.Parameters, ref stateIndex);
             }
             else if (node.CatchAll != null)
             {
                 // This node has a catchall but no parameters
-                pathBuilder.DefaultDestination = Transition(node.CatchAll);
+                pathBuilder.DefaultDestination = Transition(node.CatchAll, ref stateIndex);
                 pathBuilder.ExitDestination = pathBuilder.DefaultDestination;
             }
 
             if (node.PolicyEdges != null && node.PolicyEdges.Count > 0)
             {
                 var policyBuilder = new PolicyJumpTableBuilder(node.NodeBuilder);
-                tableBuilders[stateIndex] = (pathBuilder, policyBuilder);
+                tableBuilders[currentStateIndex] = (pathBuilder, policyBuilder);
 
                 foreach (var kvp in node.PolicyEdges)
                 {
-                    policyBuilder.AddEntry(kvp.Key, Transition(kvp.Value));
+                    policyBuilder.AddEntry(kvp.Key, Transition(kvp.Value, ref stateIndex));
                 }
             }
 
-            return stateIndex;
+            return currentStateIndex;
 
-            int Transition(DfaNode next)
+            int Transition(DfaNode next, ref int index)
             {
                 // Break cycles
-                return ReferenceEquals(node, next) ? stateIndex : AddNode(next, states, tableBuilders);
+                if (ReferenceEquals(node, next))
+                {
+                    return index;
+                }
+                else
+                {
+                    index++;
+                    return AddNode(next, states, ref index, tableBuilders);
+                }
             }
         }
 
