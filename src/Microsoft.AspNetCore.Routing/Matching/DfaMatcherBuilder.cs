@@ -26,6 +26,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
         private readonly List<(RoutePatternPathSegment pathSegment, int segmentIndex)> _complexSegments;
         private readonly List<KeyValuePair<string, IRouteConstraint>> _constraints;
 
+        private int _stateIndex;
+
         public DfaMatcherBuilder(
             ParameterPolicyFactory parameterPolicyFactory,
             EndpointSelector selector,
@@ -281,15 +283,15 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 stateCount++;
                 maxSegmentCount = Math.Max(maxSegmentCount, node.PathDepth);
             });
+            _stateIndex = 0;
 
             // The max segment count is the maximum path-node-depth +1. We need
             // the +1 to capture any additional content after the 'last' segment.
             maxSegmentCount++;
 
             var states = new DfaState[stateCount];
-            var stateIndex = 0;
             var tableBuilders = new (JumpTableBuilder pathBuilder, PolicyJumpTableBuilder policyBuilder)[stateCount];
-            AddNode(root, states, ref stateIndex, tableBuilders);
+            AddNode(root, states, tableBuilders);
 
             var exit = stateCount - 1;
             states[exit] = new DfaState(Array.Empty<Candidate>(), null, null);
@@ -327,12 +329,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
         private int AddNode(
             DfaNode node,
             DfaState[] states,
-            ref int stateIndex,
             (JumpTableBuilder pathBuilder, PolicyJumpTableBuilder policyBuilder)[] tableBuilders)
         {
             node.Matches?.Sort(_comparer);
 
-            int currentStateIndex = stateIndex;
+            int currentStateIndex = _stateIndex;
 
             var candidates = CreateCandidates(node.Matches);
             states[currentStateIndex] = new DfaState(candidates, null, null);
@@ -349,7 +350,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                         continue;
                     }
 
-                    var transition = Transition(kvp.Value, ref stateIndex);
+                    var transition = Transition(kvp.Value);
                     pathBuilder.AddEntry(kvp.Key, transition);
                 }
             }
@@ -360,25 +361,25 @@ namespace Microsoft.AspNetCore.Routing.Matching
             {
                 // This node has a single transition to but it should accept zero-width segments
                 // this can happen when a node only has catchall parameters.
-                pathBuilder.DefaultDestination = Transition(node.Parameters, ref stateIndex);
+                pathBuilder.DefaultDestination = Transition(node.Parameters);
                 pathBuilder.ExitDestination = pathBuilder.DefaultDestination;
             }
             else if (node.Parameters != null && node.CatchAll != null)
             {
                 // This node has a separate transition for zero-width segments
                 // this can happen when a node has both parameters and catchall parameters.
-                pathBuilder.DefaultDestination = Transition(node.Parameters, ref stateIndex);
-                pathBuilder.ExitDestination = Transition(node.CatchAll, ref stateIndex);
+                pathBuilder.DefaultDestination = Transition(node.Parameters);
+                pathBuilder.ExitDestination = Transition(node.CatchAll);
             }
             else if (node.Parameters != null)
             {
                 // This node has paramters but no catchall.
-                pathBuilder.DefaultDestination = Transition(node.Parameters, ref stateIndex);
+                pathBuilder.DefaultDestination = Transition(node.Parameters);
             }
             else if (node.CatchAll != null)
             {
                 // This node has a catchall but no parameters
-                pathBuilder.DefaultDestination = Transition(node.CatchAll, ref stateIndex);
+                pathBuilder.DefaultDestination = Transition(node.CatchAll);
                 pathBuilder.ExitDestination = pathBuilder.DefaultDestination;
             }
 
@@ -389,23 +390,23 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
                 foreach (var kvp in node.PolicyEdges)
                 {
-                    policyBuilder.AddEntry(kvp.Key, Transition(kvp.Value, ref stateIndex));
+                    policyBuilder.AddEntry(kvp.Key, Transition(kvp.Value));
                 }
             }
 
             return currentStateIndex;
 
-            int Transition(DfaNode next, ref int index)
+            int Transition(DfaNode next)
             {
                 // Break cycles
                 if (ReferenceEquals(node, next))
                 {
-                    return index;
+                    return _stateIndex;
                 }
                 else
                 {
-                    index++;
-                    return AddNode(next, states, ref index, tableBuilders);
+                    _stateIndex++;
+                    return AddNode(next, states, tableBuilders);
                 }
             }
         }
