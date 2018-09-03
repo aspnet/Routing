@@ -8,20 +8,19 @@ namespace Microsoft.AspNetCore.Routing.Matching
     internal class PolicyJumpTableBuilder
     {
         private readonly INodeBuilderPolicy _nodeBuilder;
-        private readonly List<PolicyJumpTableEdge> _entries;
+        private PolicyJumpTableEdge[] _entries;
 
         public PolicyJumpTableBuilder(INodeBuilderPolicy nodeBuilder)
         {
             _nodeBuilder = nodeBuilder;
-            _entries = new List<PolicyJumpTableEdge>();
         }
 
         // The destination state for a non-match.
         public int ExitDestination { get; set; } = JumpTableBuilder.InvalidDestination;
 
-        public void AddEntry(object state, int destination)
+        public void AddEntries(PolicyJumpTableEdge[] entries)
         {
-            _entries.Add(new PolicyJumpTableEdge(state, destination));
+            _entries = entries;
         }
 
         public PolicyJumpTable Build()

@@ -343,16 +343,16 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             if (node.Literals != null)
             {
+                var entries = new (string text, int destination)[node.Literals.Count];
+
+                var index = 0;
                 foreach (var kvp in node.Literals)
                 {
-                    if (kvp.Key == null)
-                    {
-                        continue;
-                    }
-
                     var transition = Transition(kvp.Value);
-                    pathBuilder.AddEntry(kvp.Key, transition);
+                    entries[index++] = (kvp.Key, transition);
                 }
+
+                pathBuilder.AddEntries(entries);
             }
 
             if (node.Parameters != null &&
@@ -388,10 +388,15 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 var policyBuilder = new PolicyJumpTableBuilder(node.NodeBuilder);
                 tableBuilders[currentStateIndex] = (pathBuilder, policyBuilder);
 
+                var entries = new PolicyJumpTableEdge[node.PolicyEdges.Count];
+
+                var index = 0;
                 foreach (var kvp in node.PolicyEdges)
                 {
-                    policyBuilder.AddEntry(kvp.Key, Transition(kvp.Value));
+                    entries[index++] = new PolicyJumpTableEdge(kvp.Key, Transition(kvp.Value));
                 }
+
+                policyBuilder.AddEntries(entries);
             }
 
             return currentStateIndex;

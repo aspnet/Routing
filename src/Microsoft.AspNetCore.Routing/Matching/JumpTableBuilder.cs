@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
     {
         public static readonly int InvalidDestination = -1;
 
-        private readonly List<(string text, int destination)> _entries = new List<(string text, int destination)>();
+        private (string text, int destination)[] _entries;
 
         // The destination state when none of the text entries match.
         public int DefaultDestination { get; set; } = InvalidDestination;
@@ -19,9 +19,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
         // case because parameters don't match a zero-length segment.
         public int ExitDestination { get; set; } = InvalidDestination;
 
-        public void AddEntry(string text, int destination)
+        public void AddEntries((string text, int destination)[] entries)
         {
-            _entries.Add((text, destination));
+            _entries = entries;
         }
 
         public JumpTable Build()
@@ -49,13 +49,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             // We have an optimized fast path for zero entries since we don't have to
             // do any string comparisons.
-            if (_entries.Count == 0)
+            if (_entries == null || _entries.Length == 0)
             {
                 return new ZeroEntryJumpTable(DefaultDestination, ExitDestination);
             }
 
             // The IL Emit jump table is not faster for a single entry
-            if (_entries.Count == 1)
+            if (_entries.Length == 1)
             {
                 var entry = _entries[0];
                 return new SingleEntryJumpTable(DefaultDestination, ExitDestination, entry.text, entry.destination);
@@ -72,9 +72,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // Additionally if we're on 32bit, the scalability is worse, so switch to the dictionary at 50
             // entries.
             var threshold = IntPtr.Size == 8 ? 100 : 50;
-            if (_entries.Count >= threshold)
+            if (_entries.Length >= threshold)
             {
-                return new DictionaryJumpTable(DefaultDestination, ExitDestination, _entries.ToArray());
+                return new DictionaryJumpTable(DefaultDestination, ExitDestination, _entries);
             }
 
             // If we have more than a single string, the IL emit strategy is the fastest - but we need to decide
@@ -82,18 +82,17 @@ namespace Microsoft.AspNetCore.Routing.Matching
             JumpTable fallback;
 
             // Based on our testing a linear search is still faster than a dictionary at ten entries.
-            if (_entries.Count <= 10)
+            if (_entries.Length <= 10)
             {
-                fallback = new LinearSearchJumpTable(DefaultDestination, ExitDestination, _entries.ToArray());
+                fallback = new LinearSearchJumpTable(DefaultDestination, ExitDestination, _entries);
             }
             else
             {
-                fallback = new DictionaryJumpTable(DefaultDestination, ExitDestination, _entries.ToArray());
+                fallback = new DictionaryJumpTable(DefaultDestination, ExitDestination, _entries);
             }
 
 #if IL_EMIT
-
-            return new ILEmitTrieJumpTable(DefaultDestination, ExitDestination, _entries.ToArray(), vectorize: null, fallback);
+            return new ILEmitTrieJumpTable(DefaultDestination, ExitDestination, _entries, vectorize: null, fallback);
 #else
             return fallback;
 #endif
