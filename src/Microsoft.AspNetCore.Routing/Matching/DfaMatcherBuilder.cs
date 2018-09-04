@@ -290,37 +290,19 @@ namespace Microsoft.AspNetCore.Routing.Matching
             maxSegmentCount++;
 
             var states = new DfaState[stateCount];
-            var tableBuilders = new (JumpTableBuilder pathBuilder, PolicyJumpTableBuilder policyBuilder)[stateCount];
-            AddNode(root, states, tableBuilders);
-
+            var tableBuilders = new JumpTableBuilder[stateCount];
             var exit = stateCount - 1;
+            AddNode(root, states, tableBuilders, exit);
+
             states[exit] = new DfaState(Array.Empty<Candidate>(), null, null);
-            tableBuilders[exit] = (new JumpTableBuilder() { DefaultDestination = exit, ExitDestination = exit, }, null);
-
-            for (var i = 0; i < tableBuilders.Length; i++)
-            {
-                if (tableBuilders[i].pathBuilder?.DefaultDestination == JumpTableBuilder.InvalidDestination)
-                {
-                    tableBuilders[i].pathBuilder.DefaultDestination = exit;
-                }
-
-                if (tableBuilders[i].pathBuilder?.ExitDestination == JumpTableBuilder.InvalidDestination)
-                {
-                    tableBuilders[i].pathBuilder.ExitDestination = exit;
-                }
-
-                if (tableBuilders[i].policyBuilder?.ExitDestination == JumpTableBuilder.InvalidDestination)
-                {
-                    tableBuilders[i].policyBuilder.ExitDestination = exit;
-                }
-            }
+            tableBuilders[exit] = (new JumpTableBuilder() { DefaultDestination = exit, ExitDestination = exit, });
 
             for (var i = 0; i < states.Length; i++)
             {
                 states[i] = new DfaState(
                     states[i].Candidates,
-                    tableBuilders[i].pathBuilder?.Build(),
-                    tableBuilders[i].policyBuilder?.Build());
+                    tableBuilders[i]?.BuildPath(),
+                    tableBuilders[i]?.BuildPolicy());
             }
 
             return new DfaMatcher(_selector, states, maxSegmentCount);
@@ -329,7 +311,8 @@ namespace Microsoft.AspNetCore.Routing.Matching
         private int AddNode(
             DfaNode node,
             DfaState[] states,
-            (JumpTableBuilder pathBuilder, PolicyJumpTableBuilder policyBuilder)[] tableBuilders)
+            JumpTableBuilder[] tableBuilders,
+            int exitDestination)
         {
             node.Matches?.Sort(_comparer);
 
@@ -338,8 +321,12 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var candidates = CreateCandidates(node.Matches);
             states[currentStateIndex] = new DfaState(candidates, null, null);
 
-            var pathBuilder = new JumpTableBuilder();
-            tableBuilders[currentStateIndex] = (pathBuilder, null);
+            var pathBuilder = new JumpTableBuilder()
+            {
+                DefaultDestination = exitDestination,
+                ExitDestination = exitDestination,
+            };
+            tableBuilders[currentStateIndex] = pathBuilder;
 
             if (node.Literals != null)
             {
@@ -352,7 +339,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     entries[index++] = (kvp.Key, transition);
                 }
 
-                pathBuilder.AddEntries(entries);
+                pathBuilder.AddPathEntries(entries);
             }
 
             if (node.Parameters != null &&
@@ -385,9 +372,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             if (node.PolicyEdges != null && node.PolicyEdges.Count > 0)
             {
-                var policyBuilder = new PolicyJumpTableBuilder(node.NodeBuilder);
-                tableBuilders[currentStateIndex] = (pathBuilder, policyBuilder);
-
                 var entries = new PolicyJumpTableEdge[node.PolicyEdges.Count];
 
                 var index = 0;
@@ -396,7 +380,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     entries[index++] = new PolicyJumpTableEdge(kvp.Key, Transition(kvp.Value));
                 }
 
-                policyBuilder.AddEntries(entries);
+                pathBuilder.SetPolicyEntries(node.NodeBuilder, entries);
             }
 
             return currentStateIndex;
@@ -411,7 +395,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 else
                 {
                     _stateIndex++;
-                    return AddNode(next, states, tableBuilders);
+                    return AddNode(next, states, tableBuilders, exitDestination);
                 }
             }
         }
