@@ -333,7 +333,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             node.Matches?.Sort(_comparer);
 
-            int currentStateIndex = _stateIndex;
+            var currentStateIndex = _stateIndex;
 
             var candidates = CreateCandidates(node.Matches);
             states[currentStateIndex] = new DfaState(candidates, null, null);
