@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // Since we're doing a BFS we will process each 'level' of the tree in stages
             // this list will hold the set of items we need to process at the current
             // stage.
-            var work = new List<(RouteEndpoint endpoint, List<DfaNode> parents)>();
+            var work = new List<(RouteEndpoint endpoint, List<DfaNode> parents)>(_endpoints.Count);
             List<(RouteEndpoint endpoint, List<DfaNode> parents)> previousWork = null;
 
             var root = new DfaNode() { PathDepth = 0, Label = "/" };

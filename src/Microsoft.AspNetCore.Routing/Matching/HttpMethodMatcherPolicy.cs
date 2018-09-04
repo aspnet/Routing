@@ -266,9 +266,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 Http405EndpointDisplayName);
         }
 
-        public static bool ContainsHttpMethod(List<string> httpMethods, string httpMethod)
+        private static bool ContainsHttpMethod(List<string> httpMethods, string httpMethod)
         {
-            for (int i = 0; i < httpMethods.Count; i++)
+            for (var i = 0; i < httpMethods.Count; i++)
             {
                 if (StringComparer.OrdinalIgnoreCase.Equals(httpMethods[i], httpMethod))
                 {
