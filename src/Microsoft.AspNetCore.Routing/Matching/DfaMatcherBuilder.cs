@@ -339,7 +339,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     entries[index++] = (kvp.Key, transition);
                 }
 
-                pathBuilder.AddPathEntries(entries);
+                pathBuilder.SetPathEntries(entries);
             }
 
             if (node.Parameters != null &&

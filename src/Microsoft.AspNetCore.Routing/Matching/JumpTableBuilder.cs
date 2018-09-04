@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
         // case because parameters don't match a zero-length segment.
         public int ExitDestination { get; set; } = InvalidDestination;
 
-        public void AddPathEntries((string text, int destination)[] entries)
+        public void SetPathEntries((string text, int destination)[] entries)
         {
             _pathEntries = entries;
         }
