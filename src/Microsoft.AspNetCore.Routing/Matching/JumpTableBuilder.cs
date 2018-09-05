@@ -2,47 +2,24 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Routing.Matching
 {
-    internal class JumpTableBuilder
+    internal static class JumpTableBuilder
     {
         public static readonly int InvalidDestination = -1;
 
-        private (string text, int destination)[] _pathEntries;
-        private INodeBuilderPolicy _nodeBuilder;
-        private PolicyJumpTableEdge[] _policyEntries;
-
-        // The destination state when none of the text entries match.
-        public int DefaultDestination { get; set; } = InvalidDestination;
-
-        // The destination state for a zero-length segment. This is a special
-        // case because parameters don't match a zero-length segment.
-        public int ExitDestination { get; set; } = InvalidDestination;
-
-        public void SetPathEntries((string text, int destination)[] entries)
+        public static JumpTable Build(int defaultDestination, int exitDestination, (string text, int destination)[] pathEntries)
         {
-            _pathEntries = entries;
-        }
-
-        public void SetPolicyEntries(INodeBuilderPolicy nodeBuilder, PolicyJumpTableEdge[] entries)
-        {
-            _nodeBuilder = nodeBuilder;
-            _policyEntries = entries;
-        }
-
-        public JumpTable BuildPath()
-        {
-            if (DefaultDestination == InvalidDestination)
+            if (defaultDestination == InvalidDestination)
             {
-                var message = $"{nameof(DefaultDestination)} is not set. Please report this as a bug.";
+                var message = $"{nameof(defaultDestination)} is not set. Please report this as a bug.";
                 throw new InvalidOperationException(message);
             }
 
-            if (ExitDestination == InvalidDestination)
+            if (exitDestination == InvalidDestination)
             {
-                var message = $"{nameof(ExitDestination)} is not set. Please report this as a bug.";
+                var message = $"{nameof(exitDestination)} is not set. Please report this as a bug.";
                 throw new InvalidOperationException(message);
             }
 
@@ -57,16 +34,16 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             // We have an optimized fast path for zero entries since we don't have to
             // do any string comparisons.
-            if (_pathEntries == null || _pathEntries.Length == 0)
+            if (pathEntries == null || pathEntries.Length == 0)
             {
-                return new ZeroEntryJumpTable(DefaultDestination, ExitDestination);
+                return new ZeroEntryJumpTable(defaultDestination, exitDestination);
             }
 
             // The IL Emit jump table is not faster for a single entry
-            if (_pathEntries.Length == 1)
+            if (pathEntries.Length == 1)
             {
-                var entry = _pathEntries[0];
-                return new SingleEntryJumpTable(DefaultDestination, ExitDestination, entry.text, entry.destination);
+                var entry = pathEntries[0];
+                return new SingleEntryJumpTable(defaultDestination, exitDestination, entry.text, entry.destination);
             }
 
             // We choose a hard upper bound of 100 as the limit for when we switch to a dictionary
@@ -80,9 +57,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // Additionally if we're on 32bit, the scalability is worse, so switch to the dictionary at 50
             // entries.
             var threshold = IntPtr.Size == 8 ? 100 : 50;
-            if (_pathEntries.Length >= threshold)
+            if (pathEntries.Length >= threshold)
             {
-                return new DictionaryJumpTable(DefaultDestination, ExitDestination, _pathEntries);
+                return new DictionaryJumpTable(defaultDestination, exitDestination, pathEntries);
             }
 
             // If we have more than a single string, the IL emit strategy is the fastest - but we need to decide
@@ -90,30 +67,20 @@ namespace Microsoft.AspNetCore.Routing.Matching
             JumpTable fallback;
 
             // Based on our testing a linear search is still faster than a dictionary at ten entries.
-            if (_pathEntries.Length <= 10)
+            if (pathEntries.Length <= 10)
             {
-                fallback = new LinearSearchJumpTable(DefaultDestination, ExitDestination, _pathEntries);
+                fallback = new LinearSearchJumpTable(defaultDestination, exitDestination, pathEntries);
             }
             else
             {
-                fallback = new DictionaryJumpTable(DefaultDestination, ExitDestination, _pathEntries);
+                fallback = new DictionaryJumpTable(defaultDestination, exitDestination, pathEntries);
             }
 
 #if IL_EMIT
-            return new ILEmitTrieJumpTable(DefaultDestination, ExitDestination, _pathEntries, vectorize: null, fallback);
+            return new ILEmitTrieJumpTable(defaultDestination, exitDestination, pathEntries, vectorize: null, fallback);
 #else
             return fallback;
 #endif
-        }
-
-        public PolicyJumpTable BuildPolicy()
-        {
-            if (_policyEntries == null)
-            {
-                return null;
-            }
-
-            return _nodeBuilder.BuildJumpTable(ExitDestination, _policyEntries);
         }
     }
 }
