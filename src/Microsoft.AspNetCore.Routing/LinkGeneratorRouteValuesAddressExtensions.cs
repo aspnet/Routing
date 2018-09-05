@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Routing
         {
             return new RouteValuesAddress()
             {
-                AmbientValues = httpContext?.GetRouteData()?.Values,
+                AmbientValues = DefaultLinkGenerator.GetAmbientValues(httpContext),
                 ExplicitValues = new RouteValueDictionary(values),
                 RouteName = routeName,
             };

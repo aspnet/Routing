@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Routing
 
             return LinkGenerator.GetPathByEndpoints(
                 Endpoints,
-                LinkGenerator.GetAmbientValues(httpContext),
+                DefaultLinkGenerator.GetAmbientValues(httpContext),
                 new RouteValueDictionary(values),
                 httpContext.Request.PathBase,
                 fragment,
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Routing
 
             return LinkGenerator.GetUriByEndpoints(
                 Endpoints,
-                LinkGenerator.GetAmbientValues(httpContext),
+                DefaultLinkGenerator.GetAmbientValues(httpContext),
                 new RouteValueDictionary(values),
                 httpContext.Request.Scheme,
                 httpContext.Request.Host,

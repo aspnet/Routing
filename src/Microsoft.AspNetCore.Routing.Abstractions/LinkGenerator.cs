@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Routing
         /// An optional <see cref="LinkOptions"/>. Settings on provided object override the settings with matching
         /// names from <c>RouteOptions</c>.
         /// </param>
-        /// <returns>An abosolute URI, or <c>null</c>.</returns>
+        /// <returns>An absolute URI, or <c>null</c>.</returns>
         public abstract string GetUriByAddress<TAddress>(
             TAddress address,
             RouteValueDictionary values,
