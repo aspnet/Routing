@@ -273,10 +273,10 @@ namespace Microsoft.AspNetCore.Routing
             var services = GetBasicServices();
             services.AddSingleton(typeof(UpperCaseParameterTransform), new UpperCaseParameterTransform());
 
-            var linkGenerator = CreateLinkGenerator(new[] { endpoint }, routeOptions, services);
+            var linkGenerator = CreateLinkGenerator(routeOptions, services, endpoint);
 
             // Act
-            var link = linkGenerator.GetLink(new { controller = "Home", name = "Test" });
+            var link = linkGenerator.GetPathByRouteValues(routeName: null, new { controller = "Home", name = "Test" });
 
             // Assert
             Assert.Equal("/HOME/Test", link);
