@@ -273,7 +273,13 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         public override Matcher Build()
         {
-            var root = BuildDfaTree();
+#if DEBUG
+            var includeLabel = true;
+#else
+            var includeLabel = false;
+#endif
+
+            var root = BuildDfaTree(includeLabel);
 
             // State count is the number of nodes plus an exit state
             var stateCount = 1;
