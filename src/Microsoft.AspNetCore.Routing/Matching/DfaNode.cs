@@ -69,10 +69,12 @@ namespace Microsoft.AspNetCore.Routing.Matching
         {
             if (Matches == null)
             {
-                Matches = new List<Endpoint>();
+                Matches = new List<Endpoint>(endpoints);
             }
-
-            Matches.AddRange(endpoints);
+            else
+            {
+                Matches.AddRange(endpoints);
+            }
         }
 
         public void Visit(Action<DfaNode> visitor)
