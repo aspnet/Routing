@@ -314,18 +314,18 @@ namespace Microsoft.AspNetCore.Routing.Template
             return true;
         }
 
-        private ParameterTransformer GetParameterTransformer(RoutePatternParameterPart parameterPart)
+        private IParameterTransformer GetParameterTransformer(RoutePatternParameterPart parameterPart)
         {
             if (_parameterPolicyFactory == null)
             {
                 return null;
             }
 
-            for (int i = 0; i < parameterPart.ParameterPolicies.Count; i++)
+            for (var i = 0; i < parameterPart.ParameterPolicies.Count; i++)
             {
                 // Use the first parameter transformer
                 var parameterPolicy = _parameterPolicyFactory.Create(parameterPart, parameterPart.ParameterPolicies[0]);
-                if (parameterPolicy is ParameterTransformer parameterTransformer)
+                if (parameterPolicy is IParameterTransformer parameterTransformer)
                 {
                     return parameterTransformer;
                 }

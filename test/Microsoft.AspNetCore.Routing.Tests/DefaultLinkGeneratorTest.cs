@@ -253,9 +253,9 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Equal("/Foo/Bar%3Fencodeme%3F/Home/In%3Fdex?query=some%3Fquery#Fragment?", path);
         }
 
-        private class UpperCaseParameterTransform : ParameterTransformer
+        private class UpperCaseParameterTransform : IParameterTransformer
         {
-            public override string Transform(string value)
+            public string Transform(string value)
             {
                 return value?.ToUpperInvariant();
             }

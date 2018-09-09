@@ -3,8 +3,8 @@
 
 namespace Microsoft.AspNetCore.Routing
 {
-    public abstract class ParameterTransformer : IParameterPolicy
+    public interface IParameterTransformer : IParameterPolicy
     {
-        public abstract string Transform(string value);
+        string Transform(string value);
     }
 }

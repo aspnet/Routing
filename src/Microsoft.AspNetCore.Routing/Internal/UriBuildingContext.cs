@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             return Accept(value, encodeSlashes: true, parameterTransformer: null);
         }
 
-        public bool Accept(string value, bool encodeSlashes, ParameterTransformer parameterTransformer)
+        public bool Accept(string value, bool encodeSlashes, IParameterTransformer parameterTransformer)
         {
             if (string.IsNullOrEmpty(value))
             {
@@ -266,13 +266,13 @@ namespace Microsoft.AspNetCore.Routing.Internal
             EncodeValue(value, encodeSlashes: true, parameterTransformer: null);
         }
 
-        private void EncodeValue(string value, bool encodeSlashes, ParameterTransformer parameterTransformer)
+        private void EncodeValue(string value, bool encodeSlashes, IParameterTransformer parameterTransformer)
         {
             EncodeValue(value, start: 0, characterCount: value.Length, encodeSlashes, parameterTransformer);
         }
 
         // For testing
-        internal void EncodeValue(string value, int start, int characterCount, bool encodeSlashes, ParameterTransformer parameterTransformer)
+        internal void EncodeValue(string value, int start, int characterCount, bool encodeSlashes, IParameterTransformer parameterTransformer)
         {
             if (parameterTransformer != null)
             {
