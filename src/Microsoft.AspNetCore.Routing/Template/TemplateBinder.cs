@@ -324,7 +324,7 @@ namespace Microsoft.AspNetCore.Routing.Template
             for (var i = 0; i < parameterPart.ParameterPolicies.Count; i++)
             {
                 // Use the first parameter transformer
-                var parameterPolicy = _parameterPolicyFactory.Create(parameterPart, parameterPart.ParameterPolicies[0]);
+                var parameterPolicy = _parameterPolicyFactory.Create(parameterPart, parameterPart.ParameterPolicies[i]);
                 if (parameterPolicy is IParameterTransformer parameterTransformer)
                 {
                     return parameterTransformer;
