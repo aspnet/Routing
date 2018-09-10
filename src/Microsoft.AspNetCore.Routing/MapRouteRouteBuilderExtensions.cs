@@ -2,9 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.Internal;
+using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Builder
@@ -156,6 +155,7 @@ namespace Microsoft.AspNetCore.Builder
                 var parameterPolicy = _parameterPolicyFactory.Create(null, inlineConstraint);
                 if (parameterPolicy != null)
                 {
+                    // Logic inside Route will skip adding NullRouteConstraint
                     return NullRouteConstraint.Instance;
                 }
 
