@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Builder
@@ -159,16 +160,6 @@ namespace Microsoft.AspNetCore.Builder
                 }
 
                 return null;
-            }
-        }
-
-        private class NullRouteConstraint : IRouteConstraint
-        {
-            public static readonly NullRouteConstraint Instance = new NullRouteConstraint();
-
-            public bool Match(HttpContext httpContext, IRouter route, string routeKey, RouteValueDictionary values, RouteDirection routeDirection)
-            {
-                return true;
             }
         }
     }

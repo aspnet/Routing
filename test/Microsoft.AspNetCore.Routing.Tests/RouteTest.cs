@@ -1603,10 +1603,7 @@ namespace Microsoft.AspNetCore.Routing
             // Assert
             var templateRoute = (Route)routeBuilder.Routes[0];
 
-            var routeConstraint = templateRoute.Constraints["controller"];
-
-            // A special null route constraint
-            Assert.NotNull(routeConstraint);
+            Assert.Empty(templateRoute.Constraints);
         }
 
         [Fact]
