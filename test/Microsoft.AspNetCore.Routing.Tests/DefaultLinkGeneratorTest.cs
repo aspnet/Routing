@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -165,6 +166,49 @@ namespace Microsoft.AspNetCore.Routing
 
             // Assert
             Assert.Equal("/Home/Index/", path);
+        }
+
+        [Fact]
+        public void GetPathByAddress_WithParameterTransformer()
+        {
+            // Arrange
+            var endpoint1 = EndpointFactory.CreateRouteEndpoint("{controller:slugify}/{action}/{id}", metadata: new object[] { new IntMetadata(1), });
+            var endpoint2 = EndpointFactory.CreateRouteEndpoint("{controller:slugify}/{action}/{id?}", metadata: new object[] { new IntMetadata(1), });
+
+            var routeOptions = new RouteOptions();
+            routeOptions.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer);
+
+            var linkGenerator = CreateLinkGenerator(routeOptions: routeOptions, services: null, endpoint1, endpoint2);
+
+            // Act
+            var path = linkGenerator.GetPathByAddress(
+                1,
+                values: new RouteValueDictionary(new { controller = "TestController", action = "Index", }));
+
+            // Assert
+            Assert.Equal("/test-controller/Index", path);
+        }
+
+        [Fact]
+        public void GetPathByAddress_WithParameterTransformer_WithLowercaseUrl()
+        {
+            // Arrange
+            var endpoint1 = EndpointFactory.CreateRouteEndpoint("{controller:slugify}/{action}/{id}", metadata: new object[] { new IntMetadata(1), });
+            var endpoint2 = EndpointFactory.CreateRouteEndpoint("{controller:slugify}/{action}/{id?}", metadata: new object[] { new IntMetadata(1), });
+
+            var routeOptions = new RouteOptions();
+            routeOptions.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer);
+
+            var linkGenerator = CreateLinkGenerator(routeOptions: routeOptions, services: null, endpoint1, endpoint2);
+
+            // Act
+            var path = linkGenerator.GetPathByAddress(
+                1,
+                values: new RouteValueDictionary(new { controller = "TestController", action = "Index", }),
+                options: new LinkOptions() { LowercaseUrls = true, });
+
+            // Assert
+            Assert.Equal("/test-controller/index", path);
         }
 
         [Fact]
