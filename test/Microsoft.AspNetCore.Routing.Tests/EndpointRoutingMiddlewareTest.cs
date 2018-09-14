@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Routing
             var options = Options.Create(new EndpointOptions());
             var middleware = new EndpointRoutingMiddleware(
                 matcherFactory,
-                new CompositeEndpointDataSource(Array.Empty<EndpointDataSource>()),
+                new DefaultEndpointDataSource(),
                 logger,
                 next);
 
