@@ -10,18 +10,20 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Routing
 {
-    internal class BuilderEndpointDataSource : EndpointDataSource
+    internal class BuilderEndpointDataSource : EndpointDataSource, IApplyEndpointBuilder
     {
-        private readonly EndpointDataSourceBuilder _builder;
+        internal IReadOnlyList<EndpointBuilder> EndpointBuilders { get; }
+        internal List<Action<EndpointBuilder>> OnApply { get; }
 
-        public BuilderEndpointDataSource(EndpointDataSourceBuilder builder)
+        public BuilderEndpointDataSource(IReadOnlyList<EndpointBuilder> endpointBuilders)
         {
-            if (builder == null)
+            if (endpointBuilders == null)
             {
-                throw new ArgumentNullException(nameof(builder));
+                throw new ArgumentNullException(nameof(endpointBuilders));
             }
 
-            _builder = builder;
+            EndpointBuilders = endpointBuilders;
+            OnApply = new List<Action<EndpointBuilder>>();
         }
 
         public override IChangeToken GetChangeToken()
@@ -29,6 +31,26 @@ namespace Microsoft.AspNetCore.Routing
             return NullChangeToken.Singleton;
         }
 
-        public override IReadOnlyList<Endpoint> Endpoints => _builder.Endpoints.Select(b => b.Build()).ToArray();
+        public void Apply(Action<EndpointBuilder> apply)
+        {
+            if (apply == null)
+            {
+                throw new ArgumentNullException(nameof(apply));
+            }
+
+            OnApply.Add(apply);
+        }
+
+        private EndpointBuilder ApplyAll(EndpointBuilder endpointBuilder)
+        {
+            foreach (var apply in OnApply)
+            {
+                apply(endpointBuilder);
+            }
+
+            return endpointBuilder;
+        }
+
+        public override IReadOnlyList<Endpoint> Endpoints => EndpointBuilders.Select(e => ApplyAll(e).Build()).ToArray();
     }
 }

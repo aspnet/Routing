@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Builder
 {
     public static class EndpointDataSourceBuilderExtensions
     {
-        public static EndpointBuilder MapHello(this EndpointDataSourceBuilder builder, string template, string greeter)
+        public static IApplyEndpointBuilder MapHello(this EndpointDataSourcesBuilder builder, string template, string greeter)
         {
             if (builder == null)
             {

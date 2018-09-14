@@ -154,8 +154,9 @@ namespace Microsoft.AspNetCore.Builder
             });
 
             // Assert
-            var dataSourceBuilder = (DefaultEndpointDataSourceBuilder)services.GetRequiredService<EndpointDataSourceBuilder>();
-            var endpointBuilder = Assert.Single(dataSourceBuilder.Endpoints);
+            var dataSourceBuilder = (DefaultEndpointDataSourcesBuilder)services.GetRequiredService<EndpointDataSourcesBuilder>();
+            var dataSource = Assert.Single(dataSourceBuilder.EndpointDataSources);
+            var endpointBuilder = Assert.Single(dataSource.Endpoints);
             Assert.Equal("Test endpoint", endpointBuilder.DisplayName);
         }
 

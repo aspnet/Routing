@@ -18,13 +18,13 @@ namespace Microsoft.AspNetCore.Builder
             return builder.UseEndpointRouting(null);
         }
 
-        public static IApplicationBuilder UseEndpointRouting(this IApplicationBuilder builder, Action<EndpointDataSourceBuilder> configure)
+        public static IApplicationBuilder UseEndpointRouting(this IApplicationBuilder builder, Action<EndpointDataSourcesBuilder> configure)
         {
             VerifyRoutingIsRegistered(builder);
 
             if (configure != null)
             {
-                var dataSourceBuilder = (DefaultEndpointDataSourceBuilder)builder.ApplicationServices.GetRequiredService<EndpointDataSourceBuilder>();
+                var dataSourceBuilder = (DefaultEndpointDataSourcesBuilder)builder.ApplicationServices.GetRequiredService<EndpointDataSourcesBuilder>();
                 dataSourceBuilder.ApplicationBuilder = builder;
                 configure(dataSourceBuilder);
             }

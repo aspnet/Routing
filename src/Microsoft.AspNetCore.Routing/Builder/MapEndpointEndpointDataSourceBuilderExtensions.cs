@@ -7,13 +7,14 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Builder
 {
     public static class MapEndpointEndpointDataSourceBuilderExtensions
     {
-        public static RouteEndpointBuilder MapEndpoint(
-            this EndpointDataSourceBuilder builder,
+        public static IApplyEndpointBuilder MapEndpoint(
+            this EndpointDataSourcesBuilder builder,
             RequestDelegate requestDelegate,
             string pattern,
             string displayName)
@@ -21,8 +22,8 @@ namespace Microsoft.AspNetCore.Builder
             return MapEndpoint(builder, requestDelegate, pattern, displayName, metadata: null);
         }
 
-        public static RouteEndpointBuilder MapEndpoint(
-            this EndpointDataSourceBuilder builder,
+        public static IApplyEndpointBuilder MapEndpoint(
+            this EndpointDataSourcesBuilder builder,
             RequestDelegate requestDelegate,
             RoutePattern pattern,
             string displayName)
@@ -30,8 +31,8 @@ namespace Microsoft.AspNetCore.Builder
             return MapEndpoint(builder, requestDelegate, pattern, displayName, metadata: null);
         }
 
-        public static RouteEndpointBuilder MapEndpoint(
-            this EndpointDataSourceBuilder builder,
+        public static IApplyEndpointBuilder MapEndpoint(
+            this EndpointDataSourcesBuilder builder,
             RequestDelegate requestDelegate,
             string pattern,
             string displayName,
@@ -40,8 +41,8 @@ namespace Microsoft.AspNetCore.Builder
             return MapEndpoint(builder, requestDelegate, RoutePatternFactory.Parse(pattern), displayName, metadata);
         }
 
-        public static RouteEndpointBuilder MapEndpoint(
-            this EndpointDataSourceBuilder builder,
+        public static IApplyEndpointBuilder MapEndpoint(
+            this EndpointDataSourcesBuilder builder,
             RequestDelegate requestDelegate,
             RoutePattern pattern,
             string displayName,
@@ -62,8 +63,11 @@ namespace Microsoft.AspNetCore.Builder
                 }
             }
 
-            builder.Endpoints.Add(endpointBuilder);
-            return endpointBuilder;
+            var builderEndpointDataSource = new BuilderEndpointDataSource(new[] { endpointBuilder });
+
+            builder.EndpointDataSources.Add(builderEndpointDataSource);
+
+            return builderEndpointDataSource;
         }
     }
 }

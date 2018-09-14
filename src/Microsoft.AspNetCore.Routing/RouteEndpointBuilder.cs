@@ -24,14 +24,14 @@ namespace Microsoft.AspNetCore.Routing
 
         public override Endpoint Build()
         {
-            var matcherEndpoint = new RouteEndpoint(
+            var routeEndpoint = new RouteEndpoint(
                 RequestDelegate,
                 RoutePattern,
                 Order,
                 new EndpointMetadataCollection(Metadata),
                 DisplayName);
 
-            return matcherEndpoint;
+            return routeEndpoint;
         }
     }
 }

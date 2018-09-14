@@ -14,28 +14,39 @@ namespace Microsoft.AspNetCore.Builder
 {
     public class MapEndpointEndpointDataSourceBuilderExtensionsTest
     {
+        private BuilderEndpointDataSource GetBuilderEndpointDataSource(DefaultEndpointDataSourcesBuilder dataSourcesBuilder)
+        {
+            return Assert.IsType<BuilderEndpointDataSource>(Assert.Single(dataSourcesBuilder.EndpointDataSources));
+        }
+
+        private RouteEndpointBuilder GetRouteEndpointBuilder(DefaultEndpointDataSourcesBuilder dataSourcesBuilder)
+        {
+            return Assert.IsType<RouteEndpointBuilder>(Assert.Single(GetBuilderEndpointDataSource(dataSourcesBuilder).EndpointBuilders));
+        }
+
         [Fact]
         public void MapEndpoint_StringPattern_BuildsEndpoint()
         {
             // Arrange
-            var builder = new DefaultEndpointDataSourceBuilder();
+            var builder = new DefaultEndpointDataSourcesBuilder();
             RequestDelegate requestDelegate = (d) => null;
 
             // Act
             var endpointBuilder = builder.MapEndpoint(requestDelegate, "/", "Display name!");
 
             // Assert
-            Assert.Equal(endpointBuilder, Assert.Single(builder.Endpoints));
-            Assert.Equal(requestDelegate, endpointBuilder.RequestDelegate);
-            Assert.Equal("Display name!", endpointBuilder.DisplayName);
-            Assert.Equal("/", endpointBuilder.RoutePattern.RawText);
+            var endpointBuilder1 = GetRouteEndpointBuilder(builder);
+
+            Assert.Equal(requestDelegate, endpointBuilder1.RequestDelegate);
+            Assert.Equal("Display name!", endpointBuilder1.DisplayName);
+            Assert.Equal("/", endpointBuilder1.RoutePattern.RawText);
         }
 
         [Fact]
         public void MapEndpoint_TypedPattern_BuildsEndpoint()
         {
             // Arrange
-            var builder = new DefaultEndpointDataSourceBuilder();
+            var builder = new DefaultEndpointDataSourcesBuilder();
             RequestDelegate requestDelegate = (d) => null;
 
             // Act
@@ -53,7 +64,7 @@ namespace Microsoft.AspNetCore.Builder
         {
             // Arrange
             var metadata = new object();
-            var builder = new DefaultEndpointDataSourceBuilder();
+            var builder = new DefaultEndpointDataSourcesBuilder();
             RequestDelegate requestDelegate = (d) => null;
 
             // Act
@@ -72,7 +83,7 @@ namespace Microsoft.AspNetCore.Builder
         {
             // Arrange
             var metadata = new object();
-            var builder = new DefaultEndpointDataSourceBuilder();
+            var builder = new DefaultEndpointDataSourcesBuilder();
             RequestDelegate requestDelegate = (d) => null;
 
             // Act
