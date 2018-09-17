@@ -62,7 +62,6 @@ namespace Microsoft.Extensions.DependencyInjection
             //
             // Endpoint Infrastructure
             //
-            services.TryAddSingleton<EndpointDataSource, BuilderEndpointDataSource>();
             services.TryAddSingleton<EndpointDataSourcesBuilder, DefaultEndpointDataSourcesBuilder>();
 
             //

@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -35,15 +36,25 @@ namespace RoutingSample.Web
             {
                 builder.MapHello("/helloworld", "World");
 
+                builder.MapHello("/helloworld-secret", "Secret World")
+                    .RequireAuthorization("swordfish");
+
                 builder.MapEndpoint(
                     (httpContext) =>
                     {
+                        var dataSource = httpContext.RequestServices.GetRequiredService<CompositeEndpointDataSource>();
+
+                        var sb = new StringBuilder();
+                        sb.AppendLine("Endpoints:");
+                        foreach (var endpoint in dataSource.Endpoints.OfType<RouteEndpoint>().OrderBy(e => e.RoutePattern.RawText, StringComparer.OrdinalIgnoreCase))
+                        {
+                            sb.AppendLine($"- {endpoint.RoutePattern.RawText}");
+                        }
+
                         var response = httpContext.Response;
-                        var payloadLength = _homePayload.Length;
                         response.StatusCode = 200;
                         response.ContentType = "text/plain";
-                        response.ContentLength = payloadLength;
-                        return response.Body.WriteAsync(_homePayload, 0, payloadLength);
+                        return response.WriteAsync(sb.ToString());
                     },
                     "/",
                     "Home");
@@ -124,7 +135,7 @@ namespace RoutingSample.Web
                     new RouteValuesAddressMetadata(routeName: "WithDoubleAsteriskCatchAll", requiredValues: new RouteValueDictionary()));
             });
 
-            // Imagine some more stuff here...
+            app.UseAuthorization();
 
             app.UseEndpoint();
         }

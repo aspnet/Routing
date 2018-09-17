@@ -11,15 +11,22 @@ namespace Microsoft.Extensions.DependencyInjection
     internal class ConfigureEndpointOptions : IConfigureOptions<EndpointOptions>
     {
         private readonly IEnumerable<EndpointDataSource> _dataSources;
+        private readonly IEnumerable<EndpointDataSourcesBuilder> _dataSourcesBuilders;
 
-        public ConfigureEndpointOptions(IEnumerable<EndpointDataSource> dataSources)
+        public ConfigureEndpointOptions(IEnumerable<EndpointDataSource> dataSources, IEnumerable<EndpointDataSourcesBuilder> dataSourcesBuilders)
         {
             if (dataSources == null)
             {
                 throw new ArgumentNullException(nameof(dataSources));
             }
 
+            if (dataSourcesBuilders == null)
+            {
+                throw new ArgumentNullException(nameof(dataSourcesBuilders));
+            }
+
             _dataSources = dataSources;
+            _dataSourcesBuilders = dataSourcesBuilders;
         }
 
         public void Configure(EndpointOptions options)
@@ -32,6 +39,14 @@ namespace Microsoft.Extensions.DependencyInjection
             foreach (var dataSource in _dataSources)
             {
                 options.DataSources.Add(dataSource);
+            }
+
+            foreach (var dataSourceBuilder in _dataSourcesBuilders)
+            {
+                foreach (var dataSource in dataSourceBuilder.EndpointDataSources)
+                {
+                    options.DataSources.Add(dataSource);
+                }
             }
         }
     }

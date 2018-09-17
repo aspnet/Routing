@@ -53,10 +53,11 @@ namespace Microsoft.AspNetCore.Builder
             var endpointBuilder = builder.MapEndpoint(requestDelegate, RoutePatternFactory.Parse("/"), "Display name!");
 
             // Assert
-            Assert.Equal(endpointBuilder, Assert.Single(builder.Endpoints));
-            Assert.Equal(requestDelegate, endpointBuilder.RequestDelegate);
-            Assert.Equal("Display name!", endpointBuilder.DisplayName);
-            Assert.Equal("/", endpointBuilder.RoutePattern.RawText);
+            var endpointBuilder1 = GetRouteEndpointBuilder(builder);
+
+            Assert.Equal(requestDelegate, endpointBuilder1.RequestDelegate);
+            Assert.Equal("Display name!", endpointBuilder1.DisplayName);
+            Assert.Equal("/", endpointBuilder1.RoutePattern.RawText);
         }
 
         [Fact]
@@ -71,11 +72,11 @@ namespace Microsoft.AspNetCore.Builder
             var endpointBuilder = builder.MapEndpoint(requestDelegate, "/", "Display name!", new[] { metadata });
 
             // Assert
-            Assert.Equal(endpointBuilder, Assert.Single(builder.Endpoints));
-            Assert.Equal(requestDelegate, endpointBuilder.RequestDelegate);
-            Assert.Equal("Display name!", endpointBuilder.DisplayName);
-            Assert.Equal("/", endpointBuilder.RoutePattern.RawText);
-            Assert.Equal(metadata, Assert.Single(endpointBuilder.Metadata));
+            var endpointBuilder1 = GetRouteEndpointBuilder(builder);
+            Assert.Equal(requestDelegate, endpointBuilder1.RequestDelegate);
+            Assert.Equal("Display name!", endpointBuilder1.DisplayName);
+            Assert.Equal("/", endpointBuilder1.RoutePattern.RawText);
+            Assert.Equal(metadata, Assert.Single(endpointBuilder1.Metadata));
         }
 
         [Fact]
@@ -90,11 +91,11 @@ namespace Microsoft.AspNetCore.Builder
             var endpointBuilder = builder.MapEndpoint(requestDelegate, RoutePatternFactory.Parse("/"), "Display name!", new[] { metadata });
 
             // Assert
-            Assert.Equal(endpointBuilder, Assert.Single(builder.Endpoints));
-            Assert.Equal(requestDelegate, endpointBuilder.RequestDelegate);
-            Assert.Equal("Display name!", endpointBuilder.DisplayName);
-            Assert.Equal("/", endpointBuilder.RoutePattern.RawText);
-            Assert.Equal(metadata, Assert.Single(endpointBuilder.Metadata));
+            var endpointBuilder1 = GetRouteEndpointBuilder(builder);
+            Assert.Equal(requestDelegate, endpointBuilder1.RequestDelegate);
+            Assert.Equal("Display name!", endpointBuilder1.DisplayName);
+            Assert.Equal("/", endpointBuilder1.RoutePattern.RawText);
+            Assert.Equal(metadata, Assert.Single(endpointBuilder1.Metadata));
         }
     }
 }

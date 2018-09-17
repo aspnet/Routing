@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Builder
             return builder.MapEndpoint(
                 pipeline,
                 template,
-                "Hello");
+                "Hello " + greeter);
         }
     }
 }
