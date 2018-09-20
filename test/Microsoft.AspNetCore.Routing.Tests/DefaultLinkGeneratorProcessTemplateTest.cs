@@ -306,7 +306,7 @@ namespace Microsoft.AspNetCore.Routing
         public void TryProcessTemplate_ParameterPolicy_Includes_BufferedValues()
         {
             // Arrange
-            var endpoint = EndpointFactory.CreateRouteEndpoint("Foo/{bar=BAR}/{id?}", policies: new { bar = new SlugifyParameterTransformer(), });
+            var endpoint = EndpointFactory.CreateRouteEndpoint("Foo/{bar=MyBar}/{id?}", policies: new { bar = new SlugifyParameterTransformer(), });
             var linkGenerator = CreateLinkGenerator(new RouteOptions() { LowercaseUrls = true }, endpoints: new[] { endpoint, });
             var httpContext = CreateHttpContext();
 
@@ -321,7 +321,7 @@ namespace Microsoft.AspNetCore.Routing
 
             // Assert
             Assert.True(success);
-            Assert.Equal("/foo/bar/18", result.path.ToUriComponent());
+            Assert.Equal("/foo/my-bar/18", result.path.ToUriComponent());
             Assert.Equal(string.Empty, result.query.ToUriComponent());
         }
 
