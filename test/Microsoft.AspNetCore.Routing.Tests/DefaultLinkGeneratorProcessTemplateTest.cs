@@ -307,7 +307,7 @@ namespace Microsoft.AspNetCore.Routing
         {
             // Arrange
             var endpoint = EndpointFactory.CreateRouteEndpoint("Foo/{bar=MyBar}/{id?}", policies: new { bar = new SlugifyParameterTransformer(), });
-            var linkGenerator = CreateLinkGenerator(new RouteOptions() { LowercaseUrls = true }, endpoints: new[] { endpoint, });
+            var linkGenerator = CreateLinkGenerator(endpoints: new[] { endpoint, });
             var httpContext = CreateHttpContext();
 
             // Act
@@ -321,7 +321,7 @@ namespace Microsoft.AspNetCore.Routing
 
             // Assert
             Assert.True(success);
-            Assert.Equal("/foo/my-bar/18", result.path.ToUriComponent());
+            Assert.Equal("/Foo/my-bar/18", result.path.ToUriComponent());
             Assert.Equal(string.Empty, result.query.ToUriComponent());
         }
 
