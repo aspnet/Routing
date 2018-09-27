@@ -10,8 +10,7 @@ using System.Linq;
 namespace Microsoft.AspNetCore.Routing
 {
     /// <summary>
-    /// Represents metadata used during link generation to find
-    /// the associated endpoint using route values.
+    /// Metadata used during link generation to find the associated endpoint using route values.
     /// </summary>
     [DebuggerDisplay("{DebuggerToString(),nq}")]
     public sealed class RouteValuesAddressMetadata : IRouteValuesAddressMetadata
@@ -22,7 +21,7 @@ namespace Microsoft.AspNetCore.Routing
         /// <summary>
         /// Creates a new instance of <see cref="RouteValuesAddressMetadata"/> with the provided route name.
         /// </summary>
-        /// <param name="routeName">The route name.</param>
+        /// <param name="routeName">The route name. Can be null.</param>
         public RouteValuesAddressMetadata(string routeName) : this(routeName, EmptyRouteValues)
         {
         }
@@ -38,7 +37,7 @@ namespace Microsoft.AspNetCore.Routing
         /// <summary>
         /// Creates a new instance of <see cref="RouteValuesAddressMetadata"/> with the provided route name and required route values.
         /// </summary>
-        /// <param name="routeName">The route name.</param>
+        /// <param name="routeName">The route name. Can be null.</param>
         /// <param name="requiredValues">The required route values.</param>
         public RouteValuesAddressMetadata(string routeName, IReadOnlyDictionary<string, object> requiredValues)
         {
