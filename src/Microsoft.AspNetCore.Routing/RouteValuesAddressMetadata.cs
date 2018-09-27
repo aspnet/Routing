@@ -13,6 +13,16 @@ namespace Microsoft.AspNetCore.Routing
     {
         public RouteValuesAddressMetadata(string routeName, IReadOnlyDictionary<string, object> requiredValues)
         {
+            if (routeName == null)
+            {
+                throw new ArgumentNullException(nameof(routeName));
+            }
+
+            if (requiredValues == null)
+            {
+                throw new ArgumentNullException(nameof(requiredValues));
+            }
+
             RouteName = routeName;
             RequiredValues = requiredValues;
         }
