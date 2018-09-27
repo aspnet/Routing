@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Routing
         [Fact]
         public void DebuggerToString_NoNameAndRequiredValues_ReturnsString()
         {
-            var metadata = new RouteValuesAddressMetadata(string.Empty, new Dictionary<string, object>());
+            var metadata = new RouteValuesAddressMetadata(null, new Dictionary<string, object>());
 
             Assert.Equal("Name:  - Required values: ", metadata.DebuggerToString());
         }
