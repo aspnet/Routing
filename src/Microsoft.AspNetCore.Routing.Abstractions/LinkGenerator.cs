@@ -79,10 +79,10 @@ namespace Microsoft.AspNetCore.Routing
         /// <param name="values">The route values. Used to expand parameters in the route template. Optional.</param>
         /// <param name="ambientValues">The values associated with the current request. Optional.</param>
         /// <param name="scheme">
-        /// The URI scheme, applied to the resulting URI. Optional. If not provided, the value of <see cref="HttpRequest.Scheme"/> will be used.
+        /// The URI scheme, applied to the resulting URI.
         /// </param>
         /// <param name="host">
-        /// The URI host/authority, applied to the resulting URI. Optional. If not provided, the value <see cref="HttpRequest.Host"/> will be used.
+        /// The URI host/authority, applied to the resulting URI.
         /// </param>
         /// <param name="pathBase">
         /// An optional URI path base. Prepended to the path in the resulting URI. If not provided, the value of <see cref="HttpRequest.PathBase"/> will be used.
@@ -97,9 +97,9 @@ namespace Microsoft.AspNetCore.Routing
             HttpContext httpContext,
             TAddress address,
             RouteValueDictionary values,
-            RouteValueDictionary ambientValues = default,
-            string scheme = default,
-            HostString? host = default,
+            RouteValueDictionary ambientValues,
+            string scheme,
+            HostString host,
             PathString? pathBase = default,
             FragmentString fragment = default,
             LinkOptions options = default);
