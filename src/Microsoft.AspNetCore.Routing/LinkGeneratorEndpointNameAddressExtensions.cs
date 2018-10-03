@@ -108,10 +108,10 @@ namespace Microsoft.AspNetCore.Routing
         /// <param name="endpointName">The endpoint name. Used to resolve endpoints.</param>
         /// <param name="values">The route values. Used to expand parameters in the route template. Optional.</param>
         /// <param name="scheme">
-        /// The URI scheme, applied to the resulting URI. Optional. If not provided, the value of <see cref="HttpRequest.Scheme"/> will be used.
+        /// The URI scheme, applied to the resulting URI.
         /// </param>
         /// <param name="host">
-        /// The URI host/authority, applied to the resulting URI. Optional. If not provided, the value <see cref="HttpRequest.Host"/> will be used.
+        /// The URI host/authority, applied to the resulting URI.
         /// </param>
         /// <param name="pathBase">
         /// An optional URI path base. Prepended to the path in the resulting URI. If not provided, the value of <see cref="HttpRequest.PathBase"/> will be used.
@@ -127,8 +127,8 @@ namespace Microsoft.AspNetCore.Routing
             HttpContext httpContext,
             string endpointName,
             object values,
-            string scheme = default,
-            HostString? host = default,
+            string scheme,
+            HostString host,
             PathString? pathBase = default,
             FragmentString fragment = default,
             LinkOptions options = default)
@@ -146,6 +146,16 @@ namespace Microsoft.AspNetCore.Routing
             if (endpointName == null)
             {
                 throw new ArgumentNullException(nameof(endpointName));
+            }
+
+            if (string.IsNullOrEmpty(scheme))
+            {
+                throw new ArgumentException("A scheme must be provided.", nameof(scheme));
+            }
+
+            if (!host.HasValue)
+            {
+                throw new ArgumentException("A host must be provided.", nameof(host));
             }
 
             return generator.GetUriByAddress<string>(

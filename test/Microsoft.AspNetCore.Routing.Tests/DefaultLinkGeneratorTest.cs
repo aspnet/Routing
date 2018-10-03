@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Routing
             var linkGenerator = CreateLinkGenerator(endpoint);
 
             // Act
-            var uri = linkGenerator.GetUriByAddress(CreateHttpContext(), 0, values: null);
+            var uri = linkGenerator.GetUriByAddress(CreateHttpContext(),  0, values: null, ambientValues: null, scheme: "https", host: new HostString("example.com"));
 
             // Assert
             Assert.Null(uri);
@@ -140,11 +140,17 @@ namespace Microsoft.AspNetCore.Routing
             var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
 
             var httpContext = CreateHttpContext();
-            httpContext.Request.Scheme = "http";
-            httpContext.Request.Host = new HostString("example.com");
+            httpContext.Request.Scheme = "https";
+            httpContext.Request.Host = new HostString("www.example.com");
 
             // Act
-            var uri = linkGenerator.GetUriByAddress(httpContext, 1, values: new RouteValueDictionary(new { controller = "Home", action = "Index", }));
+            var uri = linkGenerator.GetUriByAddress(
+                httpContext, 
+                1, 
+                values: new RouteValueDictionary(new { controller = "Home", action = "Index", }),
+                ambientValues: null,
+                scheme: "http",
+                host: new HostString("example.com"));
 
             // Assert
             Assert.Equal("http://example.com/Home/Index", uri);
@@ -263,14 +269,17 @@ namespace Microsoft.AspNetCore.Routing
             var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
 
             var httpContext = CreateHttpContext();
-            httpContext.Request.Scheme = "http";
-            httpContext.Request.Host = new HostString("example.com");
+            httpContext.Request.Scheme = "https";
+            httpContext.Request.Host = new HostString("www.example.com");
 
             // Act
             var uri = linkGenerator.GetUriByAddress(
                 httpContext,
                 1,
                 values: new RouteValueDictionary(new { controller = "Home", action = "Index", }),
+                ambientValues: null,
+                scheme: "http",
+                host: new HostString("example.com"),
                 options: new LinkOptions() { AppendTrailingSlash = true, });
 
             // Assert
@@ -410,8 +419,8 @@ namespace Microsoft.AspNetCore.Routing
             var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
 
             var httpContext = CreateHttpContext();
-            httpContext.Request.Scheme = "http";
-            httpContext.Request.Host = new HostString("example.com");
+            httpContext.Request.Scheme = "https";
+            httpContext.Request.Host = new HostString("www.example.com");
             httpContext.Request.PathBase = new PathString("/Foo/Bar?encodeme?");
 
             // Act
@@ -419,6 +428,9 @@ namespace Microsoft.AspNetCore.Routing
                 httpContext,
                 1,
                 values: new RouteValueDictionary(new { controller = "Home", action = "In?dex", query = "some?query" }),
+                ambientValues: null,
+                scheme: "http",
+                host: new HostString("example.com"),
                 fragment: new FragmentString("#Fragment?"));
 
             // Assert
@@ -459,15 +471,17 @@ namespace Microsoft.AspNetCore.Routing
             var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
 
             var httpContext = CreateHttpContext();
-            httpContext.Request.Scheme = "http";
-            httpContext.Request.Host = new HostString("example.com");
+            httpContext.Request.Scheme = "https";
+            httpContext.Request.Host = new HostString("www.example.com");
 
             // Act
             var uri = linkGenerator.GetUriByAddress(
                 httpContext, 
                 1, 
                 values: new RouteValueDictionary(new { action = "Index", }),
-                ambientValues: new RouteValueDictionary(new { controller = "Home", }));
+                ambientValues: new RouteValueDictionary(new { controller = "Home", }),
+                scheme: "http",
+                host: new HostString("example.com"));
 
             // Assert
             Assert.Equal("http://example.com/Home/Index", uri);
@@ -497,7 +511,7 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Fact]
-        public void GetUriByAddress_WithHttpContext_CanOverrideUriParts()
+        public void GetUriByAddress_WithHttpContext_CanSpecifyUriParts()
         {
             // Arrange
             var endpoint1 = EndpointFactory.CreateRouteEndpoint("{controller}/{action}/{id}", metadata: new object[] { new IntMetadata(1), });
@@ -515,6 +529,7 @@ namespace Microsoft.AspNetCore.Routing
                 httpContext,
                 1,
                 values: new RouteValueDictionary(new { action = "Index", controller = "Home", }),
+                ambientValues: null,
                 scheme: "ftp",
                 host: new HostString("example.com:5000"),
                 pathBase: "/");

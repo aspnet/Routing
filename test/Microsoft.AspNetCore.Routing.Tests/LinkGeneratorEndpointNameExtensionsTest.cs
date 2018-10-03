@@ -132,8 +132,8 @@ namespace Microsoft.AspNetCore.Routing
             var linkGenerator = CreateLinkGenerator(endpoint1, endpoint2);
 
             var httpContext = CreateHttpContext();
-            httpContext.Request.Scheme = "http";
-            httpContext.Request.Host = new HostString("example.com");
+            httpContext.Request.Scheme = "https";
+            httpContext.Request.Host = new HostString("www.example.com");
             httpContext.Request.PathBase = new PathString("/Foo/Bar?encodeme?");
 
             var values = new { p = "In?dex", query = "some?query", };
@@ -143,6 +143,8 @@ namespace Microsoft.AspNetCore.Routing
                 httpContext,
                 endpointName: "name2",
                 values,
+                scheme: "http",
+                host: new HostString("example.com"),
                 fragment: new FragmentString("#Fragment?"),
                 options: new LinkOptions() { AppendTrailingSlash = true, });
 
