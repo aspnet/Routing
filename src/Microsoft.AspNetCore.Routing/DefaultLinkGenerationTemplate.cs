@@ -61,8 +61,8 @@ namespace Microsoft.AspNetCore.Routing
         public override string GetUri(
             HttpContext httpContext,
             object values,
-            string scheme = default,
-            HostString? host = default,
+            string scheme,
+            HostString host,
             PathString? pathBase = default,
             FragmentString fragment = default,
             LinkOptions options = default)
@@ -72,12 +72,22 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(httpContext));
             }
 
+            if (string.IsNullOrEmpty(scheme))
+            {
+                throw new ArgumentException("A scheme must be provided.", nameof(scheme));
+            }
+
+            if (!host.HasValue)
+            {
+                throw new ArgumentException("A host must be provided.", nameof(host));
+            }
+
             return LinkGenerator.GetUriByEndpoints(
                 Endpoints,
                 new RouteValueDictionary(values),
                 GetAmbientValues(httpContext),
-                scheme ?? httpContext.Request.Scheme,
-                host ?? httpContext.Request.Host,
+                scheme,
+                host,
                 pathBase ?? httpContext.Request.PathBase,
                 fragment,
                 options);

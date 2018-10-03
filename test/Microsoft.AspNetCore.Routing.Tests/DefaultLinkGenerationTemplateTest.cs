@@ -93,13 +93,15 @@ namespace Microsoft.AspNetCore.Routing
             var template = new DefaultLinkGenerationTemplate(linkGenerator, new List<RouteEndpoint>() { endpoint1, endpoint2, }, options: null);
 
             var httpContext = CreateHttpContext();
-            httpContext.Request.Scheme = "http";
-            httpContext.Request.Host = new HostString("example.com");
+            httpContext.Request.Scheme = "https";
+            httpContext.Request.Host = new HostString("www.example.com");
             httpContext.Request.PathBase = new PathString("/Foo/Bar?encodeme?");
 
             // Act
             var uri = template.GetUri(
                 httpContext,
+                scheme: "http",
+                host: new HostString("example.com"),
                 values: new RouteValueDictionary(new { controller = "Home", action = "In?dex", query = "some?query" }),
                 fragment: new FragmentString("#Fragment?"),
                 options: new LinkOptions() { AppendTrailingSlash = true, });
@@ -170,11 +172,11 @@ namespace Microsoft.AspNetCore.Routing
             });
 
             var httpContext = CreateHttpContext(new { controller = "Home", });
-            httpContext.Request.Scheme = "http";
-            httpContext.Request.Host = new HostString("example.com");
+            httpContext.Request.Scheme = "https";
+            httpContext.Request.Host = new HostString("www.example.com");
 
             // Act
-            var uri = template.GetUri(httpContext, values: new { action = "Index", });
+            var uri = template.GetUri(httpContext, scheme: "http", host: new HostString("example.com"), values: new { action = "Index", });
 
             // Assert
             Assert.Equal("http://example.com/Home/Index", uri);
@@ -194,11 +196,11 @@ namespace Microsoft.AspNetCore.Routing
             });
 
             var httpContext = CreateHttpContext(new { controller = "Home", });
-            httpContext.Request.Scheme = "http";
-            httpContext.Request.Host = new HostString("example.com");
+            httpContext.Request.Scheme = "https";
+            httpContext.Request.Host = new HostString("www.example.com");
 
             // Act
-            var uri = template.GetUri(httpContext, values: new { action = "Index", });
+            var uri = template.GetUri(httpContext, scheme: "http", host: new HostString("example.com"), values: new { action = "Index", });
 
             // Assert
             Assert.Null(uri);

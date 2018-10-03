@@ -124,9 +124,9 @@ namespace Microsoft.AspNetCore.Routing
             HttpContext httpContext,
             TAddress address,
             RouteValueDictionary values,
-            RouteValueDictionary ambientValues = default,
-            string scheme = default,
-            HostString? host = default,
+            RouteValueDictionary ambientValues,
+            string scheme,
+            HostString host,
             PathString? pathBase = default,
             FragmentString fragment = default,
             LinkOptions options = null)
@@ -134,6 +134,16 @@ namespace Microsoft.AspNetCore.Routing
             if (httpContext == null)
             {
                 throw new ArgumentNullException(nameof(httpContext));
+            }
+
+            if (string.IsNullOrEmpty(scheme))
+            {
+                throw new ArgumentException("A scheme must be provided.", nameof(scheme));
+            }
+
+            if (!host.HasValue)
+            {
+                throw new ArgumentException("A host must be provided.", nameof(host));
             }
 
             var endpoints = GetEndpoints(address);
@@ -146,8 +156,8 @@ namespace Microsoft.AspNetCore.Routing
                 endpoints,
                 values,
                 ambientValues,
-                scheme ?? httpContext.Request.Scheme,
-                host ?? httpContext.Request.Host,
+                scheme,
+                host,
                 pathBase ?? httpContext.Request.PathBase,
                 fragment,
                 options);
