@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using RoutingSample.Web.DomainPolicy;
 
 namespace RoutingSample.Web
 {
@@ -29,13 +30,19 @@ namespace RoutingSample.Web
             {
                 options.ConstraintMap.Add("endsWith", typeof(EndsWithStringRouteConstraint));
             });
+
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<MatcherPolicy, DomainMatcherPolicy>());
         }
 
         public void Configure(IApplicationBuilder app)
         {
             app.UseEndpointRouting(builder =>
             {
-                builder.MapHello("/helloworld", "World");
+                builder.MapHello("/helloworld", "*:*");
+                builder.MapHello("/helloworld", "127.0.0.1:*").RequireDomain(new HostString("127.0.0.1"));
+                builder.MapHello("/helloworld", "*:5001").RequireDomain(new HostString(string.Empty, 5001));
+                builder.MapHello("/helloworld", "127.0.0.1:5001").RequireDomain(new HostString("127.0.0.1", 5001));
+                builder.MapHello("/helloworld", "localhost:5001").RequireDomain(new HostString("localhost", 5001));
 
                 builder.MapHello("/helloworld-secret", "Secret World")
                     .RequireAuthorization("swordfish");

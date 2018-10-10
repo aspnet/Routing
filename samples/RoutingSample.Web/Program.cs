@@ -58,7 +58,11 @@ namespace RoutingSample.Web
             }
 
             return new WebHostBuilder()
-                .UseKestrel()
+                .UseKestrel(options =>
+                {
+                    options.ListenLocalhost(5000);
+                    options.ListenLocalhost(5001);
+                })
                 .UseIISIntegration()
                 .ConfigureLogging(b =>
                 {
