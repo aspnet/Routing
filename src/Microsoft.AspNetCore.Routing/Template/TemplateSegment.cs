@@ -18,7 +18,12 @@ namespace Microsoft.AspNetCore.Routing.Template
 
         public TemplateSegment(RoutePatternPathSegment other)
         {
-            Parts = new List<TemplatePart>(other.Parts.Select(s => new TemplatePart(s)));
+            var partCount = other.Parts.Count;
+            Parts = new List<TemplatePart>(partCount);
+            for (var i = 0; i < partCount; i++)
+            {
+                Parts.Add(new TemplatePart(other.Parts[i]));
+            }
         }
 
         public bool IsSimple => Parts.Count == 1;
@@ -32,8 +37,14 @@ namespace Microsoft.AspNetCore.Routing.Template
 
         public RoutePatternPathSegment ToRoutePatternPathSegment()
         {
-            var parts = Parts.Select(p => p.ToRoutePatternPart());
-            return RoutePatternFactory.Segment(parts);
+            var partCount = Parts.Count;
+            var patternParts = new RoutePatternPart[partCount];
+            for (var i = 0; i < partCount; i++)
+            {
+                patternParts[i] = Parts[i].ToRoutePatternPart();
+            }
+
+            return RoutePatternFactory.Segment(patternParts);
         }
     }
 }
