@@ -449,7 +449,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 throw new ArgumentNullException(nameof(parts));
             }
 
-            return new RoutePatternPathSegment(parts);
+            return new RoutePatternPathSegment(parts.ToArray());
         }
 
         /// <summary>
@@ -665,7 +665,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 parameterName: parameterName,
                 @default: @default,
                 parameterKind: parameterKind,
-                parameterPolicies: parameterPolicies);
+                parameterPolicies: parameterPolicies.ToArray());
         }
 
         private static RoutePatternParameterPart ParameterPartCore(
