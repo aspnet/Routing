@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -18,6 +19,11 @@ namespace Microsoft.AspNetCore.Routing.Template
 
         public TemplateSegment(RoutePatternPathSegment other)
         {
+            if (other == null)
+            {
+                throw new ArgumentNullException(nameof(other));
+            }
+
             var partCount = other.Parts.Count;
             Parts = new List<TemplatePart>(partCount);
             for (var i = 0; i < partCount; i++)
@@ -37,14 +43,8 @@ namespace Microsoft.AspNetCore.Routing.Template
 
         public RoutePatternPathSegment ToRoutePatternPathSegment()
         {
-            var partCount = Parts.Count;
-            var patternParts = new RoutePatternPart[partCount];
-            for (var i = 0; i < partCount; i++)
-            {
-                patternParts[i] = Parts[i].ToRoutePatternPart();
-            }
-
-            return RoutePatternFactory.Segment(patternParts);
+            var parts = Parts.Select(p => p.ToRoutePatternPart());
+            return RoutePatternFactory.Segment(parts);
         }
     }
 }
