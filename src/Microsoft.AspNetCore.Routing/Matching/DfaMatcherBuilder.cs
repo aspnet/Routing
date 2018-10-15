@@ -40,11 +40,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
             _parameterPolicyFactory = parameterPolicyFactory;
             _selector = selector;
 
-            var extractedPolicies = ExtractPolicies(policies.OrderBy(p => p.Order));
-
-            _endpointSelectorPolicies = extractedPolicies.endpointSelectorPolicies;
-            _nodeBuilders = extractedPolicies.nodeBuilderPolicies;
-            _comparer = new EndpointComparer(extractedPolicies.endpointComparerPolicies);
+            var (nodeBuilderPolicies, endpointComparerPolicies, endpointSelectorPolicies) = ExtractPolicies(policies.OrderBy(p => p.Order));
+            _endpointSelectorPolicies = endpointSelectorPolicies;
+            _nodeBuilders = nodeBuilderPolicies;
+            _comparer = new EndpointComparer(endpointComparerPolicies);
 
             _assignments = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             _slots = new List<KeyValuePair<string, object>>();
