@@ -18,64 +18,6 @@ namespace Microsoft.AspNetCore.Routing
     public class LinkGeneratorRouteValuesAddressExtensionsTest : LinkGeneratorTestBase
     {
         [Fact]
-        public void GetPathByRouteValues_UsePrioritizedEndpointOnlyWithMatchingRouteValue()
-        {
-            // Arrange
-            var endpointControllerAction = EndpointFactory.CreateRouteEndpoint(
-                "Home/Index",
-                order: 3,
-                defaults: new { controller = "Home", action = "Index", },
-                metadata: new[] { new RouteValuesAddressMetadata(new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
-            var endpointController = EndpointFactory.CreateRouteEndpoint(
-                "Home",
-                order: 2,
-                defaults: new { controller = "Home", action = "Index", },
-                metadata: new[] { new RouteValuesAddressMetadata(new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
-            var endpointEmpty = EndpointFactory.CreateRouteEndpoint(
-                "",
-                order: 1,
-                defaults: new { controller = "Home", action = "Index", },
-                metadata: new[] { new RouteValuesAddressMetadata(new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
-
-            // This endpoint should be used to generate the link when an id is present
-            var endpointControllerActionParameter = EndpointFactory.CreateRouteEndpoint(
-                "Home/Index/{id}",
-                order: 0,
-                defaults: new { controller = "Home", action = "Index", },
-                metadata: new[] { new RouteValuesAddressMetadata(new RouteValueDictionary(new { controller = "Home", action = "Index", })) });
-
-            var linkGenerator = CreateLinkGenerator(endpointControllerAction, endpointController, endpointEmpty, endpointControllerActionParameter);
-
-            var context = new EndpointSelectorContext()
-            {
-                RouteValues = new RouteValueDictionary(new { controller = "Home", action = "Index", })
-            };
-            var httpContext = CreateHttpContext();
-            httpContext.Features.Set<IRouteValuesFeature>(context);
-
-            // Act
-            var pathWithoutId = linkGenerator.GetPathByRouteValues(
-                httpContext,
-                routeName: null,
-                values: new RouteValueDictionary());
-
-            var pathWithId = linkGenerator.GetPathByRouteValues(
-                httpContext,
-                routeName: null,
-                values: new RouteValueDictionary(new { id = "3" }));
-
-            var pathWithCustom = linkGenerator.GetPathByRouteValues(
-                httpContext,
-                routeName: null,
-                values: new RouteValueDictionary(new { custom = "Custom" }));
-
-            // Assert
-            Assert.Equal("/", pathWithoutId);
-            Assert.Equal("/Home/Index/3", pathWithId);
-            Assert.Equal("/?custom=Custom", pathWithCustom);
-        }
-
-        [Fact]
         public void GetPathByRouteValues_WithHttpContext_UsesAmbientValues()
         {
             // Arrange
