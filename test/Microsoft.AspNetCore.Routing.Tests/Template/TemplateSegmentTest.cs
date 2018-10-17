@@ -1,5 +1,8 @@
-﻿using Microsoft.AspNetCore.Routing.Patterns;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
+using Microsoft.AspNetCore.Routing.Patterns;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Routing.Template
