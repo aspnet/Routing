@@ -1547,6 +1547,80 @@ namespace Microsoft.AspNetCore.Routing.Tests
             Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
         }
 
+        [Fact]
+        public void Remove_KeyAndOutValue_ListStorage_KeyExists_First()
+        {
+            // Arrange
+            object value = "value";
+            var dict = new RouteValueDictionary()
+            {
+                { "key", value },
+                { "other", 5 },
+                { "dotnet", "rocks" }
+            };
+
+            // Act
+            var result = dict.Remove("key", out var removedValue);
+
+            // Assert
+            Assert.True(result);
+            Assert.Same(value, removedValue);
+            Assert.Equal(2, dict.Count);
+            Assert.False(dict.ContainsKey("key"));
+            Assert.True(dict.ContainsKey("other"));
+            Assert.True(dict.ContainsKey("dotnet"));
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
+        }
+
+        [Fact]
+        public void Remove_KeyAndOutValue_ListStorage_KeyExists_Middle()
+        {
+            // Arrange
+            object value = "value";
+            var dict = new RouteValueDictionary()
+            {
+                { "other", 5 },
+                { "key", value },
+                { "dotnet", "rocks" }
+            };
+
+            // Act
+            var result = dict.Remove("key", out var removedValue);
+
+            // Assert
+            Assert.True(result);
+            Assert.Same(value, removedValue);
+            Assert.Equal(2, dict.Count);
+            Assert.False(dict.ContainsKey("key"));
+            Assert.True(dict.ContainsKey("other"));
+            Assert.True(dict.ContainsKey("dotnet"));
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
+        }
+
+        [Fact]
+        public void Remove_KeyAndOutValue_ListStorage_KeyExists_Last()
+        {
+            // Arrange
+            object value = "value";
+            var dict = new RouteValueDictionary()
+            {
+                { "other", 5 },
+                { "dotnet", "rocks" },
+                { "key", value }
+            };
+
+            // Act
+            var result = dict.Remove("key", out var removedValue);
+
+            // Assert
+            Assert.True(result);
+            Assert.Same(value, removedValue);
+            Assert.Equal(2, dict.Count);
+            Assert.False(dict.ContainsKey("key"));
+            Assert.True(dict.ContainsKey("other"));
+            Assert.True(dict.ContainsKey("dotnet"));
+            Assert.IsType<KeyValuePair<string, object>[]>(dict._arrayStorage);
+        }
 
         [Fact]
         public void TryAdd_EmptyStringIsAllowed()

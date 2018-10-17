@@ -388,7 +388,9 @@ namespace Microsoft.AspNetCore.Routing
                 return false;
             }
 
-            EnsureCapacity(Count);
+            // Ensure property storage is converted to array storage as we'll be
+            // applying the lookup and removal on the array
+            EnsureCapacity(_count);
 
             var index = FindIndex(key);
             if (index >= 0)
@@ -419,13 +421,15 @@ namespace Microsoft.AspNetCore.Routing
                 ThrowArgumentNullExceptionForKey();
             }
 
-            if (Count == 0)
+            if (_count == 0)
             {
                 value = default;
                 return false;
             }
 
-            EnsureCapacity(Count);
+            // Ensure property storage is converted to array storage as we'll be
+            // applying the lookup and removal on the array
+            EnsureCapacity(_count);
 
             var index = FindIndex(key);
             if (index >= 0)
