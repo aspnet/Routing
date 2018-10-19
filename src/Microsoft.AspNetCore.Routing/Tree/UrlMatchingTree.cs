@@ -86,7 +86,8 @@ namespace Microsoft.AspNetCore.Routing.Tree
                 var part = segment.Parts[0];
                 if (part.IsLiteral)
                 {
-                    if (!current.Literals.TryGetValue(part.Text, out var next))
+                    UrlMatchingNode next;
+                    if (!current.Literals.TryGetValue(part.Text, out next))
                     {
                         next = new UrlMatchingNode(length: i + 1);
                         current.Literals.Add(part.Text, next);

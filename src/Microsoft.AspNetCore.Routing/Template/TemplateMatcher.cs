@@ -49,7 +49,8 @@ namespace Microsoft.AspNetCore.Routing.Template
                     continue;
                 }
 
-                if (Defaults.TryGetValue(part.Name, out var value))
+                object value;
+                if (Defaults.TryGetValue(part.Name, out value))
                 {
                     _hasDefaultValue[i] = true;
                     _defaultValues[i] = value;

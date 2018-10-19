@@ -76,7 +76,8 @@ namespace Microsoft.AspNetCore.Routing.Constraints
                     // signal that he is generating a URI that will be used for an HTTP POST, so he wants the URI
                     // generation to be performed by the (b) route instead of the (a) route, consistent with what would
                     // happen on incoming requests.
-                    if (!values.TryGetValue(routeKey, out var obj))
+                    object obj;
+                    if (!values.TryGetValue(routeKey, out obj))
                     {
                         return true;
                     }

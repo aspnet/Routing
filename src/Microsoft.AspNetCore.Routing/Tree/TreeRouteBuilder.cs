@@ -259,7 +259,8 @@ namespace Microsoft.AspNetCore.Routing.Tree
 
             foreach (var entry in InboundEntries)
             {
-                if (!trees.TryGetValue(entry.Order, out var tree))
+                UrlMatchingTree tree;
+                if (!trees.TryGetValue(entry.Order, out tree))
                 {
                     tree = new UrlMatchingTree(entry.Order);
                     trees.Add(entry.Order, tree);

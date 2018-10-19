@@ -32,15 +32,17 @@ namespace Microsoft.AspNetCore.Routing.Constraints
                 throw new ArgumentNullException(nameof(values));
             }
 
-            if (values.TryGetValue(routeKey, out var value) && value != null)
+            object value;
+            if (values.TryGetValue(routeKey, out value) && value != null)
             {
                 if (value is Guid)
                 {
                     return true;
                 }
 
+                Guid result;
                 var valueString = Convert.ToString(value, CultureInfo.InvariantCulture);
-                return Guid.TryParse(valueString, out _);
+                return Guid.TryParse(valueString, out result);
             }
 
             return false;

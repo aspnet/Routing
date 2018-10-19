@@ -103,7 +103,8 @@ namespace Microsoft.AspNetCore.Routing.Tree
                 // We only need to keep one OutboundMatch per route template
                 // so in case two entries have the same name and the same template we only keep
                 // the first entry.
-                if (_namedEntries.TryGetValue(entry.RouteName, out var namedMatch) &&
+                OutboundMatch namedMatch;
+                if (_namedEntries.TryGetValue(entry.RouteName, out namedMatch) &&
                     !string.Equals(
                         namedMatch.Entry.RouteTemplate.TemplateText,
                         entry.RouteTemplate.TemplateText,
@@ -232,7 +233,8 @@ namespace Microsoft.AspNetCore.Routing.Tree
 
         private VirtualPathData GetVirtualPathForNamedRoute(VirtualPathContext context)
         {
-            if (_namedEntries.TryGetValue(context.RouteName, out var match))
+            OutboundMatch match;
+            if (_namedEntries.TryGetValue(context.RouteName, out match))
             {
                 var path = GenerateVirtualPath(context, match.Entry, match.TemplateBinder);
                 if (path != null)

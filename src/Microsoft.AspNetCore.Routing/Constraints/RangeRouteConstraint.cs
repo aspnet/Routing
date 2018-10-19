@@ -58,10 +58,12 @@ namespace Microsoft.AspNetCore.Routing.Constraints
                 throw new ArgumentNullException(nameof(values));
             }
 
-            if (values.TryGetValue(routeKey, out var value) && value != null)
+            object value;
+            if (values.TryGetValue(routeKey, out value) && value != null)
             {
+                long longValue;
                 var valueString = Convert.ToString(value, CultureInfo.InvariantCulture);
-                if (Int64.TryParse(valueString, NumberStyles.Integer, CultureInfo.InvariantCulture, out var longValue))
+                if (Int64.TryParse(valueString, NumberStyles.Integer, CultureInfo.InvariantCulture, out longValue))
                 {
                     return longValue >= Min && longValue <= Max;
                 }

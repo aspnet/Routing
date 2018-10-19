@@ -91,8 +91,8 @@ namespace Microsoft.AspNetCore.Routing
             if (!string.IsNullOrEmpty(context.RouteName))
             {
                 VirtualPathData namedRoutePathData = null;
-
-                if (_namedRoutes.TryGetValue(context.RouteName, out var matchedNamedRoute))
+                INamedRouter matchedNamedRoute;
+                if (_namedRoutes.TryGetValue(context.RouteName, out matchedNamedRoute))
                 {
                     namedRoutePathData = matchedNamedRoute.GetVirtualPath(context);
                 }
