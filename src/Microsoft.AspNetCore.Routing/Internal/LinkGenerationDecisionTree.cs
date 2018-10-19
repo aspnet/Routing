@@ -87,8 +87,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 var criterion = node.Criteria[i];
                 var key = criterion.Key;
 
-                object value;
-                if (values.TryGetValue(key, out value))
+                if (values.TryGetValue(key, out object value))
                 {
                     DecisionTreeNode<OutboundMatch> branch;
                     if (criterion.Branches.TryGetValue(value ?? string.Empty, out branch))

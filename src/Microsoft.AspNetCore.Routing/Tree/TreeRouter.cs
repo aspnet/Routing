@@ -103,8 +103,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
                 // We only need to keep one OutboundMatch per route template
                 // so in case two entries have the same name and the same template we only keep
                 // the first entry.
-                OutboundMatch namedMatch;
-                if (_namedEntries.TryGetValue(entry.RouteName, out namedMatch) &&
+                if (_namedEntries.TryGetValue(entry.RouteName, out OutboundMatch namedMatch) &&
                     !string.Equals(
                         namedMatch.Entry.RouteTemplate.TemplateText,
                         entry.RouteTemplate.TemplateText,
