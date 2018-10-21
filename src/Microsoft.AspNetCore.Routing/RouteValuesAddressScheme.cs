@@ -124,9 +124,7 @@ namespace Microsoft.AspNetCore.Routing
                 if (routeEndpoint == null)
                     continue;
 
-                // Do not consider an endpoint for link generation if the following marker metadata is on it
-                var suppressLinkGeneration = routeEndpoint.Metadata.GetMetadata<ISuppressLinkGenerationMetadata>();
-                if (suppressLinkGeneration != null)
+                if (endpoint.Metadata.GetMetadata<ISuppressLinkGenerationMetadata>()?.SuppressLinkGeneration == true)
                 {
                     continue;
                 }
