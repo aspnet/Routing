@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Primitives;
@@ -14,15 +15,20 @@ namespace Microsoft.AspNetCore.Routing
     /// </summary>
     public sealed class DefaultEndpointDataSource : EndpointDataSource
     {
-        private readonly List<Endpoint> _endpoints;
+        private readonly Endpoint[] _endpoints;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultEndpointDataSource" /> class.
         /// </summary>
         /// <param name="endpoints">The <see cref="Endpoint"/> instances that the data source will return.</param>
         public DefaultEndpointDataSource(params Endpoint[] endpoints)
-            : this((IEnumerable<Endpoint>) endpoints)
         {
+            if (endpoints == null)
+            {
+                throw new ArgumentNullException(nameof(endpoints));
+            }
+
+            _endpoints = (Endpoint[])endpoints.Clone();
         }
 
         /// <summary>
@@ -36,8 +42,7 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(endpoints));
             }
 
-            _endpoints = new List<Endpoint>();
-            _endpoints.AddRange(endpoints);
+            _endpoints = endpoints.ToArray();
         }
 
         /// <summary>
