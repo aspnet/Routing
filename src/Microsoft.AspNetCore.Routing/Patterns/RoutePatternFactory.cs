@@ -433,7 +433,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 throw new ArgumentNullException(nameof(parts));
             }
 
-            return new RoutePatternPathSegment(parts.ToArray());
+            return SegmentCore(parts.ToArray());
         }
 
         /// <summary>
@@ -449,7 +449,12 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 throw new ArgumentNullException(nameof(parts));
             }
 
-            return new RoutePatternPathSegment((RoutePatternPart[]) parts.Clone());
+            return SegmentCore((RoutePatternPart[]) parts.Clone());
+        }
+
+        private static RoutePatternPathSegment SegmentCore(RoutePatternPart[] parts)
+        {
+            return new RoutePatternPathSegment(parts);
         }
 
         /// <summary>
