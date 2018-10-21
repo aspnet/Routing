@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Routing
     /// </summary>
     public sealed class DefaultEndpointDataSource : EndpointDataSource
     {
-        private readonly Endpoint[] _endpoints;
+        private readonly IReadOnlyList<Endpoint> _endpoints;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultEndpointDataSource" /> class.
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Routing
                 throw new ArgumentNullException(nameof(endpoints));
             }
 
-            _endpoints = endpoints.ToArray();
+            _endpoints = new List<Endpoint>(endpoints);
         }
 
         /// <summary>
