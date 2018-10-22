@@ -120,9 +120,10 @@ namespace Microsoft.AspNetCore.Routing
 
             foreach (var endpoint in _dataSource.Endpoints)
             {
-                var routeEndpoint = endpoint as RouteEndpoint;
-                if (routeEndpoint == null)
+                if (!(endpoint is RouteEndpoint routeEndpoint))
+                {
                     continue;
+                }
 
                 if (endpoint.Metadata.GetMetadata<ISuppressLinkGenerationMetadata>()?.SuppressLinkGeneration == true)
                 {
