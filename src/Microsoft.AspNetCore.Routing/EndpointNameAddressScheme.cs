@@ -15,7 +15,13 @@ namespace Microsoft.AspNetCore.Routing
 
         public EndpointNameAddressScheme(CompositeEndpointDataSource dataSource)
         {
-            _cache = new DataSourceDependentCache<Dictionary<string, Endpoint[]>>(dataSource, Initialize);
+            // Do not use method group to avoid extra allocation
+            // Can be removed once this is improved in either:
+            // Roslyn: https://github.com/dotnet/roslyn/issues/5835
+            // -or-
+            // JIT: https://github.com/dotnet/coreclr/issues/1784
+            _cache = new DataSourceDependentCache<Dictionary<string, Endpoint[]>>(dataSource,
+                                                                                  (endpoints) => Initialize(endpoints));
         }
 
         // Internal for tests
