@@ -6,6 +6,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -13,17 +15,34 @@ using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.AspNetCore.Mvc;
 
 namespace RoutingSandbox
 {
     public class UseEndpointRoutingStartup
     {
-        private static readonly byte[] _homePayload = Encoding.UTF8.GetBytes("Endpoint Routing sample endpoints:" + Environment.NewLine + "/plaintext");
-        private static readonly byte[] _plainTextPayload = Encoding.UTF8.GetBytes("Plain text!");
-
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddRouting();
+
+            services.AddMvc();
+
+            services
+                .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
+                {
+                    options.LoginPath = new PathString("/login");
+                    options.AccessDeniedPath = new PathString("/forbidden");
+                });
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("Members", p => p.RequireAuthenticatedUser());
+                options.AddPolicy("Admins", p => p.RequireRole("admin"));
+
+                options.DefaultPolicy = options.GetPolicy("Members");
+            });
+            services.AddAuthorizationPolicyEvaluator();
         }
 
         public void Configure(IApplicationBuilder app)
@@ -33,7 +52,9 @@ namespace RoutingSandbox
                 builder.MapHello("/helloworld", "World");
 
                 builder.MapHello("/helloworld-secret", "Secret World")
-                    .RequireAuthorization("swordfish");
+                    .RequireAuthorization(new AuthorizeAttribute("Admins"));
+
+                builder.MapRazorPages();
 
                 builder.MapGet(
                     "/",
@@ -42,27 +63,43 @@ namespace RoutingSandbox
                         var dataSource = httpContext.RequestServices.GetRequiredService<EndpointDataSource>();
 
                         var sb = new StringBuilder();
-                        sb.AppendLine("Endpoints:");
+                        sb.AppendLine("<html><body>");
+                        sb.AppendLine("<h1>Endpoints:</h1>");
+                        sb.AppendLine("<ul>");
                         foreach (var endpoint in dataSource.Endpoints.OfType<RouteEndpoint>().OrderBy(e => e.RoutePattern.RawText, StringComparer.OrdinalIgnoreCase))
                         {
-                            sb.AppendLine($"- {endpoint.RoutePattern.RawText}");
+                            sb.AppendLine($@"<li><a href=""{endpoint.RoutePattern.RawText}"">{endpoint.RoutePattern.RawText}</a></li>");
                         }
+                        sb.AppendLine("</ul>");
+                        if (httpContext.User.Identity.IsAuthenticated)
+                        {
+                            sb.AppendLine("<h1>Authenticated</h1>");
+                            sb.AppendLine("<ul>");
+                            foreach (var claim in httpContext.User.Claims)
+                            {
+                                sb.AppendLine($"<li>{claim}</li>");
+                            }
+                            sb.AppendLine("</ul>");
+                        }
+                        else
+                        {
+                            sb.AppendLine("<h1>Unauthenticated</h1>");
+                        }
+                        sb.AppendLine("</body></html>");
 
                         var response = httpContext.Response;
                         response.StatusCode = 200;
-                        response.ContentType = "text/plain";
+                        response.ContentType = "text/html";
                         return response.WriteAsync(sb.ToString());
                     });
                 builder.MapGet(
-                    "/plaintext",
+                    "/forbidden",
                     (httpContext) =>
                     {
                         var response = httpContext.Response;
-                        var payloadLength = _plainTextPayload.Length;
                         response.StatusCode = 200;
                         response.ContentType = "text/plain";
-                        response.ContentLength = payloadLength;
-                        return response.Body.WriteAsync(_plainTextPayload, 0, payloadLength);
+                        return response.WriteAsync("Forbidden endpoint!");
                     });
                 builder.MapGet(
                     "/graph",
@@ -72,7 +109,7 @@ namespace RoutingSandbox
                         using (var writer = new StreamWriter(httpContext.Response.Body, Encoding.UTF8, 1024, leaveOpen: true))
                         {
                             var graphWriter = httpContext.RequestServices.GetRequiredService<DfaGraphWriter>();
-                            var dataSource = httpContext.RequestServices.GetRequiredService<CompositeEndpointDataSource>();
+                            var dataSource = httpContext.RequestServices.GetRequiredService<EndpointDataSource>();
                             graphWriter.Write(dataSource, writer);
                         }
 
@@ -81,8 +118,10 @@ namespace RoutingSandbox
             });
 
             app.UseStaticFiles();
-			
-			app.UseAuthorization();
+
+            app.UseAuthentication();
+
+            app.UseAuthorization();
 
             app.UseEndpoint();
         }

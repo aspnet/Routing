@@ -30,7 +30,7 @@ namespace RoutingSandbox
                 Console.WriteLine($"2. {RouterScenario}");
                 Console.WriteLine();
 
-                scenario = Console.ReadLine();
+                scenario = "1"; //Console.ReadLine();
             }
             else
             {
@@ -63,7 +63,7 @@ namespace RoutingSandbox
                 .ConfigureLogging(b =>
                 {
                     b.AddConsole();
-                    b.SetMinimumLevel(LogLevel.Critical);
+                    b.SetMinimumLevel(LogLevel.Trace);
                 })
                 .UseContentRoot(Environment.CurrentDirectory)
                 .UseStartup(startupType);
