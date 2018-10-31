@@ -583,7 +583,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
         public void GetUrlVerifyEncoding()
         {
             var values = new RouteValueDictionary();
-            values.Add("controller", "#;?:@&=+$,");
+            values.Add("controller", "#;?:@&=+$,/");
             values.Add("action", "showcategory");
             values.Add("id", 123);
             values.Add("so?rt", "de?sc");
@@ -594,7 +594,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
                 new RouteValueDictionary(new { controller = "Home" }),
                 new RouteValueDictionary(new { controller = "home", action = "Index", id = (string)null }),
                 values,
-                "/%23;%3F%3A@%26%3D%2B$,.mvc/showcategory/123?so%3Frt=de%3Fsc&maxPrice=100");
+                "/%23;%3F:@&=+$,%2F.mvc/showcategory/123?so%3Frt=de%3Fsc&maxPrice=100");
         }
 
         [Fact]

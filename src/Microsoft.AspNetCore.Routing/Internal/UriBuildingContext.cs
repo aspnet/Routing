@@ -14,8 +14,14 @@ namespace Microsoft.AspNetCore.Routing.Internal
     public class UriBuildingContext
     {
         // Holds the 'accepted' parts of the path.
+        //
+        // Note that the path is stored as **unencoded** (except slashes in some cases) for parity with PathString.
         private readonly StringBuilder _path;
-        private StringBuilder _query;
+
+        // Holds the query string
+        //
+        // Note that the query is stored as **encoded** for parity with QueryString.
+        private readonly StringBuilder _query;
 
         // Holds the 'optional' parts of the path. We need a secondary buffer to handle cases where an optional
         // segment is in the middle of the uri. We don't know if we need to write it out - if it's
@@ -32,7 +38,6 @@ namespace Microsoft.AspNetCore.Routing.Internal
             _path = new StringBuilder();
             _query = new StringBuilder();
             _buffer = new List<BufferValue>();
-            PathWriter = new StringWriter(_path);
             QueryWriter = new StringWriter(_query);
             _lastValueOffset = -1;
 
@@ -49,8 +54,6 @@ namespace Microsoft.AspNetCore.Routing.Internal
         public SegmentState BufferState { get; private set; }
 
         public SegmentState UriState { get; private set; }
-
-        public TextWriter PathWriter { get; }
 
         public TextWriter QueryWriter { get; }
 
@@ -97,7 +100,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
                 if (buffer[i].RequiresEncoding)
                 {
-                    EncodeValue(bufferValue);
+                    EncodePathValue(bufferValue);
                 }
                 else
                 {
@@ -124,11 +127,11 @@ namespace Microsoft.AspNetCore.Routing.Internal
             if (_path.Length == 0 && value.Length > 0 && value[0] == '/')
             {
                 _path.Append("/");
-                EncodeValue(value, 1, value.Length - 1, encodeSlashes);
+                EncodePathValue(value, 1, value.Length - 1, encodeSlashes);
             }
             else
             {
-                EncodeValue(value, encodeSlashes);
+                EncodePathValue(value, encodeSlashes);
             }
 
             return true;
@@ -236,7 +239,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
                 _path.Insert(0, '/');
             }
 
-            return _path.ToString() + _query.ToString();
+            return new PathString(_path.ToString()).ToString() + _query.ToString();
         }
 
         // Used by TemplateBinder.TryBindValues - the new code path of LinkGenerator
@@ -279,41 +282,42 @@ namespace Microsoft.AspNetCore.Routing.Internal
             return new QueryString(_query.ToString());
         }
 
-        private void EncodeValue(string value)
+        private void EncodePathValue(string value)
         {
-            EncodeValue(value, encodeSlashes: true);
+            EncodePathValue(value, encodeSlashes: true);
         }
 
-        private void EncodeValue(string value, bool encodeSlashes)
+        private void EncodePathValue(string value, bool encodeSlashes)
         {
-            EncodeValue(value, start: 0, characterCount: value.Length, encodeSlashes);
+            EncodePathValue(value, start: 0, count: value.Length, encodeSlashes);
         }
 
         // For testing
-        internal void EncodeValue(string value, int start, int characterCount, bool encodeSlashes)
+        internal void EncodePathValue(string value, int start, int count, bool encodeSlashes)
         {
             // Just encode everything if its ok to encode slashes
             if (encodeSlashes)
             {
-                _urlEncoder.Encode(PathWriter, value, start, characterCount);
+                int end;
+                int length = start + count;
+                while ((end = value.IndexOf('/', start, count)) >= 0)
+                {
+                    _path.Append(value, start, end - start);
+                    _path.Append("%2F"); // Encoded /
+
+                    start = end + 1;
+                    count = length - start;
+                }
+
+                // Residue
+                if (end < 0 && count >= 0)
+                {
+                    _path.Append(value, start, length - start);
+                }
             }
             else
             {
-                int end;
-                int length = start + characterCount;
-                while ((end = value.IndexOf('/', start, characterCount)) >= 0)
-                {
-                    _urlEncoder.Encode(PathWriter, value, start, end - start);
-                    _path.Append("/");
-
-                    start = end + 1;
-                    characterCount = length - start;
-                }
-
-                if (end < 0 && characterCount >= 0)
-                {
-                    _urlEncoder.Encode(PathWriter, value, start, length - start);
-                }
+                _path.Append(value, start, count);
             }
         }
 
