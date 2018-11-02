@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Routing
             new RouteValueDictionary(_arrayValues);
         }
 
-        //[Benchmark]
+        [Benchmark]
         public RouteValueDictionary AddSingleItem()
         {
             var dictionary = new RouteValueDictionary
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Routing
             _propertyValues.ContainsKey("name");
         }
 
-        //[Benchmark]
+        [Benchmark]
         public RouteValueDictionary ConditionalAdd_ContainsKeyAdd()
         {
             var dictionary = _arrayValues;
