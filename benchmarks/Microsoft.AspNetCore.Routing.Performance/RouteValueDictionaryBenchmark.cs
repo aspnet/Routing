@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.Routing
     {
         private RouteValueDictionary _arrayValues;
         private RouteValueDictionary _propertyValues;
+        private RouteValueDictionary _arrayValuesEmpty;
 
         // We modify the route value dictionaries in many of these benchmarks.
         [IterationSetup]
@@ -21,10 +22,23 @@ namespace Microsoft.AspNetCore.Routing
                 { "controller", "Home" },
                 { "id", "17" },
             };
+            _arrayValuesEmpty = new RouteValueDictionary();
             _propertyValues = new RouteValueDictionary(new { action = "Index", controller = "Home", id = "17" });
         }
 
         [Benchmark]
+        public void Ctor_Values_RouteValueDictionary_EmptyArray()
+        {
+            new RouteValueDictionary(_arrayValuesEmpty);
+        }
+
+        [Benchmark]
+        public void Ctor_Values_RouteValueDictionary_Array()
+        {
+            new RouteValueDictionary(_arrayValues);
+        }
+
+        //[Benchmark]
         public RouteValueDictionary AddSingleItem()
         {
             var dictionary = new RouteValueDictionary
@@ -47,6 +61,30 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Benchmark]
+        public void ContainsKey_Array_Found()
+        {
+            _arrayValues.ContainsKey("id");
+        }
+
+        [Benchmark]
+        public void ContainsKey_Array_NotFound()
+        {
+            _arrayValues.ContainsKey("name");
+        }
+
+        [Benchmark]
+        public void ContainsKey_Properties_Found()
+        {
+            _propertyValues.ContainsKey("id");
+        }
+
+        [Benchmark]
+        public void ContainsKey_Properties_NotFound()
+        {
+            _propertyValues.ContainsKey("name");
+        }
+
+        //[Benchmark]
         public RouteValueDictionary ConditionalAdd_ContainsKeyAdd()
         {
             var dictionary = _arrayValues;
@@ -68,7 +106,7 @@ namespace Microsoft.AspNetCore.Routing
 
             return dictionary;
         }
-        
+
         [Benchmark]
         public RouteValueDictionary ConditionalAdd_TryAdd()
         {

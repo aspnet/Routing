@@ -97,7 +97,6 @@ namespace Microsoft.AspNetCore.Routing
         /// Only public instance non-index properties are considered.
         /// </remarks>
         public RouteValueDictionary(object values)
-            : this()
         {
             if (values is RouteValueDictionary dictionary)
             {
@@ -109,15 +108,20 @@ namespace Microsoft.AspNetCore.Routing
                     return;
                 }
 
-                var other = dictionary._arrayStorage;
-                var storage = new KeyValuePair<string, object>[other.Length];
-                if (dictionary._count != 0)
+                var count = dictionary._count;
+                if (count > 0)
                 {
-                    Array.Copy(other, 0, storage, 0, dictionary._count);
+                    var other = dictionary._arrayStorage;
+                    var storage = new KeyValuePair<string, object>[count];
+                    Array.Copy(other, 0, storage, 0, count);
+                    _arrayStorage = storage;
+                    _count = count;
+                }
+                else
+                {
+                    _arrayStorage = Array.Empty<KeyValuePair<string, object>>();
                 }
 
-                _arrayStorage = storage;
-                _count = dictionary._count;
                 return;
             }
 
@@ -146,7 +150,10 @@ namespace Microsoft.AspNetCore.Routing
                 var storage = new PropertyStorage(values);
                 _propertyStorage = storage;
                 _count = storage.Properties.Length;
-                return;
+            }
+            else
+            {
+                _arrayStorage = Array.Empty<KeyValuePair<string, object>>();
             }
         }
 
@@ -260,8 +267,7 @@ namespace Microsoft.AspNetCore.Routing
 
             EnsureCapacity(_count + 1);
 
-            var index = FindIndex(key);
-            if (index >= 0)
+            if (ContainsKeyArray(key))
             {
                 var message = Resources.FormatRouteValueDictionary_DuplicateKey(key, nameof(RouteValueDictionary));
                 throw new ArgumentException(message, nameof(key));
@@ -305,7 +311,12 @@ namespace Microsoft.AspNetCore.Routing
                 ThrowArgumentNullExceptionForKey();
             }
 
-            return TryGetValue(key, out var _);
+            if (_propertyStorage == null)
+            {
+                return ContainsKeyArray(key);
+            }
+
+            return ContainsKeyProperties(key);
         }
 
         /// <inheritdoc />
@@ -466,8 +477,7 @@ namespace Microsoft.AspNetCore.Routing
             // so we do it here to keep the code size and complexity down.
             EnsureCapacity(Count);
 
-            var index = FindIndex(key);
-            if (index >= 0)
+            if (ContainsKeyArray(key))
             {
                 return false;
             }
@@ -601,6 +611,42 @@ namespace Microsoft.AspNetCore.Routing
             }
 
             value = null;
+            return false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool ContainsKeyArray(string key)
+        {
+            var array = _arrayStorage;
+            var count = _count;
+
+            // Elide bounds check for indexing.
+            if ((uint)count <= (uint)array.Length)
+            {
+                for (var i = 0; i < count; i++)
+                {
+                    if (string.Equals(array[i].Key, key, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return true;
+                    }
+                }
+            }
+
+            return false;
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool ContainsKeyProperties(string key)
+        {
+            var properties = _propertyStorage.Properties;
+            for (var i = 0; i < properties.Length; i++)
+            {
+                if (string.Equals(properties[i].Name, key, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
             return false;
         }
 
