@@ -311,6 +311,12 @@ namespace Microsoft.AspNetCore.Routing
                 ThrowArgumentNullExceptionForKey();
             }
 
+            return ContainsKeyCore(key);
+        }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        private bool ContainsKeyCore(string key)
+        {
             if (_propertyStorage == null)
             {
                 return ContainsKeyArray(key);
@@ -472,12 +478,7 @@ namespace Microsoft.AspNetCore.Routing
                 ThrowArgumentNullExceptionForKey();
             }
 
-            // Since this is an attempt to write to the dictionary, just make it an array if it isn't. If the code
-            // path we're on event tries to write to the dictionary, it will likely get 'upgraded' at some point,
-            // so we do it here to keep the code size and complexity down.
-            EnsureCapacity(Count);
-
-            if (ContainsKeyArray(key))
+            if (ContainsKeyCore(key))
             {
                 return false;
             }
