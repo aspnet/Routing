@@ -92,22 +92,43 @@ namespace Microsoft.AspNetCore.Routing.Template
             // Any default that doesn't have a corresponding parameter is a 'filter' and if a value
             // is provided for that 'filter' it must match the value in defaults.
             var filters = new RouteValueDictionary(_defaults);
-            for (var i = 0; i < pattern.Parameters.Count; i++)
+            if (filters.Count > 0)
             {
-                filters.Remove(pattern.Parameters[i].Name);
+                for (var i = 0; i < pattern.Parameters.Count; i++)
+                {
+                    filters.Remove(pattern.Parameters[i].Name);
+                }
+                _filters = filters.ToArray();
             }
-            _filters = filters.ToArray();
+            else
+            {
+                _filters = Array.Empty<KeyValuePair<string, object>>();
+            }
 
-            _constraints = parameterPolicies
-                ?.Where(p => p.policy is IRouteConstraint)
-                .Select(p => (p.parameterName, (IRouteConstraint)p.policy))
-                .ToArray() ?? Array.Empty<(string, IRouteConstraint)>();
-            _parameterTransformers = parameterPolicies
-                ?.Where(p => p.policy is IOutboundParameterTransformer)
-                .Select(p => (p.parameterName, (IOutboundParameterTransformer)p.policy))
-                .ToArray() ?? Array.Empty<(string, IOutboundParameterTransformer)>();
+            (_constraints, _parameterTransformers) = ExtractParameterPolicies(parameterPolicies);
 
-            _slots = AssignSlots(_pattern, _filters);
+            _slots = AssignSlots(_pattern.Parameters, _filters);
+        }
+
+        private ((string parameterName, IRouteConstraint constraint)[] _constraints, (string parameterName, IOutboundParameterTransformer transformer)[] _parameterTransformers) ExtractParameterPolicies(IEnumerable<(string parameterName, IParameterPolicy policy)> parameterPolicies)
+        {
+            ArrayBuilder<(string, IRouteConstraint)> constraintsBuilder = new ArrayBuilder<(string, IRouteConstraint)>(0);
+            ArrayBuilder<(string, IOutboundParameterTransformer)> transformersBuilder = new ArrayBuilder<(string, IOutboundParameterTransformer)>(0);
+
+            foreach (var (parameterName, policy) in parameterPolicies)
+            {
+                if (policy is IRouteConstraint constraint)
+                {
+                    constraintsBuilder.Add((parameterName, constraint));
+                }
+                
+                if (policy is IOutboundParameterTransformer transformer)
+                {
+                    transformersBuilder.Add((parameterName, transformer));
+                }
+            }
+
+            return (constraintsBuilder.ToArray(), transformersBuilder.ToArray());
         }
 
         // Step 1: Get the list of values we're going to try to use to match and generate this URI
@@ -636,18 +657,19 @@ namespace Microsoft.AspNetCore.Routing.Template
             }
         }
 
-        private static KeyValuePair<string, object>[] AssignSlots(RoutePattern pattern, KeyValuePair<string, object>[] filters)
+        private static KeyValuePair<string, object>[] AssignSlots(IReadOnlyList<RoutePatternParameterPart> parameters, KeyValuePair<string, object>[] filters)
         {
-            var slots = new KeyValuePair<string, object>[pattern.Parameters.Count + filters.Length];
+            var parameterCount = parameters.Count;
+            var slots = new KeyValuePair<string, object>[parameterCount + filters.Length];
 
-            for (var i = 0; i < pattern.Parameters.Count; i++)
+            for (var i = 0; i < parameterCount; i++)
             {
-                slots[i] = new KeyValuePair<string, object>(pattern.Parameters[i].Name, null);
+                slots[i] = new KeyValuePair<string, object>(parameters[i].Name, null);
             }
 
             for (var i = 0; i < filters.Length; i++)
             {
-                slots[i + pattern.Parameters.Count] = new KeyValuePair<string, object>(filters[i].Key, null);
+                slots[i + parameterCount] = new KeyValuePair<string, object>(filters[i].Key, null);
             }
 
             return slots;
