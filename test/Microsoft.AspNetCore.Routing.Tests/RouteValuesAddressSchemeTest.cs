@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Routing
         public void GetOutboundMatches_GetsNamedMatchesFor_EndpointsHaving_IRouteNameMetadata()
         {
             // Arrange
-            var endpoint1 = CreateEndpoint("/a");
+            var endpoint1 = CreateEndpoint("/a", routeName: "other");
             var endpoint2 = CreateEndpoint("/a", routeName: "named");
 
             // Act
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Routing
         public void GetOutboundMatches_GroupsMultipleEndpoints_WithSameName()
         {
             // Arrange
-            var endpoint1 = CreateEndpoint("/a");
+            var endpoint1 = CreateEndpoint("/a", routeName: "other");
             var endpoint2 = CreateEndpoint("/a", routeName: "named");
             var endpoint3 = CreateEndpoint("/b", routeName: "named");
 
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Routing
         public void GetOutboundMatches_GroupsMultipleEndpoints_WithSameName_IgnoringCase()
         {
             // Arrange
-            var endpoint1 = CreateEndpoint("/a");
+            var endpoint1 = CreateEndpoint("/a", routeName: "other");
             var endpoint2 = CreateEndpoint("/a", routeName: "named");
             var endpoint3 = CreateEndpoint("/b", routeName: "NaMed");
 
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Routing
         public void EndpointDataSource_ChangeCallback_Refreshes_OutboundMatches()
         {
             // Arrange 1
-            var endpoint1 = CreateEndpoint("/a");
+            var endpoint1 = CreateEndpoint("/a", requiredValues: new { });
             var dynamicDataSource = new DynamicEndpointDataSource(new[] { endpoint1 });
 
             // Act 1
@@ -93,21 +93,21 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Same(endpoint1, actual);
 
             // Arrange 2
-            var endpoint2 = CreateEndpoint("/b");
+            var endpoint2 = CreateEndpoint("/b", requiredValues: new { });
 
             // Act 2
             // Trigger change
             dynamicDataSource.AddEndpoint(endpoint2);
 
             // Arrange 2
-            var endpoint3 = CreateEndpoint("/c");
+            var endpoint3 = CreateEndpoint("/c", requiredValues: new { });
 
             // Act 2
             // Trigger change
             dynamicDataSource.AddEndpoint(endpoint3);
 
             // Arrange 3
-            var endpoint4 = CreateEndpoint("/d");
+            var endpoint4 = CreateEndpoint("/d", requiredValues: new { });
 
             // Act 3
             // Trigger change
@@ -236,12 +236,7 @@ namespace Microsoft.AspNetCore.Routing
                 defaults: new { zipCode = 3510 },
                 requiredValues: new { id = 7 },
                 routeName: "OrdersApi");
-            var endpoint2 = new RouteEndpoint(
-                c => null,
-                RoutePatternFactory.Parse("test"),
-                0,
-                EndpointMetadataCollection.Empty,
-                "Test endpoint");
+            var endpoint2 = CreateEndpoint("test");
 
             var addressScheme = CreateAddressScheme(endpoint1, endpoint2);
 
@@ -333,7 +328,7 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var endpoint = EndpointFactory.CreateRouteEndpoint(
                 "/a",
-                metadata: new object[] { new SuppressLinkGenerationMetadata(), new EncourageLinkGenerationMetadata(), });
+                metadata: new object[] { new SuppressLinkGenerationMetadata(), new EncourageLinkGenerationMetadata(), new RouteValuesAddressMetadata(string.Empty), });
 
             // Act
             var addressScheme = CreateAddressScheme(endpoint);
