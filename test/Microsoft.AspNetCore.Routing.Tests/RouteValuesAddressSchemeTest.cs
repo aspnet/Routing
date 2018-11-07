@@ -146,13 +146,11 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint1 = CreateEndpoint(
                 "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
                 defaults: new { zipCode = 3510 },
-                requiredValues: new { id = 7 },
-                routeName: "OrdersApi");
+                requiredValues: new { id = 7 });
             var endpoint2 = CreateEndpoint(
                 "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
                 defaults: new { id = 12 },
-                requiredValues: new { zipCode = 3510 },
-                routeName: "OrdersApi");
+                requiredValues: new { zipCode = 3510 });
             var addressScheme = CreateAddressScheme(endpoint1, endpoint2);
 
             // Act
@@ -174,45 +172,11 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint1 = CreateEndpoint(
                 "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
                 defaults: new { zipCode = 3510 },
-                requiredValues: new { id = 7 },
-                routeName: "OrdersApi");
+                requiredValues: new { id = 7 });
             var endpoint2 = CreateEndpoint(
                 "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
-                defaults: new { id = 12 },
-                routeName: "OrdersApi");
+                defaults: new { id = 12 });
             var addressScheme = CreateAddressScheme(endpoint1, endpoint2);
-
-            // Act
-            var foundEndpoints = addressScheme.FindEndpoints(
-                new RouteValuesAddress
-                {
-                    ExplicitValues = new RouteValueDictionary(new { id = 13 }),
-                    AmbientValues = new RouteValueDictionary(new { zipCode = 3500 }),
-                });
-
-            // Assert
-            var actual = Assert.Single(foundEndpoints);
-            Assert.Same(endpoint2, actual);
-        }
-
-        [Fact]
-        public void FindEndpoints_LookedUpByCriteria_MultipleMatches()
-        {
-            // Arrange
-            var endpoint1 = CreateEndpoint(
-                "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
-                defaults: new { zipCode = 3510 },
-                requiredValues: new { id = 7 },
-                routeName: "OrdersApi");
-            var endpoint2 = CreateEndpoint(
-                "api/orders/{id}/{name?}/{urgent}/{zipCode}",
-                defaults: new { id = 12 },
-                routeName: "OrdersApi");
-            var endpoint3 = CreateEndpoint(
-                "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
-                defaults: new { id = 12 },
-                routeName: "OrdersApi");
-            var addressScheme = CreateAddressScheme(endpoint1, endpoint2, endpoint3);
 
             // Act
             var foundEndpoints = addressScheme.FindEndpoints(
@@ -223,8 +187,40 @@ namespace Microsoft.AspNetCore.Routing
                 });
 
             // Assert
-            Assert.Contains(endpoint1, foundEndpoints);
-            Assert.Contains(endpoint1, foundEndpoints);
+            var actual = Assert.Single(foundEndpoints);
+            Assert.Same(endpoint1, actual);
+        }
+
+        [Fact]
+        public void FindEndpoints_LookedUpByCriteria_MultipleMatches()
+        {
+            // Arrange
+            var endpoint1 = CreateEndpoint(
+                "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
+                defaults: new { zipCode = 3510 },
+                requiredValues: new { id = 7 });
+            var endpoint2 = CreateEndpoint(
+                "api/orders/{id}/{name?}/{urgent}/{zipCode}",
+                defaults: new { id = 12 },
+                requiredValues: new { id = 12 });
+            var endpoint3 = CreateEndpoint(
+                "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
+                defaults: new { id = 12 },
+                requiredValues: new { id = 12 });
+            var addressScheme = CreateAddressScheme(endpoint1, endpoint2, endpoint3);
+
+            // Act
+            var foundEndpoints = addressScheme.FindEndpoints(
+                new RouteValuesAddress
+                {
+                    ExplicitValues = new RouteValueDictionary(new { id = 12 }),
+                    AmbientValues = new RouteValueDictionary(new { zipCode = 3500 }),
+                });
+
+            // Assert
+            Assert.Collection(foundEndpoints,
+                e => Assert.Equal(endpoint3, e),
+                e => Assert.Equal(endpoint2, e));
         }
 
         [Fact]
@@ -234,8 +230,7 @@ namespace Microsoft.AspNetCore.Routing
             var endpoint1 = CreateEndpoint(
                 "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
                 defaults: new { zipCode = 3510 },
-                requiredValues: new { id = 7 },
-                routeName: "OrdersApi");
+                requiredValues: new { id = 7 });
             var endpoint2 = CreateEndpoint("test");
 
             var addressScheme = CreateAddressScheme(endpoint1, endpoint2);
