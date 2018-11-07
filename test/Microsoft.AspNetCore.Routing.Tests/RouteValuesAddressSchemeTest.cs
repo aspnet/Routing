@@ -228,6 +228,37 @@ namespace Microsoft.AspNetCore.Routing
         }
 
         [Fact]
+        public void FindEndpoints_LookedUpByCriteria_ExcludeEndpointWithoutRouteValuesAddressMetadata()
+        {
+            // Arrange
+            var endpoint1 = CreateEndpoint(
+                "api/orders/{id}/{name?}/{urgent=true}/{zipCode}",
+                defaults: new { zipCode = 3510 },
+                requiredValues: new { id = 7 },
+                routeName: "OrdersApi");
+            var endpoint2 = new RouteEndpoint(
+                c => null,
+                RoutePatternFactory.Parse("test"),
+                0,
+                EndpointMetadataCollection.Empty,
+                "Test endpoint");
+
+            var addressScheme = CreateAddressScheme(endpoint1, endpoint2);
+
+            // Act
+            var foundEndpoints = addressScheme.FindEndpoints(
+                new RouteValuesAddress
+                {
+                    ExplicitValues = new RouteValueDictionary(new { id = 7 }),
+                    AmbientValues = new RouteValueDictionary(new { zipCode = 3500 }),
+                }).ToList();
+
+            // Assert
+            Assert.DoesNotContain(endpoint2, foundEndpoints);
+            Assert.Contains(endpoint1, foundEndpoints);
+        }
+
+        [Fact]
         public void FindEndpoints_ReturnsEndpoint_WhenLookedUpByRouteName()
         {
             // Arrange
