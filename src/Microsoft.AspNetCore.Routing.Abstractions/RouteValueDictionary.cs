@@ -127,6 +127,8 @@ namespace Microsoft.AspNetCore.Routing
 
             if (values is IEnumerable<KeyValuePair<string, object>> keyValueEnumerable)
             {
+                _arrayStorage = Array.Empty<KeyValuePair<string, object>>();
+
                 foreach (var kvp in keyValueEnumerable)
                 {
                     Add(kvp.Key, kvp.Value);
@@ -137,6 +139,8 @@ namespace Microsoft.AspNetCore.Routing
 
             if (values is IEnumerable<KeyValuePair<string, string>> stringValueEnumerable)
             {
+                _arrayStorage = Array.Empty<KeyValuePair<string, object>>();
+
                 foreach (var kvp in stringValueEnumerable)
                 {
                     Add(kvp.Key, kvp.Value);
