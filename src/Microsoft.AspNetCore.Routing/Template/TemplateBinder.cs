@@ -110,8 +110,13 @@ namespace Microsoft.AspNetCore.Routing.Template
             _slots = AssignSlots(_pattern.Parameters, _filters);
         }
 
-        private ((string parameterName, IRouteConstraint constraint)[] _constraints, (string parameterName, IOutboundParameterTransformer transformer)[] _parameterTransformers) ExtractParameterPolicies(IEnumerable<(string parameterName, IParameterPolicy policy)> parameterPolicies)
+        private ((string parameterName, IRouteConstraint constraint)[] constraints, (string parameterName, IOutboundParameterTransformer transformer)[] parameterTransformers) ExtractParameterPolicies(IEnumerable<(string parameterName, IParameterPolicy policy)> parameterPolicies)
         {
+            if (parameterPolicies == null)
+            {
+                return (Array.Empty<(string, IRouteConstraint)>(), Array.Empty<(string, IOutboundParameterTransformer)>());
+            }
+
             ArrayBuilder<(string, IRouteConstraint)> constraintsBuilder = new ArrayBuilder<(string, IRouteConstraint)>(0);
             ArrayBuilder<(string, IOutboundParameterTransformer)> transformersBuilder = new ArrayBuilder<(string, IOutboundParameterTransformer)>(0);
 
