@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Routing.Template
             });
 
             // Assert
-            Assert.Equal("Route contains too many segments and is unable to be parsed.", ex.Message);
+            Assert.Equal("Route exceeds the maximum number of allowed segments of 28 and is unable to be processed.", ex.Message);
         }
 
         [Fact]
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Routing.Template
             });
 
             // Assert
-            Assert.Equal("Route contains too many segments and is unable to be parsed.", ex.Message);
+            Assert.Equal("Route exceeds the maximum number of allowed segments of 28 and is unable to be processed.", ex.Message);
         }
 
         protected abstract decimal ComputeMatched(string template);

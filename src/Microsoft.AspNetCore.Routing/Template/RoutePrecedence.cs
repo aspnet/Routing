@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Routing.Template
             if (length > 28)
             {
                 // An OverflowException will be thrown by Math.Pow when greater than 28
-                throw new InvalidOperationException("Route contains too many segments and is unable to be parsed.");
+                throw new InvalidOperationException("Route exceeds the maximum number of allowed segments of 28 and is unable to be processed.");
             }
         }
 
