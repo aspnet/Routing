@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.Logging;
@@ -145,72 +146,66 @@ namespace Microsoft.AspNetCore.Routing.Matching
                         var part = segment.Parts[0];
                         if (segment.IsSimple && part is RoutePatternLiteralPart literalPart)
                         {
-                            DfaNode next = null;
-                            var literal = literalPart.Content;
-                            if (parent.Literals == null ||
-                                !parent.Literals.TryGetValue(literal, out next))
-                            {
-                                next = new DfaNode()
-                                {
-                                    PathDepth = parent.PathDepth + 1,
-                                    Label = includeLabel ? parent.Label + literal + "/" : null,
-                                };
-                                parent.AddLiteral(literal, next);
-                            }
-
-                            nextParents.Add(next);
+                            AddLiteralNode(includeLabel, nextParents, parent, literalPart.Content);
                         }
-                        else if (segment.IsSimple && part is RoutePatternParameterPart parameterPart && parameterPart.IsCatchAll)
+                        else if (segment.IsSimple && part is RoutePatternParameterPart parameterPart)
                         {
-                            // A catch all should traverse all literal nodes as well as parameter nodes
-                            // we don't need to create the parameter node here because of ordering
-                            // all catchalls will be processed after all parameters.
-                            if (parent.Literals != null)
+                            if (parameterPart.IsCatchAll)
                             {
-                                nextParents.AddRange(parent.Literals.Values);
+                                // A catch all should traverse all literal nodes as well as parameter nodes
+                                // we don't need to create the parameter node here because of ordering
+                                // all catchalls will be processed after all parameters.
+                                if (parent.Literals != null)
+                                {
+                                    nextParents.AddRange(parent.Literals.Values);
+                                }
+                                if (parent.Parameters != null)
+                                {
+                                    nextParents.Add(parent.Parameters);
+                                }
+
+                                // We also create a 'catchall' here. We don't do further traversals
+                                // on the catchall node because only catchalls can end up here. The
+                                // catchall node allows us to capture an unlimited amount of segments
+                                // and also to match a zero-length segment, which a parameter node
+                                // doesn't allow.
+                                if (parent.CatchAll == null)
+                                {
+                                    parent.CatchAll = new DfaNode()
+                                    {
+                                        PathDepth = parent.PathDepth + 1,
+                                        Label = includeLabel ? parent.Label + "{*...}/" : null,
+                                    };
+
+                                    // The catchall node just loops.
+                                    parent.CatchAll.Parameters = parent.CatchAll;
+                                    parent.CatchAll.CatchAll = parent.CatchAll;
+                                }
+
+                                parent.CatchAll.AddMatch(endpoint);
                             }
-                            if (parent.Parameters != null)
+                            else if (HasRequiredValue(endpoint, parameterPart, out var requiredValue))
                             {
+                                AddLiteralNode(includeLabel, nextParents, parent, requiredValue.ToString());
+                            }
+                            else
+                            {
+                                if (parent.Parameters == null)
+                                {
+                                    parent.Parameters = new DfaNode()
+                                    {
+                                        PathDepth = parent.PathDepth + 1,
+                                        Label = includeLabel ? parent.Label + "{...}/" : null,
+                                    };
+                                }
+
+                                // A parameter should traverse all literal nodes as well as the parameter node
+                                if (parent.Literals != null)
+                                {
+                                    nextParents.AddRange(parent.Literals.Values);
+                                }
                                 nextParents.Add(parent.Parameters);
                             }
-
-                            // We also create a 'catchall' here. We don't do further traversals
-                            // on the catchall node because only catchalls can end up here. The
-                            // catchall node allows us to capture an unlimited amount of segments
-                            // and also to match a zero-length segment, which a parameter node
-                            // doesn't allow.
-                            if (parent.CatchAll == null)
-                            {
-                                parent.CatchAll = new DfaNode()
-                                {
-                                    PathDepth = parent.PathDepth + 1,
-                                    Label = includeLabel ? parent.Label + "{*...}/" : null,
-                                };
-
-                                // The catchall node just loops.
-                                parent.CatchAll.Parameters = parent.CatchAll;
-                                parent.CatchAll.CatchAll = parent.CatchAll;
-                            }
-
-                            parent.CatchAll.AddMatch(endpoint);
-                        }
-                        else if (segment.IsSimple && part.IsParameter)
-                        {
-                            if (parent.Parameters == null)
-                            {
-                                parent.Parameters = new DfaNode()
-                                {
-                                    PathDepth = parent.PathDepth + 1,
-                                    Label = includeLabel ? parent.Label + "{...}/" : null,
-                                };
-                            }
-
-                            // A parameter should traverse all literal nodes as well as the parameter node
-                            if (parent.Literals != null)
-                            {
-                                nextParents.AddRange(parent.Literals.Values);
-                            }
-                            nextParents.Add(parent.Parameters);
                         }
                         else
                         {
@@ -252,6 +247,23 @@ namespace Microsoft.AspNetCore.Routing.Matching
             root.Visit(ApplyPolicies);
 
             return root;
+        }
+
+        private static void AddLiteralNode(bool includeLabel, List<DfaNode> nextParents, DfaNode parent, string literal)
+        {
+            DfaNode next = null;
+            if (parent.Literals == null ||
+                !parent.Literals.TryGetValue(literal, out next))
+            {
+                next = new DfaNode()
+                {
+                    PathDepth = parent.PathDepth + 1,
+                    Label = includeLabel ? parent.Label + literal + "/" : null,
+                };
+                parent.AddLiteral(literal, next);
+            }
+
+            nextParents.Add(next);
         }
 
         private RoutePatternPathSegment GetCurrentSegment(RouteEndpoint endpoint, int depth)
@@ -620,6 +632,21 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
 
             return false;
+        }
+
+        private static bool HasRequiredValue(RouteEndpoint endpoint, RoutePatternParameterPart parameterPart, out object value)
+        {
+            if (!endpoint.RoutePattern.RequiredValues.TryGetValue(parameterPart.Name, out value))
+            {
+                return false;
+            }
+
+            if (value is string s && string.IsNullOrEmpty(s))
+            {
+                return false;
+            }
+
+            return value != null;
         }
 
         private void ApplyPolicies(DfaNode node)

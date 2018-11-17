@@ -7,6 +7,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Moq;
@@ -728,6 +729,162 @@ namespace Microsoft.AspNetCore.Routing.Matching
         }
 
         [Fact]
+        public void BuildDfaTree_RequiredValues()
+        {
+            // Arrange
+            var builder = CreateDfaMatcherBuilder();
+
+            var endpoint = CreateEndpoint("{controller}/{action}", requiredValues: new { controller = "Home", action = "Index" });
+            builder.AddEndpoint(endpoint);
+
+            // Act
+            var root = builder.BuildDfaTree();
+
+            // Assert
+            Assert.Null(root.Matches);
+            Assert.Null(root.Parameters);
+
+            var next = Assert.Single(root.Literals);
+            Assert.Equal("Home", next.Key);
+
+            var home = next.Value;
+            Assert.Null(home.Matches);
+            Assert.Null(home.Parameters);
+
+            next = Assert.Single(home.Literals);
+            Assert.Equal("Index", next.Key);
+
+            var index = next.Value;
+            Assert.Same(endpoint, Assert.Single(index.Matches));
+            Assert.Null(index.Literals);
+        }
+
+        [Fact]
+        public void BuildDfaTree_RequiredValues_AndMatchingDefaults()
+        {
+            // Arrange
+            var builder = CreateDfaMatcherBuilder();
+
+            var endpoint = CreateEndpoint("{controller}/{action}", defaults: new { controller = "Home", action = "Index" }, requiredValues: new { controller = "Home", action = "Index" });
+            builder.AddEndpoint(endpoint);
+
+            // Act
+            var root = builder.BuildDfaTree();
+
+            // Assert
+            Assert.Same(endpoint, Assert.Single(root.Matches));
+            Assert.Null(root.Parameters);
+
+            var next = Assert.Single(root.Literals);
+            Assert.Equal("Home", next.Key);
+
+            var home = next.Value;
+            Assert.Same(endpoint, Assert.Single(home.Matches));
+            Assert.Null(home.Parameters);
+
+            next = Assert.Single(home.Literals);
+            Assert.Equal("Index", next.Key);
+
+            var index = next.Value;
+            Assert.Same(endpoint, Assert.Single(index.Matches));
+            Assert.Null(index.Literals);
+        }
+
+        [Fact]
+        public void BuildDfaTree_RequiredValues_AndDifferentDefaults()
+        {
+            // Arrange
+            var builder = CreateDfaMatcherBuilder();
+
+            var endpoint = CreateEndpoint("{controller}/{action}", defaults: new { controller = "Home", action = "Index" }, requiredValues: new { controller = "Login", action = "Index" });
+            builder.AddEndpoint(endpoint);
+
+            // Act
+            var root = builder.BuildDfaTree();
+
+            // Assert
+            Assert.Null(root.Matches);
+            Assert.Null(root.Parameters);
+
+            var next = Assert.Single(root.Literals);
+            Assert.Equal("Login", next.Key);
+
+            var login = next.Value;
+            Assert.Same(endpoint, Assert.Single(login.Matches));
+            Assert.Null(login.Parameters);
+
+            next = Assert.Single(login.Literals);
+            Assert.Equal("Index", next.Key);
+
+            var index = next.Value;
+            Assert.Same(endpoint, Assert.Single(index.Matches));
+            Assert.Null(index.Literals);
+        }
+
+        [Fact]
+        public void BuildDfaTree_RequiredValues_Multiple()
+        {
+            // Arrange
+            var builder = CreateDfaMatcherBuilder();
+
+            var endpoint1 = CreateEndpoint("{controller}/{action}/{id?}", defaults: new { controller = "Home", action = "Index" }, requiredValues: new { controller = "Home", action = "Index" });
+            builder.AddEndpoint(endpoint1);
+
+            var endpoint2 = CreateEndpoint("{controller}/{action}/{id?}", defaults: new { controller = "Home", action = "Index" }, requiredValues: new { controller = "Login", action = "Index" });
+            builder.AddEndpoint(endpoint2);
+
+            var endpoint3 = CreateEndpoint("{controller}/{action}/{id?}", defaults: new { controller = "Home", action = "Index" }, requiredValues: new { controller = "Login", action = "ChangePassword" });
+            builder.AddEndpoint(endpoint3);
+
+            // Act
+            var root = builder.BuildDfaTree();
+
+            // Assert
+            Assert.Same(endpoint1, Assert.Single(root.Matches));
+            Assert.Null(root.Parameters);
+
+            Assert.Equal(2, root.Literals.Count);
+
+            var home = root.Literals["Home"];
+
+            Assert.Same(endpoint1, Assert.Single(home.Matches));
+            Assert.Null(home.Parameters);
+
+            var next = Assert.Single(home.Literals);
+            Assert.Equal("Index", next.Key);
+
+            var homeIndex = next.Value;
+            Assert.Same(endpoint1, Assert.Single(homeIndex.Matches));
+            Assert.Null(homeIndex.Literals);
+            Assert.NotNull(homeIndex.Parameters);
+
+            Assert.Same(endpoint1, Assert.Single(homeIndex.Parameters.Matches));
+
+            var login = root.Literals["Login"];
+
+            Assert.Same(endpoint2, Assert.Single(login.Matches));
+            Assert.Null(login.Parameters);
+
+            Assert.Equal(2, login.Literals.Count);
+
+            var loginIndex = login.Literals["Index"];
+
+            Assert.Same(endpoint2, Assert.Single(loginIndex.Matches));
+            Assert.Null(loginIndex.Literals);
+            Assert.NotNull(loginIndex.Parameters);
+
+            Assert.Same(endpoint2, Assert.Single(loginIndex.Parameters.Matches));
+
+            var loginChangePassword = login.Literals["ChangePassword"];
+
+            Assert.Same(endpoint3, Assert.Single(loginChangePassword.Matches));
+            Assert.Null(loginChangePassword.Literals);
+            Assert.NotNull(loginChangePassword.Parameters);
+
+            Assert.Same(endpoint3, Assert.Single(loginChangePassword.Parameters.Matches));
+        }
+
+        [Fact]
         public void CreateCandidate_JustLiterals()
         {
             // Arrange
@@ -983,11 +1140,25 @@ namespace Microsoft.AspNetCore.Routing.Matching
             string template,
             object defaults = null,
             object constraints = null,
+            object requiredValues = null,
             params object[] metadata)
         {
+            var routePattern = RoutePatternFactory.Parse(template, new RouteValueDictionary(defaults), new RouteValueDictionary(constraints));
+
+            if (requiredValues != null)
+            {
+                var serviceCollection = new ServiceCollection();
+                var defaultRoutePatternTransformer = new DefaultRoutePatternTransformer(
+                    new DefaultParameterPolicyFactory(
+                        Options.Create(new RouteOptions()),
+                        serviceCollection.BuildServiceProvider()));
+
+                routePattern = defaultRoutePatternTransformer.SubstituteRequiredValues(routePattern, requiredValues);
+            }
+
             return new RouteEndpoint(
                 TestConstants.EmptyRequestDelegate,
-                RoutePatternFactory.Parse(template, new RouteValueDictionary(defaults), new RouteValueDictionary(constraints)),
+                routePattern,
                 0,
                 new EndpointMetadataCollection(metadata),
                 "test");
