@@ -6,6 +6,9 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.AspNetCore.Routing.TestObjects;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Routing
 {
@@ -21,17 +24,40 @@ namespace Microsoft.AspNetCore.Routing
             params object[] metadata)
         {
             var d = new List<object>(metadata ?? Array.Empty<object>());
+
+            var routePattern = RoutePatternFactory.Parse(template, defaults, policies);
+
             if (requiredValues != null)
             {
-                d.Add(new RouteValuesAddressMetadata(new RouteValueDictionary(requiredValues)));
+                var policyFactory = CreateParameterPolicyFactory();
+                var defaultRoutePatternTransformer = new DefaultRoutePatternTransformer(policyFactory);
+
+                routePattern = defaultRoutePatternTransformer.SubstituteRequiredValues(routePattern, requiredValues);
             }
 
             return new RouteEndpoint(
                 TestConstants.EmptyRequestDelegate,
-                RoutePatternFactory.Parse(template, defaults, policies),
+                routePattern,
                 order,
                 new EndpointMetadataCollection(d),
                 displayName);
+        }
+
+        private static DefaultParameterPolicyFactory CreateParameterPolicyFactory()
+        {
+            var serviceCollection = new ServiceCollection();
+            var policyFactory = new DefaultParameterPolicyFactory(
+                Options.Create(new RouteOptions
+                {
+                    ConstraintMap =
+                    {
+                        ["slugify"] = typeof(SlugifyParameterTransformer),
+                        ["upper-case"] = typeof(UpperCaseParameterTransform)
+                    }
+                }),
+                serviceCollection.BuildServiceProvider());
+
+            return policyFactory;
         }
     }
 }

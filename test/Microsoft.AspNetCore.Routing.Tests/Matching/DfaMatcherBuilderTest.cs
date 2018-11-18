@@ -7,6 +7,7 @@ using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
@@ -765,7 +766,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // Arrange
             var builder = CreateDfaMatcherBuilder();
 
-            var endpoint = CreateEndpoint("{controller}/{action}", defaults: new { controller = "Home", action = "Index" }, requiredValues: new { controller = "Home", action = "Index" });
+            var endpoint = CreateEndpoint(
+                "{controller}/{action}",
+                defaults: new { controller = "Home", action = "Index" },
+                requiredValues: new { controller = "Home", action = "Index" });
             builder.AddEndpoint(endpoint);
 
             // Act
@@ -796,7 +800,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // Arrange
             var builder = CreateDfaMatcherBuilder();
 
-            var endpoint = CreateEndpoint("{controller}/{action}", defaults: new { controller = "Home", action = "Index" }, requiredValues: new { controller = "Login", action = "Index" });
+            var endpoint = CreateEndpoint(
+                "{controller}/{action}",
+                defaults: new { controller = "Home", action = "Index" },
+                requiredValues: new { controller = "Login", action = "Index" });
             builder.AddEndpoint(endpoint);
 
             // Act
@@ -827,13 +834,22 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // Arrange
             var builder = CreateDfaMatcherBuilder();
 
-            var endpoint1 = CreateEndpoint("{controller}/{action}/{id?}", defaults: new { controller = "Home", action = "Index" }, requiredValues: new { controller = "Home", action = "Index" });
+            var endpoint1 = CreateEndpoint(
+                "{controller}/{action}/{id?}",
+                defaults: new { controller = "Home", action = "Index" },
+                requiredValues: new { controller = "Home", action = "Index" });
             builder.AddEndpoint(endpoint1);
 
-            var endpoint2 = CreateEndpoint("{controller}/{action}/{id?}", defaults: new { controller = "Home", action = "Index" }, requiredValues: new { controller = "Login", action = "Index" });
+            var endpoint2 = CreateEndpoint(
+                "{controller}/{action}/{id?}",
+                defaults: new { controller = "Home", action = "Index" },
+                requiredValues: new { controller = "Login", action = "Index" });
             builder.AddEndpoint(endpoint2);
 
-            var endpoint3 = CreateEndpoint("{controller}/{action}/{id?}", defaults: new { controller = "Home", action = "Index" }, requiredValues: new { controller = "Login", action = "ChangePassword" });
+            var endpoint3 = CreateEndpoint(
+                "{controller}/{action}/{id?}",
+                defaults: new { controller = "Home", action = "Index" },
+                requiredValues: new { controller = "Login", action = "ChangePassword" });
             builder.AddEndpoint(endpoint3);
 
             // Act
@@ -882,6 +898,82 @@ namespace Microsoft.AspNetCore.Routing.Matching
             Assert.NotNull(loginChangePassword.Parameters);
 
             Assert.Same(endpoint3, Assert.Single(loginChangePassword.Parameters.Matches));
+        }
+
+        [Fact]
+        public void BuildDfaTree_RequiredValues_AndParameterTransformer()
+        {
+            // Arrange
+            var builder = CreateDfaMatcherBuilder();
+
+            var endpoint = CreateEndpoint(
+                "{controller:slugify}/{action:slugify}",
+                defaults: new { controller = "RecentProducts", action = "ViewAll" },
+                requiredValues: new { controller = "RecentProducts", action = "ViewAll" });
+            builder.AddEndpoint(endpoint);
+
+            // Act
+            var root = builder.BuildDfaTree();
+
+            // Assert
+            Assert.Same(endpoint, Assert.Single(root.Matches));
+            Assert.Null(root.Parameters);
+
+            var next = Assert.Single(root.Literals);
+            Assert.Equal("recent-products", next.Key);
+
+            var home = next.Value;
+            Assert.Same(endpoint, Assert.Single(home.Matches));
+            Assert.Null(home.Parameters);
+
+            next = Assert.Single(home.Literals);
+            Assert.Equal("view-all", next.Key);
+
+            var index = next.Value;
+            Assert.Same(endpoint, Assert.Single(index.Matches));
+            Assert.Null(index.Literals);
+        }
+
+        [Fact]
+        public void BuildDfaTree_sdfsdfsfd()
+        {
+            // Arrange
+            var builder = CreateDfaMatcherBuilder();
+
+            var endpoint = CreateEndpoint(
+                "ConventionalTransformerRoute/{controller:slugify}/{action=Index}/{param:slugify?}",
+                requiredValues: new { controller = "ConventionalTransformer", action = "Index", area = (string)null, page = (string)null });
+            builder.AddEndpoint(endpoint);
+
+            // Act
+            var root = builder.BuildDfaTree();
+
+            // Assert
+            Assert.Null(root.Matches);
+            Assert.Null(root.Parameters);
+
+            var next = Assert.Single(root.Literals);
+            Assert.Equal("ConventionalTransformerRoute", next.Key);
+
+            var conventionalTransformerRoute = next.Value;
+            Assert.Null(conventionalTransformerRoute.Matches);
+            Assert.Null(conventionalTransformerRoute.Parameters);
+
+            next = Assert.Single(conventionalTransformerRoute.Literals);
+            Assert.Equal("conventional-transformer", next.Key);
+
+            var conventionalTransformer = next.Value;
+            Assert.Same(endpoint, Assert.Single(conventionalTransformer.Matches));
+
+            next = Assert.Single(conventionalTransformer.Literals);
+            Assert.Equal("Index", next.Key);
+
+            var index = next.Value;
+            Assert.Same(endpoint, Assert.Single(index.Matches));
+
+            Assert.NotNull(index.Parameters);
+
+            Assert.Same(endpoint, Assert.Single(index.Parameters.Matches));
         }
 
         [Fact]
@@ -1128,10 +1220,11 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
         private static DfaMatcherBuilder CreateDfaMatcherBuilder(params MatcherPolicy[] policies)
         {
+            var policyFactory = CreateParameterPolicyFactory();
             var dataSource = new CompositeEndpointDataSource(Array.Empty<EndpointDataSource>());
             return new DfaMatcherBuilder(
                 NullLoggerFactory.Instance,
-                new DefaultParameterPolicyFactory(Options.Create(new RouteOptions()), Mock.Of<IServiceProvider>()),
+                policyFactory,
                 Mock.Of<EndpointSelector>(),
                 policies);
         }
@@ -1143,25 +1236,22 @@ namespace Microsoft.AspNetCore.Routing.Matching
             object requiredValues = null,
             params object[] metadata)
         {
-            var routePattern = RoutePatternFactory.Parse(template, new RouteValueDictionary(defaults), new RouteValueDictionary(constraints));
+            return EndpointFactory.CreateRouteEndpoint(template, defaults, constraints, requiredValues, metadata: metadata);
+        }
 
-            if (requiredValues != null)
-            {
-                var serviceCollection = new ServiceCollection();
-                var defaultRoutePatternTransformer = new DefaultRoutePatternTransformer(
-                    new DefaultParameterPolicyFactory(
-                        Options.Create(new RouteOptions()),
-                        serviceCollection.BuildServiceProvider()));
-
-                routePattern = defaultRoutePatternTransformer.SubstituteRequiredValues(routePattern, requiredValues);
-            }
-
-            return new RouteEndpoint(
-                TestConstants.EmptyRequestDelegate,
-                routePattern,
-                0,
-                new EndpointMetadataCollection(metadata),
-                "test");
+        private static DefaultParameterPolicyFactory CreateParameterPolicyFactory()
+        {
+            var serviceCollection = new ServiceCollection();
+            var policyFactory = new DefaultParameterPolicyFactory(
+                Options.Create(new RouteOptions
+                {
+                    ConstraintMap =
+                    {
+                        ["slugify"] = typeof(SlugifyParameterTransformer)
+                    }
+                }),
+                serviceCollection.BuildServiceProvider());
+            return policyFactory;
         }
 
         private class TestMetadata1

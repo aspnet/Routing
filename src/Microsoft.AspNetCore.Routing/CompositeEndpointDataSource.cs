@@ -170,10 +170,11 @@ namespace Microsoft.AspNetCore.Routing
                         var routeValuesAddressMetadata = routeEndpoint.Metadata.GetMetadata<IRouteValuesAddressMetadata>();
                         sb.Append(", Route Name: ");
                         sb.Append(routeValuesAddressMetadata?.RouteName);
-                        if (routeValuesAddressMetadata?.RequiredValues != null)
+                        var routeValues = routeEndpoint.ResolveRouteValues();
+                        if (routeValues?.Count > 0)
                         {
                             sb.Append(", Required Values: new { ");
-                            sb.Append(string.Join(", ", FormatValues(routeValuesAddressMetadata.RequiredValues)));
+                            sb.Append(string.Join(", ", FormatValues(routeValues)));
                             sb.Append(" }");
                         }
                         sb.Append(", Order: ");

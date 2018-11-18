@@ -59,5 +59,14 @@ namespace Microsoft.AspNetCore.Routing
         /// Gets the <see cref="RoutePattern"/> associated with the endpoint.
         /// </summary>
         public RoutePattern RoutePattern { get; }
+
+        internal IReadOnlyDictionary<string, object> ResolveRouteValues()
+        {
+            var metadata = Metadata.GetMetadata<IRouteValuesAddressMetadata>();
+
+            return (RoutePattern.RequiredValues.Count > 0)
+                ? RoutePattern.RequiredValues
+                : metadata?.RequiredValues;
+        }
     }
 }

@@ -53,16 +53,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                     // 1. Required value is null-ish - check to make sure that this route doesn't have a
                     // parameter or filter-like default.
 
-                    if (original.GetParameter(kvp.Key) != null)
-                    {
-                        // Fail: we can't 'require' that a parameter be null. In theory this would be possible
-                        // for an optional parameter, but that's not really in line with the usage of this feature
-                        // so we don't handle it.
-                        //
-                        // Ex: {controller=Home}/{action=Index}/{id?} - with required values: { controller = "" }
-                        return null;
-                    }
-                    else if (original.Defaults.TryGetValue(kvp.Key, out var defaultValue) &&
+                    if (original.Defaults.TryGetValue(kvp.Key, out var defaultValue) &&
                         !RouteValueEqualityComparer.Default.Equals(kvp.Value, defaultValue))
                     {
                         // Fail: this route has a non-parameter default that doesn't match.

@@ -335,5 +335,47 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 kvp => Assert.Equal(new KeyValuePair<string, object>("area", "Admin"), kvp),
                 kvp => Assert.Equal(new KeyValuePair<string, object>("controller", "Home"), kvp));
         }
+
+        [Fact]
+        public void SubstituteRequiredValues_NullRequiredValueAllowedAsParameter()
+        {
+            // Arrange
+            var template = "PageRoute/Attribute/{page}";
+            var defaults = new { area = (string)null, page = (string)null, controller = "Home", action = "Index", };
+            var policies = new { };
+
+            var original = RoutePatternFactory.Parse(template, defaults, policies);
+
+            var requiredValues = new { area = (string)null, page = (string)null, controller = "Home", action = "Index", };
+
+            // Act
+            var actual = Transformer.SubstituteRequiredValues(original, requiredValues);
+
+            // Assert
+            Assert.Collection(
+                actual.RequiredValues.OrderBy(kvp => kvp.Key),
+                kvp => Assert.Equal(new KeyValuePair<string, object>("action", "Index"), kvp),
+                kvp => Assert.Equal(new KeyValuePair<string, object>("area", null), kvp),
+                kvp => Assert.Equal(new KeyValuePair<string, object>("controller", "Home"), kvp),
+                kvp => Assert.Equal(new KeyValuePair<string, object>("page", null), kvp));
+        }
+
+        [Fact]
+        public void dfgdfg()
+        {
+            // Arrange
+            var template = "DefaultValuesRoute/Default/{controller=DEFAULTVALUES}/{action=DEFAULTPARAMETER}/{id=17}/{**catchAll}";
+            var policies = new { controller = "DefaultValues", action = "DefaultParameter" };
+
+            var original = RoutePatternFactory.Parse(template, defaults: null, policies);
+
+            var requiredValues = new { area = (string)null, page = (string)null, controller = "Home", action = "Index", };
+
+            // Act
+            var actual = Transformer.SubstituteRequiredValues(original, requiredValues);
+
+            // Assert
+            Assert.Null(actual);
+        }
     }
 }

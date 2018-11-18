@@ -309,14 +309,6 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Equal("/Foo/Bar%3Fencodeme%3F/Home/In%3Fdex?query=some%3Fquery#Fragment?", path);
         }
 
-        private class UpperCaseParameterTransform : IOutboundParameterTransformer
-        {
-            public string TransformOutbound(object value)
-            {
-                return value?.ToString()?.ToUpperInvariant();
-            }
-        }
-
         [Fact]
         public void GetLink_ParameterTransformer()
         {
@@ -346,7 +338,7 @@ namespace Microsoft.AspNetCore.Routing
             // Arrange
             var endpoint = EndpointFactory.CreateRouteEndpoint(
                 "{controller:upper-case}/{name}",
-                requiredValues: new { controller = "Home", name = "Test", c = "hithere", },
+                requiredValues: new { controller = "Home", name = "Test", },
                 policies: new { c = new UpperCaseParameterTransform(), });
 
             Action<IServiceCollection> configure = (s) =>

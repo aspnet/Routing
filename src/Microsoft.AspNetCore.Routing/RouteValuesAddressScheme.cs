@@ -137,8 +137,8 @@ namespace Microsoft.AspNetCore.Routing
                 }
 
                 var entry = CreateOutboundRouteEntry(
-                    routeEndpoint, 
-                    metadata?.RequiredValues ?? routeEndpoint.RoutePattern.RequiredValues, 
+                    routeEndpoint,
+                    routeEndpoint.ResolveRouteValues(),
                     metadata?.RouteName);
 
                 var outboundMatch = new OutboundMatch() { Entry = entry };

@@ -186,6 +186,20 @@ namespace Microsoft.AspNetCore.Routing.Matching
                             }
                             else if (HasRequiredValue(endpoint, parameterPart, out var requiredValue))
                             {
+                                if (endpoint.RoutePattern.ParameterPolicies.TryGetValue(parameterPart.Name, out var parameterPolicyReferences))
+                                {
+                                    for (var k = 0; k < parameterPolicyReferences.Count; k++)
+                                    {
+                                        var reference = parameterPolicyReferences[k];
+                                        var parameterPolicy = _parameterPolicyFactory.Create(parameterPart, reference);
+                                        if (parameterPolicy is IOutboundParameterTransformer parameterTransformer)
+                                        {
+                                            requiredValue = parameterTransformer.TransformOutbound(requiredValue);
+                                            break;
+                                        }
+                                    }
+                                }
+
                                 AddLiteralNode(includeLabel, nextParents, parent, requiredValue.ToString());
                             }
                             else

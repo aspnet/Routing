@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing.Patterns;
+using Microsoft.AspNetCore.Routing.TestObjects;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
@@ -19,14 +20,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
     // so we're reusing the services here.
     public class DfaMatcherTest
     {
-        private RouteEndpoint CreateEndpoint(string template, int order, object defaults = null, EndpointMetadataCollection metadata = null)
+        private RouteEndpoint CreateEndpoint(string template, int order, object defaults = null, object requiredValues = null)
         {
-            return new RouteEndpoint(
-                TestConstants.EmptyRequestDelegate,
-                RoutePatternFactory.Parse(template, defaults, parameterPolicies: null),
-                order,
-                metadata ?? EndpointMetadataCollection.Empty,
-                template);
+            return EndpointFactory.CreateRouteEndpoint(template, defaults, order: order, displayName: template);
         }
 
         private Matcher CreateDfaMatcher(
@@ -38,7 +34,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
             var serviceCollection = new ServiceCollection()
                 .AddLogging()
                 .AddOptions()
-                .AddRouting();
+                .AddRouting(options =>
+                {
+                    options.ConstraintMap["slugify"] = typeof(SlugifyParameterTransformer);
+                });
 
             if (policies != null)
             {
@@ -104,6 +103,32 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             // Assert
             Assert.Null(context.Endpoint);
+        }
+
+        [Fact]
+        public async Task MatchAsync_ParameterTransformer_EndpointMatched()
+        {
+            // Arrange
+            var endpoint = CreateEndpoint(
+                "ConventionalTransformerRoute/{controller:slugify}/{action=Index}/{param:slugify?}",
+                0,
+                requiredValues: new { controller = "ConventionalTransformer", action = "Index", area = (string)null, page = (string)null });
+
+            var dataSource = new DefaultEndpointDataSource(new List<Endpoint>
+            {
+                endpoint
+            });
+
+            var matcher = CreateDfaMatcher(dataSource);
+
+            var (httpContext, context) = CreateContext();
+            httpContext.Request.Path = "/ConventionalTransformerRoute/conventional-transformer/Index";
+
+            // Act
+            await matcher.MatchAsync(httpContext, context);
+
+            // Assert
+            Assert.Same(endpoint, context.Endpoint);
         }
 
         [Fact]
