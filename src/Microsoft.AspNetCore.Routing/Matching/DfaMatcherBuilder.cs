@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Patterns;
 using Microsoft.Extensions.Logging;
 
@@ -184,7 +185,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
                                 parent.CatchAll.AddMatch(endpoint);
                             }
-                            else if (HasRequiredValue(endpoint, parameterPart, out var requiredValue))
+                            else if (RequiredValueHelpers.TryGetRequiredValue(endpoint.RoutePattern, parameterPart, out var requiredValue))
                             {
                                 if (endpoint.RoutePattern.ParameterPolicies.TryGetValue(parameterPart.Name, out var parameterPolicyReferences))
                                 {
@@ -526,11 +527,22 @@ namespace Microsoft.AspNetCore.Routing.Matching
                         slotIndex = _assignments.Count;
                         _assignments.Add(parameterPart.Name, slotIndex);
 
-                        var hasDefaultValue = parameterPart.Default != null || parameterPart.IsCatchAll;
-                        _slots.Add(hasDefaultValue ? new KeyValuePair<string, object>(parameterPart.Name, parameterPart.Default) : default);
+                        if (RequiredValueHelpers.TryGetRequiredValue(routeEndpoint.RoutePattern, parameterPart, out var requiredValue))
+                        {
+                            _slots.Add(new KeyValuePair<string, object>(parameterPart.Name, requiredValue));
+                        }
+                        else
+                        {
+                            var hasDefaultValue = parameterPart.Default != null || parameterPart.IsCatchAll;
+                            _slots.Add(hasDefaultValue ? new KeyValuePair<string, object>(parameterPart.Name, parameterPart.Default) : default);
+                        }
                     }
 
-                    if (parameterPart.IsCatchAll)
+                    if (RequiredValueHelpers.TryGetRequiredValue(routeEndpoint.RoutePattern, parameterPart, out _))
+                    {
+                        // Don't capture a parameter if it has a required value. Required value will be set to route values on request
+                    }
+                    else if (parameterPart.IsCatchAll)
                     {
                         catchAll = (parameterPart.Name, i, slotIndex);
                     }
@@ -646,21 +658,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
 
             return false;
-        }
-
-        private static bool HasRequiredValue(RouteEndpoint endpoint, RoutePatternParameterPart parameterPart, out object value)
-        {
-            if (!endpoint.RoutePattern.RequiredValues.TryGetValue(parameterPart.Name, out value))
-            {
-                return false;
-            }
-
-            if (value is string s && string.IsNullOrEmpty(s))
-            {
-                return false;
-            }
-
-            return value != null;
         }
 
         private void ApplyPolicies(DfaNode node)

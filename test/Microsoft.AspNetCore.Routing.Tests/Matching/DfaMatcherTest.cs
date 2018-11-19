@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -22,7 +23,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
     {
         private RouteEndpoint CreateEndpoint(string template, int order, object defaults = null, object requiredValues = null)
         {
-            return EndpointFactory.CreateRouteEndpoint(template, defaults, order: order, displayName: template);
+            return EndpointFactory.CreateRouteEndpoint(template, defaults, requiredValues: requiredValues, order: order, displayName: template);
         }
 
         private Matcher CreateDfaMatcher(
@@ -129,6 +130,19 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
             // Assert
             Assert.Same(endpoint, context.Endpoint);
+
+            Assert.Collection(
+                context.RouteValues.OrderBy(kvp => kvp.Key),
+                (kvp) =>
+                {
+                    Assert.Equal("action", kvp.Key);
+                    Assert.Equal("Index", kvp.Value);
+                },
+                (kvp) =>
+                {
+                    Assert.Equal("controller", kvp.Key);
+                    Assert.Equal("ConventionalTransformer", kvp.Value);
+                });
         }
 
         [Fact]

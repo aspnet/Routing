@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Linq;
+using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Patterns;
 
 namespace Microsoft.AspNetCore.Routing.Template
@@ -50,7 +51,7 @@ namespace Microsoft.AspNetCore.Routing.Template
             {
                 var segment = routePattern.PathSegments[i];
 
-                var digit = ComputeInboundPrecedenceDigit(segment);
+                var digit = ComputeInboundPrecedenceDigit(routePattern, segment);
                 Debug.Assert(digit >= 0 && digit < 10);
 
                 precedence += decimal.Divide(digit, (decimal)Math.Pow(10, i));
@@ -217,7 +218,9 @@ namespace Microsoft.AspNetCore.Routing.Template
         }
 
         // see description on ComputeInboundPrecedenceDigit(TemplateSegment segment)
-        private static int ComputeInboundPrecedenceDigit(RoutePatternPathSegment pathSegment)
+        //
+        // With a RoutePattern, parameters with a required value are treated as a literal segment
+        private static int ComputeInboundPrecedenceDigit(RoutePattern routePattern, RoutePatternPathSegment pathSegment)
         {
             if (pathSegment.Parts.Count > 1)
             {
@@ -233,6 +236,12 @@ namespace Microsoft.AspNetCore.Routing.Template
             }
             else if (part is RoutePatternParameterPart parameterPart)
             {
+                // Parameter with a required value is matched as a literal
+                if (RequiredValueHelpers.TryGetRequiredValue(routePattern, parameterPart, out _))
+                {
+                    return 1;
+                }
+
                 var digit = parameterPart.IsCatchAll ? 5 : 3;
 
                 // If there is a route constraint for the parameter, reduce order by 1
