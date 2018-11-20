@@ -337,7 +337,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
         }
 
         [Fact]
-        public void SubstituteRequiredValues_NullRequiredValueAllowedAsParameter()
+        public void SubstituteRequiredValues_NullRequiredValueParameter_Fail()
         {
             // Arrange
             var template = "PageRoute/Attribute/{page}";
@@ -352,12 +352,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
             var actual = Transformer.SubstituteRequiredValues(original, requiredValues);
 
             // Assert
-            Assert.Collection(
-                actual.RequiredValues.OrderBy(kvp => kvp.Key),
-                kvp => Assert.Equal(new KeyValuePair<string, object>("action", "Index"), kvp),
-                kvp => Assert.Equal(new KeyValuePair<string, object>("area", null), kvp),
-                kvp => Assert.Equal(new KeyValuePair<string, object>("controller", "Home"), kvp),
-                kvp => Assert.Equal(new KeyValuePair<string, object>("page", null), kvp));
+            Assert.Null(actual);
         }
     }
 }

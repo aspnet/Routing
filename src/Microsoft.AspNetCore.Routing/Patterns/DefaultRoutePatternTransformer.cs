@@ -53,7 +53,16 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                     // 1. Required value is null-ish - check to make sure that this route doesn't have a
                     // parameter or filter-like default.
 
-                    if (original.Defaults.TryGetValue(kvp.Key, out var defaultValue) &&
+                    if (original.GetParameter(kvp.Key) != null)
+                    {
+                        // Fail: we can't 'require' that a parameter be null. In theory this would be possible
+                        // for an optional parameter, but that's not really in line with the usage of this feature
+                        // so we don't handle it.
+                        //
+                        // Ex: {controller=Home}/{action=Index}/{id?} - with required values: { controller = "" }
+                        return null;
+                    }
+                    else if (original.Defaults.TryGetValue(kvp.Key, out var defaultValue) &&
                         !RouteValueEqualityComparer.Default.Equals(kvp.Value, defaultValue))
                     {
                         // Fail: this route has a non-parameter default that doesn't match.
@@ -133,8 +142,8 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 // We only need to handle the case where the required value maps to a parameter. That's the only
                 // case where we allow a default and a required value to disagree, and we already validated the
                 // other cases.
-                if (parameter != null && 
-                    original.Defaults.TryGetValue(kvp.Key, out var defaultValue) && 
+                if (parameter != null &&
+                    original.Defaults.TryGetValue(kvp.Key, out var defaultValue) &&
                     !RouteValueEqualityComparer.Default.Equals(kvp.Value, defaultValue))
                 {
                     if (updatedDefaults == null && updatedSegments == null && updatedParameters == null)
@@ -159,7 +168,7 @@ namespace Microsoft.AspNetCore.Routing.Patterns
                 updatedDefaults ?? original.Defaults,
                 original.ParameterPolicies,
                 requiredValues,
-                updatedParameters ?? original.Parameters, 
+                updatedParameters ?? original.Parameters,
                 updatedSegments ?? original.PathSegments);
         }
 
