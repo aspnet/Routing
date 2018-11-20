@@ -540,7 +540,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
 
                     if (RequiredValueHelpers.TryGetRequiredValue(routeEndpoint.RoutePattern, parameterPart, out _))
                     {
-                        // Don't capture a parameter if it has a required value. Required value will be set to route values on request
+                        // Don't capture a parameter if it has a required value
                     }
                     else if (parameterPart.IsCatchAll)
                     {
