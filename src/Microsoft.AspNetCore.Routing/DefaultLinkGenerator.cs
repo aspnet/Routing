@@ -311,7 +311,7 @@ namespace Microsoft.AspNetCore.Routing
                 _uriBuildingContextPool,
                 endpoint.RoutePattern,
                 new RouteValueDictionary(endpoint.RoutePattern.Defaults),
-                endpoint.ResolveRouteValues()?.Keys,
+                endpoint.RoutePattern.RequiredValues.Keys,
                 policies);
         }
 

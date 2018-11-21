@@ -24,12 +24,6 @@ namespace Microsoft.AspNetCore.Routing
             string displayName = null,
             params object[] metadata)
         {
-            var oldRequiredValues = metadata?.OfType<IRouteValuesAddressMetadata>().SingleOrDefault()?.RequiredValues;
-            if (oldRequiredValues != null && requiredValues == null)
-            {
-                requiredValues = oldRequiredValues;
-            }
-
             var routePattern = RoutePatternFactory.Parse(template, defaults, policies, requiredValues);
 
             return CreateRouteEndpoint(routePattern, order, displayName, metadata);

@@ -1236,12 +1236,6 @@ namespace Microsoft.AspNetCore.Routing.Matching
             object requiredValues = null,
             params object[] metadata)
         {
-            var oldRequiredValues = metadata?.OfType<IRouteValuesAddressMetadata>().SingleOrDefault()?.RequiredValues;
-            if (oldRequiredValues != null && requiredValues == null)
-            {
-                requiredValues = oldRequiredValues;
-            }
-
             var routePattern = RoutePatternFactory.Parse(template, defaults, constraints);
 
             var policyFactory = CreateParameterPolicyFactory();

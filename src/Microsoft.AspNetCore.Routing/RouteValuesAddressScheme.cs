@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Routing
                     continue;
                 }
 
-                var metadata = endpoint.Metadata.GetMetadata<IRouteValuesAddressMetadata>();
+                var metadata = endpoint.Metadata.GetMetadata<IRouteNameMetadata>();
                 if (metadata == null && routeEndpoint.RoutePattern.RequiredValues.Count == 0)
                 {
                     continue;
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Routing
 
                 var entry = CreateOutboundRouteEntry(
                     routeEndpoint,
-                    routeEndpoint.ResolveRouteValues(),
+                    routeEndpoint.RoutePattern.RequiredValues,
                     metadata?.RouteName);
 
                 var outboundMatch = new OutboundMatch() { Entry = entry };

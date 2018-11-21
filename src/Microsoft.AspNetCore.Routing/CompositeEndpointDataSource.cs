@@ -167,11 +167,11 @@ namespace Microsoft.AspNetCore.Routing
                         sb.Append(", Defaults: new { ");
                         sb.Append(string.Join(", ", FormatValues(routeEndpoint.RoutePattern.Defaults)));
                         sb.Append(" }");
-                        var routeValuesAddressMetadata = routeEndpoint.Metadata.GetMetadata<IRouteValuesAddressMetadata>();
+                        var routeNameMetadata = routeEndpoint.Metadata.GetMetadata<IRouteNameMetadata>();
                         sb.Append(", Route Name: ");
-                        sb.Append(routeValuesAddressMetadata?.RouteName);
-                        var routeValues = routeEndpoint.ResolveRouteValues();
-                        if (routeValues?.Count > 0)
+                        sb.Append(routeNameMetadata?.RouteName);
+                        var routeValues = routeEndpoint.RoutePattern.RequiredValues;
+                        if (routeValues.Count > 0)
                         {
                             sb.Append(", Required Values: new { ");
                             sb.Append(string.Join(", ", FormatValues(routeValues)));
