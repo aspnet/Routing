@@ -1304,9 +1304,11 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             var binder = new TemplateBinder(
                 UrlEncoder.Default,
                 new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy()),
-                EndpointFactory.CreateRoutePattern(
-                    RoutePatternFactory.Parse(template, defaults, parameterPolicies: null),
-                    new { area = (string)null, action = "Param", controller = "ConventionalTransformer", page = (string)null }),
+                RoutePatternFactory.Parse(
+                    template,
+                    defaults,
+                    parameterPolicies: null,
+                    requiredValues: new { area = (string)null, action = "Param", controller = "ConventionalTransformer", page = (string)null }),
                 defaults,
                 requiredKeys: defaults.Keys,
                 parameterPolicies: new (string, IParameterPolicy)[] { ("param", new LengthRouteConstraint(500)), ("param", new SlugifyParameterTransformer()), });
@@ -1332,9 +1334,11 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             var binder = new TemplateBinder(
                 UrlEncoder.Default,
                 new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy()),
-                EndpointFactory.CreateRoutePattern(
-                    RoutePatternFactory.Parse(template, defaults, parameterPolicies: null),
-                    new { area = "Travel", action = "SomeAction", controller = "Flight", page = (string)null }),
+                RoutePatternFactory.Parse(
+                    template,
+                    defaults,
+                    parameterPolicies: null,
+                    requiredValues: new { area = "Travel", action = "SomeAction", controller = "Flight", page = (string)null }),
                 defaults,
                 requiredKeys: new string[] { "area", "action", "controller", "page" },
                 parameterPolicies: null);
@@ -1360,9 +1364,11 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             var binder = new TemplateBinder(
                 UrlEncoder.Default,
                 new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy()),
-                EndpointFactory.CreateRoutePattern(
-                    RoutePatternFactory.Parse(template, defaults, parameterPolicies: null),
-                    new { area = (string)null, action = "SomeAction", controller = "LG2", page = (string)null }),
+                RoutePatternFactory.Parse(
+                    template,
+                    defaults,
+                    parameterPolicies: null,
+                    requiredValues: new { area = (string)null, action = "SomeAction", controller = "LG2", page = (string)null }),
                 defaults,
                 requiredKeys: new string[] { "area", "action", "controller", "page" },
                 parameterPolicies: null);
@@ -1388,9 +1394,11 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
             var binder = new TemplateBinder(
                 UrlEncoder.Default,
                 new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy()),
-                EndpointFactory.CreateRoutePattern(
-                    RoutePatternFactory.Parse(template, defaults, parameterPolicies: null),
-                    new { area = "Admin", action = "SomeAction", controller = "LG3", page = (string)null }),
+                RoutePatternFactory.Parse(
+                    template,
+                    defaults,
+                    parameterPolicies: null,
+                    requiredValues: new { area = "Admin", action = "SomeAction", controller = "LG3", page = (string)null }),
                 defaults,
                 requiredKeys: new string[] { "area", "action", "controller", "page" },
                 parameterPolicies: null);

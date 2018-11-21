@@ -145,82 +145,84 @@ namespace Microsoft.AspNetCore.Routing.Matching
                     {
                         var parent = parents[j];
                         var part = segment.Parts[0];
+                        var parameterPart = part as RoutePatternParameterPart;
                         if (segment.IsSimple && part is RoutePatternLiteralPart literalPart)
                         {
                             AddLiteralNode(includeLabel, nextParents, parent, literalPart.Content);
                         }
-                        else if (segment.IsSimple && part is RoutePatternParameterPart parameterPart)
+                        else if (segment.IsSimple && parameterPart != null && parameterPart.IsCatchAll)
                         {
-                            if (parameterPart.IsCatchAll)
+                            // A catch all should traverse all literal nodes as well as parameter nodes
+                            // we don't need to create the parameter node here because of ordering
+                            // all catchalls will be processed after all parameters.
+                            if (parent.Literals != null)
                             {
-                                // A catch all should traverse all literal nodes as well as parameter nodes
-                                // we don't need to create the parameter node here because of ordering
-                                // all catchalls will be processed after all parameters.
-                                if (parent.Literals != null)
-                                {
-                                    nextParents.AddRange(parent.Literals.Values);
-                                }
-                                if (parent.Parameters != null)
-                                {
-                                    nextParents.Add(parent.Parameters);
-                                }
-
-                                // We also create a 'catchall' here. We don't do further traversals
-                                // on the catchall node because only catchalls can end up here. The
-                                // catchall node allows us to capture an unlimited amount of segments
-                                // and also to match a zero-length segment, which a parameter node
-                                // doesn't allow.
-                                if (parent.CatchAll == null)
-                                {
-                                    parent.CatchAll = new DfaNode()
-                                    {
-                                        PathDepth = parent.PathDepth + 1,
-                                        Label = includeLabel ? parent.Label + "{*...}/" : null,
-                                    };
-
-                                    // The catchall node just loops.
-                                    parent.CatchAll.Parameters = parent.CatchAll;
-                                    parent.CatchAll.CatchAll = parent.CatchAll;
-                                }
-
-                                parent.CatchAll.AddMatch(endpoint);
+                                nextParents.AddRange(parent.Literals.Values);
                             }
-                            else if (RequiredValueHelpers.TryGetRequiredValue(endpoint.RoutePattern, parameterPart, out var requiredValue))
+                            if (parent.Parameters != null)
                             {
-                                if (endpoint.RoutePattern.ParameterPolicies.TryGetValue(parameterPart.Name, out var parameterPolicyReferences))
-                                {
-                                    for (var k = 0; k < parameterPolicyReferences.Count; k++)
-                                    {
-                                        var reference = parameterPolicyReferences[k];
-                                        var parameterPolicy = _parameterPolicyFactory.Create(parameterPart, reference);
-                                        if (parameterPolicy is IOutboundParameterTransformer parameterTransformer)
-                                        {
-                                            requiredValue = parameterTransformer.TransformOutbound(requiredValue);
-                                            break;
-                                        }
-                                    }
-                                }
-
-                                AddLiteralNode(includeLabel, nextParents, parent, requiredValue.ToString());
-                            }
-                            else
-                            {
-                                if (parent.Parameters == null)
-                                {
-                                    parent.Parameters = new DfaNode()
-                                    {
-                                        PathDepth = parent.PathDepth + 1,
-                                        Label = includeLabel ? parent.Label + "{...}/" : null,
-                                    };
-                                }
-
-                                // A parameter should traverse all literal nodes as well as the parameter node
-                                if (parent.Literals != null)
-                                {
-                                    nextParents.AddRange(parent.Literals.Values);
-                                }
                                 nextParents.Add(parent.Parameters);
                             }
+
+                            // We also create a 'catchall' here. We don't do further traversals
+                            // on the catchall node because only catchalls can end up here. The
+                            // catchall node allows us to capture an unlimited amount of segments
+                            // and also to match a zero-length segment, which a parameter node
+                            // doesn't allow.
+                            if (parent.CatchAll == null)
+                            {
+                                parent.CatchAll = new DfaNode()
+                                {
+                                    PathDepth = parent.PathDepth + 1,
+                                    Label = includeLabel ? parent.Label + "{*...}/" : null,
+                                };
+
+                                // The catchall node just loops.
+                                parent.CatchAll.Parameters = parent.CatchAll;
+                                parent.CatchAll.CatchAll = parent.CatchAll;
+                            }
+
+                            parent.CatchAll.AddMatch(endpoint);
+                        }
+                        else if (segment.IsSimple && parameterPart != null && TryGetRequiredValue(endpoint.RoutePattern, parameterPart, out var requiredValue))
+                        {
+                            // If the parameter has a matching required value, replace the parameter with the required value
+                            // as a literal. This should use the parameter's transformer (if present)
+                            // e.g. Template: Home/{action}, Required values: { action = "Index" }, Result: Home/Index
+
+                            if (endpoint.RoutePattern.ParameterPolicies.TryGetValue(parameterPart.Name, out var parameterPolicyReferences))
+                            {
+                                for (var k = 0; k < parameterPolicyReferences.Count; k++)
+                                {
+                                    var reference = parameterPolicyReferences[k];
+                                    var parameterPolicy = _parameterPolicyFactory.Create(parameterPart, reference);
+                                    if (parameterPolicy is IOutboundParameterTransformer parameterTransformer)
+                                    {
+                                        requiredValue = parameterTransformer.TransformOutbound(requiredValue);
+                                        break;
+                                    }
+                                }
+                            }
+
+                            AddLiteralNode(includeLabel, nextParents, parent, requiredValue.ToString());
+                        }
+                        else if (segment.IsSimple && parameterPart != null)
+                        {
+                            if (parent.Parameters == null)
+                            {
+                                parent.Parameters = new DfaNode()
+                                {
+                                    PathDepth = parent.PathDepth + 1,
+                                    Label = includeLabel ? parent.Label + "{...}/" : null,
+                                };
+                            }
+
+                            // A parameter should traverse all literal nodes as well as the parameter node
+                            if (parent.Literals != null)
+                            {
+                                nextParents.AddRange(parent.Literals.Values);
+                            }
+                            nextParents.Add(parent.Parameters);
                         }
                         else
                         {
@@ -527,7 +529,9 @@ namespace Microsoft.AspNetCore.Routing.Matching
                         slotIndex = _assignments.Count;
                         _assignments.Add(parameterPart.Name, slotIndex);
 
-                        if (RequiredValueHelpers.TryGetRequiredValue(routeEndpoint.RoutePattern, parameterPart, out var requiredValue))
+                        // A parameter can have a required value, default value/catch all, or be a normal parameter
+                        // Add the required value or default value as the slot's initial value
+                        if (TryGetRequiredValue(routeEndpoint.RoutePattern, parameterPart, out var requiredValue))
                         {
                             _slots.Add(new KeyValuePair<string, object>(parameterPart.Name, requiredValue));
                         }
@@ -538,9 +542,10 @@ namespace Microsoft.AspNetCore.Routing.Matching
                         }
                     }
 
-                    if (RequiredValueHelpers.TryGetRequiredValue(routeEndpoint.RoutePattern, parameterPart, out _))
+                    if (TryGetRequiredValue(routeEndpoint.RoutePattern, parameterPart, out _))
                     {
                         // Don't capture a parameter if it has a required value
+                        // There is no need because a parameter with a required value is matched as a literal
                     }
                     else if (parameterPart.IsCatchAll)
                     {
@@ -757,6 +762,16 @@ namespace Microsoft.AspNetCore.Routing.Matching
             }
 
             return (nodeBuilderPolicies.ToArray(), endpointComparerPolicies.ToArray(), endpointSelectorPolicies.ToArray());
+        }
+
+        private static bool TryGetRequiredValue(RoutePattern routePattern, RoutePatternParameterPart parameterPart, out object value)
+        {
+            if (!routePattern.RequiredValues.TryGetValue(parameterPart.Name, out value))
+            {
+                return false;
+            }
+
+            return !RouteValueEqualityComparer.Default.Equals(value, string.Empty);
         }
     }
 }

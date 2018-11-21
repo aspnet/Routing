@@ -800,7 +800,7 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // Arrange
             var builder = CreateDfaMatcherBuilder();
 
-            var endpoint = CreateEndpoint(
+            var endpoint = CreateSubsitutedEndpoint(
                 "{controller}/{action}",
                 defaults: new { controller = "Home", action = "Index" },
                 requiredValues: new { controller = "Login", action = "Index" });
@@ -834,19 +834,19 @@ namespace Microsoft.AspNetCore.Routing.Matching
             // Arrange
             var builder = CreateDfaMatcherBuilder();
 
-            var endpoint1 = CreateEndpoint(
+            var endpoint1 = CreateSubsitutedEndpoint(
                 "{controller}/{action}/{id?}",
                 defaults: new { controller = "Home", action = "Index" },
                 requiredValues: new { controller = "Home", action = "Index" });
             builder.AddEndpoint(endpoint1);
 
-            var endpoint2 = CreateEndpoint(
+            var endpoint2 = CreateSubsitutedEndpoint(
                 "{controller}/{action}/{id?}",
                 defaults: new { controller = "Home", action = "Index" },
                 requiredValues: new { controller = "Login", action = "Index" });
             builder.AddEndpoint(endpoint2);
 
-            var endpoint3 = CreateEndpoint(
+            var endpoint3 = CreateSubsitutedEndpoint(
                 "{controller}/{action}/{id?}",
                 defaults: new { controller = "Home", action = "Index" },
                 requiredValues: new { controller = "Login", action = "ChangePassword" });
@@ -1229,14 +1229,40 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 policies);
         }
 
-        private RouteEndpoint CreateEndpoint(
+        private static RouteEndpoint CreateSubsitutedEndpoint(
             string template,
             object defaults = null,
             object constraints = null,
             object requiredValues = null,
             params object[] metadata)
         {
-            return EndpointFactory.CreateRouteEndpoint(template, defaults, constraints, requiredValues, metadata: metadata);
+            var oldRequiredValues = metadata?.OfType<IRouteValuesAddressMetadata>().SingleOrDefault()?.RequiredValues;
+            if (oldRequiredValues != null && requiredValues == null)
+            {
+                requiredValues = oldRequiredValues;
+            }
+
+            var routePattern = RoutePatternFactory.Parse(template, defaults, constraints);
+
+            var policyFactory = CreateParameterPolicyFactory();
+            var defaultRoutePatternTransformer = new DefaultRoutePatternTransformer(policyFactory);
+
+            routePattern = defaultRoutePatternTransformer.SubstituteRequiredValues(routePattern, requiredValues);
+
+            return EndpointFactory.CreateRouteEndpoint(routePattern, metadata: metadata);
+        }
+
+        public static RoutePattern CreateRoutePattern(RoutePattern routePattern, object requiredValues)
+        {
+            if (requiredValues != null)
+            {
+                var policyFactory = CreateParameterPolicyFactory();
+                var defaultRoutePatternTransformer = new DefaultRoutePatternTransformer(policyFactory);
+
+                routePattern = defaultRoutePatternTransformer.SubstituteRequiredValues(routePattern, requiredValues);
+            }
+
+            return routePattern;
         }
 
         private static DefaultParameterPolicyFactory CreateParameterPolicyFactory()
@@ -1247,11 +1273,23 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 {
                     ConstraintMap =
                     {
-                        ["slugify"] = typeof(SlugifyParameterTransformer)
+                        ["slugify"] = typeof(SlugifyParameterTransformer),
+                        ["upper-case"] = typeof(UpperCaseParameterTransform)
                     }
                 }),
                 serviceCollection.BuildServiceProvider());
+
             return policyFactory;
+        }
+
+        private static RouteEndpoint CreateEndpoint(
+            string template,
+            object defaults = null,
+            object constraints = null,
+            object requiredValues = null,
+            params object[] metadata)
+        {
+            return EndpointFactory.CreateRouteEndpoint(template, defaults, constraints, requiredValues, metadata: metadata);
         }
 
         private class TestMetadata1

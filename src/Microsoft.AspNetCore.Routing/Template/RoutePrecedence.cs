@@ -237,7 +237,8 @@ namespace Microsoft.AspNetCore.Routing.Template
             else if (part is RoutePatternParameterPart parameterPart)
             {
                 // Parameter with a required value is matched as a literal
-                if (RequiredValueHelpers.TryGetRequiredValue(routePattern, parameterPart, out _))
+                if (routePattern.RequiredValues.TryGetValue(parameterPart.Name, out var requiredValue) &&
+                    !RouteValueEqualityComparer.Default.Equals(requiredValue, string.Empty))
                 {
                     return 1;
                 }

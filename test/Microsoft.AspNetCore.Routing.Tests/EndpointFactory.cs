@@ -24,54 +24,29 @@ namespace Microsoft.AspNetCore.Routing
             string displayName = null,
             params object[] metadata)
         {
-            var d = new List<object>(metadata ?? Array.Empty<object>());
-
             var oldRequiredValues = metadata?.OfType<IRouteValuesAddressMetadata>().SingleOrDefault()?.RequiredValues;
             if (oldRequiredValues != null && requiredValues == null)
             {
                 requiredValues = oldRequiredValues;
             }
 
-            var routePattern = RoutePatternFactory.Parse(template, defaults, policies);
+            var routePattern = RoutePatternFactory.Parse(template, defaults, policies, requiredValues);
 
-            routePattern = CreateRoutePattern(routePattern, requiredValues);
+            return CreateRouteEndpoint(routePattern, order, displayName, metadata);
+        }
 
+        public static RouteEndpoint CreateRouteEndpoint(
+            RoutePattern routePattern = null,
+            int order = 0,
+            string displayName = null,
+            IList<object> metadata = null)
+        {
             return new RouteEndpoint(
                 TestConstants.EmptyRequestDelegate,
                 routePattern,
                 order,
-                new EndpointMetadataCollection(d),
+                new EndpointMetadataCollection(metadata ?? Array.Empty<object>()),
                 displayName);
-        }
-
-        public static RoutePattern CreateRoutePattern(RoutePattern routePattern, object requiredValues)
-        {
-            if (requiredValues != null)
-            {
-                var policyFactory = CreateParameterPolicyFactory();
-                var defaultRoutePatternTransformer = new DefaultRoutePatternTransformer(policyFactory);
-
-                routePattern = defaultRoutePatternTransformer.SubstituteRequiredValues(routePattern, requiredValues);
-            }
-
-            return routePattern;
-        }
-
-        private static DefaultParameterPolicyFactory CreateParameterPolicyFactory()
-        {
-            var serviceCollection = new ServiceCollection();
-            var policyFactory = new DefaultParameterPolicyFactory(
-                Options.Create(new RouteOptions
-                {
-                    ConstraintMap =
-                    {
-                        ["slugify"] = typeof(SlugifyParameterTransformer),
-                        ["upper-case"] = typeof(UpperCaseParameterTransform)
-                    }
-                }),
-                serviceCollection.BuildServiceProvider());
-
-            return policyFactory;
         }
     }
 }
