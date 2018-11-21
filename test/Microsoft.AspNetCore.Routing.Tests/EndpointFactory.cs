@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing.Matching;
 using Microsoft.AspNetCore.Routing.Patterns;
@@ -25,8 +26,26 @@ namespace Microsoft.AspNetCore.Routing
         {
             var d = new List<object>(metadata ?? Array.Empty<object>());
 
+            var oldRequiredValues = metadata?.OfType<IRouteValuesAddressMetadata>().SingleOrDefault()?.RequiredValues;
+            if (oldRequiredValues != null && requiredValues == null)
+            {
+                requiredValues = oldRequiredValues;
+            }
+
             var routePattern = RoutePatternFactory.Parse(template, defaults, policies);
 
+            routePattern = CreateRoutePattern(routePattern, requiredValues);
+
+            return new RouteEndpoint(
+                TestConstants.EmptyRequestDelegate,
+                routePattern,
+                order,
+                new EndpointMetadataCollection(d),
+                displayName);
+        }
+
+        public static RoutePattern CreateRoutePattern(RoutePattern routePattern, object requiredValues)
+        {
             if (requiredValues != null)
             {
                 var policyFactory = CreateParameterPolicyFactory();
@@ -35,12 +54,7 @@ namespace Microsoft.AspNetCore.Routing
                 routePattern = defaultRoutePatternTransformer.SubstituteRequiredValues(routePattern, requiredValues);
             }
 
-            return new RouteEndpoint(
-                TestConstants.EmptyRequestDelegate,
-                routePattern,
-                order,
-                new EndpointMetadataCollection(d),
-                displayName);
+            return routePattern;
         }
 
         private static DefaultParameterPolicyFactory CreateParameterPolicyFactory()

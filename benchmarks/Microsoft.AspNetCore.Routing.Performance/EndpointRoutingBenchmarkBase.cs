@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Routing
 
             return new RouteEndpoint(
                 (context) => Task.CompletedTask,
-                RoutePatternFactory.Parse(template, defaults, constraints),
+                RoutePatternFactory.Parse(template, defaults, constraints, requiredValues),
                 order,
                 new EndpointMetadataCollection(endpointMetadata),
                 displayName);
