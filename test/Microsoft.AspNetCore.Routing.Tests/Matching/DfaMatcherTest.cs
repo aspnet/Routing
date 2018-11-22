@@ -215,6 +215,41 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 });
         }
 
+        [Theory]
+        [InlineData("/")]
+        [InlineData("/TestController")]
+        [InlineData("/TestController/TestAction")]
+        [InlineData("/TestController/TestAction/17")]
+        [InlineData("/TestController/TestAction/17/catchAll")]
+        public async Task MatchAsync_ShortenedPattern_EndpointMatched(string path)
+        {
+            // Arrange
+            var endpoint = CreateEndpoint(
+                "{controller=TestController}/{action=TestAction}/{id=17}/{**catchAll}",
+                0,
+                requiredValues: new { controller = "TestController", action = "TestAction", area = (string)null, page = (string)null });
+
+            var dataSource = new DefaultEndpointDataSource(new List<Endpoint>
+            {
+                endpoint
+            });
+
+            var matcher = CreateDfaMatcher(dataSource);
+
+            var (httpContext, context) = CreateContext();
+            httpContext.Request.Path = path;
+
+            // Act
+            await matcher.MatchAsync(httpContext, context);
+
+            // Assert
+            Assert.Same(endpoint, context.Endpoint);
+
+            Assert.Equal("TestAction", context.RouteValues["action"]);
+            Assert.Equal("TestController", context.RouteValues["controller"]);
+            Assert.Equal("17", context.RouteValues["id"]);
+        }
+
         [Fact]
         public async Task MatchAsync_MultipleEndpointsWithDifferentRequiredValues_EndpointMatched()
         {
@@ -290,6 +325,45 @@ namespace Microsoft.AspNetCore.Routing.Matching
                 {
                     Assert.Equal("controller", kvp.Key);
                     Assert.Equal("ConventionalTransformer", kvp.Value);
+                });
+        }
+
+        [Fact]
+        public async Task MatchAsync_DifferentDefaultCase_RouteValueUsesDefaultCase()
+        {
+            // Arrange
+            var endpoint = CreateEndpoint(
+                "{controller}/{action=TESTACTION}/{id?}",
+                0,
+                requiredValues: new { controller = "TestController", action = "TestAction" });
+
+            var dataSource = new DefaultEndpointDataSource(new List<Endpoint>
+            {
+                endpoint
+            });
+
+            var matcher = CreateDfaMatcher(dataSource);
+
+            var (httpContext, context) = CreateContext();
+            httpContext.Request.Path = "/TestController";
+
+            // Act
+            await matcher.MatchAsync(httpContext, context);
+
+            // Assert
+            Assert.Same(endpoint, context.Endpoint);
+
+            Assert.Collection(
+                context.RouteValues.OrderBy(kvp => kvp.Key),
+                (kvp) =>
+                {
+                    Assert.Equal("action", kvp.Key);
+                    Assert.Equal("TESTACTION", kvp.Value);
+                },
+                (kvp) =>
+                {
+                    Assert.Equal("controller", kvp.Key);
+                    Assert.Equal("TestController", kvp.Value);
                 });
         }
 
